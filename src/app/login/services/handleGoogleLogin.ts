@@ -1,5 +1,9 @@
 import { auth, db } from "@/lib/firebaseConfig";
-import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  signInWithRedirect,
+  getRedirectResult,
+} from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
 /**
@@ -7,23 +11,20 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
  */
 export const startGoogleLogin = () => {
   const provider = new GoogleAuthProvider();
-  signInWithRedirect(auth, provider);
+  return signInWithRedirect(auth, provider);
 };
 
 /**
- * Call this after page load to complete Google login and create Firestore profile if needed.
+ * Handles Google redirect result and ensures Firestore profile exists.
  */
-export const handleGoogleRedirectResult = async (
-  setLoading: (val: boolean) => void,
-  setError: (msg: string) => void
-) => {
-  setLoading(true);
-  setError("");
+export const completeGoogleLogin = async () => {
   try {
     const result = await getRedirectResult(auth);
+    console.log("Redirect result:", result);
+    
     if (!result || !result.user) {
-      setLoading(false);
-      return; // No user returned yet
+      console.log("No redirect result or user");
+      return null;
     }
 
     const user = result.user;
@@ -31,6 +32,7 @@ export const handleGoogleRedirectResult = async (
     const userSnap = await getDoc(userRef);
 
     if (!userSnap.exists()) {
+      console.log("Creating new user profile");
       await setDoc(userRef, {
         name: user.displayName || "",
         email: user.email,
@@ -40,11 +42,10 @@ export const handleGoogleRedirectResult = async (
       });
     }
 
-    console.log("Google login successful:", user.uid);
-  } catch (err: any) {
-    console.error(err);
-    setError(err.message);
-  } finally {
-    setLoading(false);
+    console.log("Login successful, returning user:", user);
+    return user;
+  } catch (error) {
+    console.error("Error in completeGoogleLogin:", error);
+    throw error;
   }
 };

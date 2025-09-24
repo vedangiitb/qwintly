@@ -2,32 +2,45 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useEmailAuth } from "./hooks/useAuth";
 import { useAuthForm } from "./hooks/useAuthForm";
-import { usePref } from "./hooks/usePref";
-import {
-  handleGoogleRedirectResult,
-  startGoogleLogin,
-} from "./services/handleGoogleLogin";
-import { handleLogin } from "./services/handleLogin";
-import { handleSignUp } from "./services/handleSignUp";
+import { useGoogleLogin } from "./hooks/useGoogleLogin";
+
+import { useAuth } from "./contexts/AuthContext";
 
 export default function SignIn() {
+  const router = useRouter();
   const { email, setEmail, userName, setUserName, password, setPassword } =
     useAuthForm();
-  const {
-    isExistingUser,
-    setIsExistingUser,
-    loading,
-    error,
-    setLoading,
-    setError,
-  } = usePref();
+  const { loading, error } = useAuth();
+
+  const [isExistingUser, setIsExistingUser] = useState(true);
+
+  const { login, signUp } = useEmailAuth();
+
+  const { loginWithGoogle, handleRedirectResult } = useGoogleLogin();
 
   useEffect(() => {
-    // Complete login after redirect
-    handleGoogleRedirectResult(setLoading, setError);
+    const checkRedirect = async () => {
+      const user = await handleRedirectResult();
+      if (user) {
+        router.push("/account");
+      }
+    };
+    checkRedirect();
   }, []);
+
+  const handleSubmit = async () => {
+    const user = isExistingUser
+      ? await login(email, password)
+      : await signUp(email, password, userName);
+
+    if (user) {
+      router.push("/account");
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted">
@@ -42,7 +55,6 @@ export default function SignIn() {
               : "Create your new account"}
           </p>
         </div>
-
         <form className="space-y-5">
           {!isExistingUser && (
             <Input
@@ -77,18 +89,7 @@ export default function SignIn() {
           <Button
             type="button"
             className="w-full h-11 rounded-lg bg-primary hover:bg-primary/90 transition-colors duration-150 shadow focus:ring-2 focus:ring-primary/40"
-            onClick={
-              isExistingUser
-                ? () => handleLogin(setLoading, setError, email, password)
-                : () =>
-                    handleSignUp(
-                      setLoading,
-                      setError,
-                      email,
-                      password,
-                      userName
-                    )
-            }
+            onClick={handleSubmit}
             disabled={loading}
           >
             {loading ? (
@@ -111,7 +112,7 @@ export default function SignIn() {
           type="button"
           variant="outline"
           className="w-full flex items-center justify-center gap-3 h-11 rounded-lg text-base shadow-sm hover:bg-primary/10"
-          onClick={() => startGoogleLogin()}
+          onClick={loginWithGoogle}
           disabled={loading}
         >
           <img src="/google-logo.png" alt="google" className="h-5 w-5" />
