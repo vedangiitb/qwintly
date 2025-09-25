@@ -1,27 +1,20 @@
+"use client";
 import { auth, db } from "@/lib/firebaseConfig";
 import {
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
 /**
- * Initiates Google login via redirect.
+ * Initiates Google login via popup.
  */
-export const startGoogleLogin = () => {
-  const provider = new GoogleAuthProvider();
-  return signInWithRedirect(auth, provider);
-};
-
-/**
- * Handles Google redirect result and ensures Firestore profile exists.
- */
-export const completeGoogleLogin = async () => {
+export const handleGoogleLogin = async () => {
   try {
-    const result = await getRedirectResult(auth);
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
     console.log("Redirect result:", result);
-    
+
     if (!result || !result.user) {
       console.log("No redirect result or user");
       return null;

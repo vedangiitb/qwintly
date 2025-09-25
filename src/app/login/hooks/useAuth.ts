@@ -8,6 +8,7 @@ import {
 } from "../services/authService";
 
 import { useAuth } from "../contexts/AuthContext";
+import { validatePassword } from "../utils/validatePassword";
 
 export const useEmailAuth = () => {
   const { setLoading, setError } = useAuth();
@@ -28,6 +29,11 @@ export const useEmailAuth = () => {
   };
 
   const signUp = async (email: string, password: string, userName: string) => {
+    if (!validatePassword(password).isValid) {
+      console.error("Invalid password")
+      setError("Invalid password")
+      return;
+    }
     try {
       setLoading(true);
       setError("");
