@@ -50,7 +50,5 @@ export const validatePassword = (
     },
   ];
 
-  console.log(isValid, checks);
-
   return { isValid, checks };
 };

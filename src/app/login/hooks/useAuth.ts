@@ -1,24 +1,23 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useAuth } from "../contexts/AuthContext";
 import {
   loginWithEmail,
-  signUpWithEmail,
   logOut,
+  signUpWithEmail,
 } from "../services/authService";
-
-import { useAuth } from "../contexts/AuthContext";
 import { validatePassword } from "../utils/validatePassword";
 
 export const useEmailAuth = () => {
   const { setLoading, setError } = useAuth();
   const router = useRouter();
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string,recaptchaToken: string) => {
     try {
       setLoading(true);
       setError("");
-      const user = await loginWithEmail(email, password);
+      const user = await loginWithEmail(email, password,recaptchaToken);
       return user;
     } catch (err: any) {
       console.error(err.message);
@@ -28,16 +27,16 @@ export const useEmailAuth = () => {
     }
   };
 
-  const signUp = async (email: string, password: string, userName: string) => {
+  const signUp = async (email: string, password: string, userName: string,recaptchaToken: string) => {
     if (!validatePassword(password).isValid) {
-      console.error("Invalid password")
-      setError("Invalid password")
+      console.error("Invalid password");
+      setError("Invalid password");
       return;
     }
     try {
       setLoading(true);
       setError("");
-      const user = await signUpWithEmail(email, password, userName);
+      const user = await signUpWithEmail(email, password, userName,recaptchaToken);
       return user;
     } catch (err: any) {
       console.error(err);
