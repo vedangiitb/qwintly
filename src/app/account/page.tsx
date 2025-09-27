@@ -8,9 +8,20 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/app/login/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function Account() {
   const { user, logout } = useAuth();
+  const router = useRouter();
+
+  if (!user || !user.emailVerified) {
+    return (
+      <div>
+        <p>Please verify your email</p>
+        <Button onClick={() => router.push("/login/verify")}>Verify</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">

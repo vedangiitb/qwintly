@@ -15,6 +15,7 @@ type User = {
   uid: string;
   email: string | null;
   displayName: string | null;
+  emailVerified: boolean;
 } | null;
 
 type AuthContextType = {
@@ -42,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           uid: firebaseUser.uid,
           email: firebaseUser.email,
           displayName: firebaseUser.displayName,
+          emailVerified: firebaseUser.emailVerified,
         });
       } else {
         setUser(null);

@@ -27,7 +27,6 @@ export const loginWithEmail = async (
     throw new Error(data.message || "Failed to login");
   }
 
-  // 2. VERIFICATION PASSED: PROCEED WITH CLIENT-SIDE FIREBASE LOGIN
   const auth = getAuth();
   const userCredential = await signInWithEmailAndPassword(
     auth,
@@ -58,15 +57,12 @@ export const signUpWithEmail = async (
     throw new Error(data.message || "Failed to sign up.");
   }
 
-  // Log the user in on the client-side using the custom token from the server
   const auth = getAuth();
   const userCredential = await signInWithCustomToken(auth, data.customToken);
 
-  // Return the newly logged-in user
   return userCredential.user;
 };
 
-// Log out
 export async function logOut() {
   return await signOut(auth);
 }

@@ -22,9 +22,7 @@ export default function AuthForm({ isExistingUser }: Props) {
   const router = useRouter();
   const { email, setEmail, userName, setUserName, password, setPassword } =
     useAuthForm();
-  // Assuming useAuth now manages error states related to reCAPTCHA too
   const { loading, error, setLoading, setError } = useAuth();
-  // IMPORTANT: The login and signUp functions MUST now accept the reCAPTCHA token
   const { login, signUp } = useEmailAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,7 +52,9 @@ export default function AuthForm({ isExistingUser }: Props) {
         ? await login(email, password, recaptchaToken)
         : await signUp(email, password, userName, recaptchaToken);
 
-      if (user) router.push("/account");
+      if (user) {
+        isExistingUser ? router.push("/account") : router.push("/verify");
+      }
     } catch (err: any) {
       console.error("Auth failed");
       setError(err.message || "An unknown error occurred.");

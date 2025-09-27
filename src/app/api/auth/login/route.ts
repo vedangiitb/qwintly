@@ -10,13 +10,10 @@ async function createAssessment(token: string, action: string) {
 
   const serviceAccountJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
 
-  // 1. Initialize client options
   const clientOptions = serviceAccountJson
     ? { credentials: JSON.parse(serviceAccountJson) }
     : {};
 
-  // Create the reCAPTCHA Enterprise client
-  // It automatically handles authentication using the environment variables (e.g., GOOGLE_APPLICATION_CREDENTIALS)
   const client = new RecaptchaEnterpriseServiceClient(clientOptions);
   const projectPath = client.projectPath(PROJECT_ID);
 
@@ -39,7 +36,6 @@ async function createAssessment(token: string, action: string) {
     throw new Error("Invalid assessment response from reCAPTCHA Enterprise.");
   }
 
-  // Check if the token is valid for the expected action
   if (
     !response.tokenProperties.valid ||
     response.tokenProperties.action !== action

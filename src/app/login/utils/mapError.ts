@@ -1,7 +1,16 @@
 export const mapError = (err: string) => {
-  if (err.includes("invalid-credential"))
-    return "No account found with this email.";
-  if (err.includes("wrong-password")) return "Incorrect password.";
-  if (err.includes("email-already-in-use")) return "Email already registered.";
+  if (err.includes("email-already-in-use")) {
+    return "Email already registered.";
+  }
+
+  if (
+    err.includes("invalid-credential") ||
+    err.includes("wrong-password") ||
+    err.includes("user-not-found") ||
+    err.includes("invalid-email")
+  ) {
+    return "Invalid email or password.";
+  }
+
   return "Something went wrong. Please try again.";
 };
