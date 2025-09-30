@@ -2,6 +2,7 @@ import { RecaptchaEnterpriseServiceClient } from "@google-cloud/recaptcha-enterp
 import * as admin from "firebase-admin";
 import { NextResponse } from "next/server";
 import { adminAuth, firestoreDb } from "@/lib/firebase-admin";
+import { enqueueEmail } from "@/lib/queue";
 
 const PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT_ID;
 
@@ -46,19 +47,7 @@ async function createAssessment(token: string, action: string) {
   return response.riskAnalysis.score;
 }
 
-const actionCodeSettings = {
-  url: `${process.env.NEXT_PUBLIC_APP_DOMAIN}/login/verify`,
-};
 
-async function sendVerificationEmail({
-  to,
-  name,
-  link,
-}: {
-  to: string;
-  name: string;
-  link: string;
-}) {}
 
 // This function will handle all POST requests to /api/auth/signup
 export async function POST(req: Request) {
@@ -91,16 +80,9 @@ export async function POST(req: Request) {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    const verificationLink = await adminAuth.generateEmailVerificationLink(
-      email,
-      actionCodeSettings // Defined in step 1
-    );
-
-    // 4. SEND CUSTOM EMAIL (THE MANUAL STEP)
-    await sendVerificationEmail({
-      to: email,
-      name: userName,
-      link: verificationLink,
+    await enqueueEmail({
+      email: email,
+      userId: userName,
     });
 
     const customToken = await adminAuth.createCustomToken(userRecord.uid);
