@@ -53,7 +53,8 @@ export default function AuthForm({ isExistingUser }: Props) {
         : await signUp(email, password, userName, recaptchaToken);
 
       if (user) {
-        isExistingUser ? router.push("/account") : router.push("/login/verify");
+        console.log(user)
+        isExistingUser ? router.push("/account") : router.push(`/login/verify?id=${user.uid}`);
       }
     } catch (err: any) {
       console.error("Auth failed");

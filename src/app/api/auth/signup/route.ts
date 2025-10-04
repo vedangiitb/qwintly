@@ -47,8 +47,6 @@ async function createAssessment(token: string, action: string) {
   return response.riskAnalysis.score;
 }
 
-
-
 // This function will handle all POST requests to /api/auth/signup
 export async function POST(req: Request) {
   try {
@@ -82,7 +80,7 @@ export async function POST(req: Request) {
 
     await enqueueEmail({
       email: email,
-      userId: userName,
+      userId: userRecord.uid,
     });
 
     const customToken = await adminAuth.createCustomToken(userRecord.uid);

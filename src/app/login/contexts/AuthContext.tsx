@@ -26,6 +26,7 @@ type AuthContextType = {
   error: string;
   setError: React.Dispatch<SetStateAction<string>>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,6 +37,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  const refreshUser = async () => {
+    if (auth.currentUser) {
+      await auth.currentUser.reload(); // reloads user info from Firebase
+      const firebaseUser = auth.currentUser;
+      setUser({
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName,
+        emailVerified: firebaseUser.emailVerified,
+      });
+    }
+  };
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
@@ -72,6 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError,
     currentUser: user?.displayName || user?.email?.split("@")[0] || "Login",
     logout,
+    refreshUser,
   };
 
   return (
