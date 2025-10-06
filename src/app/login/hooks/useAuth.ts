@@ -13,36 +13,42 @@ export const useEmailAuth = () => {
   const { setLoading, setError } = useAuth();
   const router = useRouter();
 
-  const login = async (email: string, password: string,recaptchaToken: string) => {
+  const login = async (
+    email: string,
+    password: string,
+    recaptchaToken: string
+  ) => {
     try {
-      setLoading(true);
-      setError("");
-      const user = await loginWithEmail(email, password,recaptchaToken);
+      const user = await loginWithEmail(email, password, recaptchaToken);
       return user;
     } catch (err: any) {
-      console.error(err.message);
       setError(err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const signUp = async (email: string, password: string, userName: string,recaptchaToken: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    userName: string,
+    recaptchaToken: string
+  ) => {
     if (!validatePassword(password).isValid) {
       console.error("Invalid password");
       setError("Invalid password");
       return;
     }
     try {
-      setLoading(true);
       setError("");
-      const user = await signUpWithEmail(email, password, userName,recaptchaToken);
+      const user = await signUpWithEmail(
+        email,
+        password,
+        userName,
+        recaptchaToken
+      );
       return user;
     } catch (err: any) {
       console.error(err);
       setError(err.message);
-    } finally {
-      setLoading(false);
     }
   };
 

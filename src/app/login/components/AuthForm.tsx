@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "../contexts/AuthContext";
+import { useState } from "react";
 import { useEmailAuth } from "../hooks/useAuth";
 import { useAuthForm } from "../hooks/useAuthForm";
 import { mapError } from "../utils/mapError";
 import { validatePassword } from "../utils/validatePassword";
 import PasswordInput from "./PasswordInput";
+import { useAuth } from "../contexts/AuthContext";
 
 declare global {
   interface Window {
@@ -22,7 +23,8 @@ export default function AuthForm({ isExistingUser }: Props) {
   const router = useRouter();
   const { email, setEmail, userName, setUserName, password, setPassword } =
     useAuthForm();
-  const { loading, error, setLoading, setError } = useAuth();
+  const { error, setError } = useAuth();
+  const [loading, setLoading] = useState(false);
   const { login, signUp } = useEmailAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,8 +55,10 @@ export default function AuthForm({ isExistingUser }: Props) {
         : await signUp(email, password, userName, recaptchaToken);
 
       if (user) {
-        console.log(user)
-        isExistingUser ? router.push("/account") : router.push(`/login/verify?id=${user.uid}`);
+        console.log(user);
+        isExistingUser
+          ? router.push("/account")
+          : router.push(`/login/verify?id=${user.uid}`);
       }
     } catch (err: any) {
       console.error("Auth failed");
@@ -105,7 +109,9 @@ export default function AuthForm({ isExistingUser }: Props) {
       <Button
         type="submit"
         className="cursor-pointer w-full h-11 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 transition-colors duration-200 shadow-lg focus:ring-2 focus:ring-indigo-400"
-        disabled={loading || !validatePassword(password).isValid}
+        disabled={
+          loading || (!validatePassword(password).isValid && !isExistingUser)
+        }
       >
         {loading ? (
           <Loader2 className="h-5 w-5 animate-spin" />
