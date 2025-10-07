@@ -11,7 +11,7 @@ export const verifyOtpService = async (otp: string, userId: string) => {
     if (resp.ok) {
       return { isVerified: true, error: null };
     } else {
-      return { isVerified: false, error: data.error };
+      return { isVerified: false, error: data.message };
     }
   } catch (e: any) {
     return { isVerified: true, error: e.message };
@@ -31,7 +31,7 @@ export const resendOtpService = async (email: string, userId: string) => {
     if (resp.ok) {
       return { sent: true, error: null };
     } else {
-      return { sent: false, error: data.error };
+      return { sent: false, error: data.message };
     }
   } catch (e: any) {
     return { sent: true, error: e.message };
