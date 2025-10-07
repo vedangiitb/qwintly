@@ -2,20 +2,23 @@
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useGoogleLogin } from "../hooks/useGoogleLogin";
-import { useAuth } from "../contexts/AuthContext";
 
 export default function GoogleLoginButton() {
   const router = useRouter();
   const { loginWithGoogle } = useGoogleLogin();
-  const { loading } = useAuth();
+  const [loading, setLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
     try {
+      setLoading(true);
       const user = await loginWithGoogle();
       if (user) router.push("/account");
     } catch (err) {
       console.error("Google login failed", err);
+    } finally {
+      setLoading(false);
     }
   };
 

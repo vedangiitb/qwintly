@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useEmailAuth } from "../hooks/useAuth";
+import { useEmailAuth } from "../hooks/useEmailAuth";
 import { useAuthForm } from "../hooks/useAuthForm";
 import { mapError } from "../utils/mapError";
 import { validatePassword } from "../utils/validatePassword";
@@ -58,7 +58,7 @@ export default function AuthForm({ isExistingUser }: Props) {
         console.log(user);
         isExistingUser
           ? router.push("/account")
-          : router.push(`/login/verify?id=${user.uid}`);
+          : router.push(`/login/verify`);
       }
     } catch (err: any) {
       console.error("Auth failed");

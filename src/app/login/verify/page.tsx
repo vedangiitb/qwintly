@@ -6,108 +6,14 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { useVerify } from "../hooks/useVerify";
 
 export default function VerifyAccount() {
-  const searchParams = useSearchParams();
-  const userId = searchParams.get("id");
-  const { user } = useAuth();
-
-  const router = useRouter();
-  const { refreshUser } = useAuth();
-
   const [otpVal, setOtp] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{ isError: boolean; msg: string }>({
-    isError: false,
-    msg: "",
-  });
-
-  if (!userId) {
-    return (
-      <div>
-        <p>No user ID found in URL</p>
-      </div>
-    );
-  }
-
-  const verifyOtp = async (otp = otpVal) => {
-    if (otp.length !== 6) {
-      setMessage({ isError: true, msg: "Please enter a 6-digit OTP" });
-      return;
-    }
-
-    setLoading(true);
-    setMessage({ isError: false, msg: "" });
-
-    try {
-      const resp = await fetch("/api/auth/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ otp, userId }),
-      });
-
-      const data = await resp.json();
-
-      if (resp.ok) {
-        setMessage({ isError: false, msg: "OTP verified successfully!" });
-        await refreshUser();
-        router.push("/account");
-      } else {
-        setMessage({
-          isError: true,
-          msg: data.error || "OTP verification failed",
-        });
-      }
-    } catch (error: any) {
-      setMessage({
-        isError: true,
-        msg: error.message || "Something went wrong",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const resendOtp = async () => {
-    if (!user || !user.email || !user.uid) {
-      setMessage({
-        isError: true,
-        msg: "Unknown Error occured, please login again",
-      });
-      return;
-    }
-    setLoading(true);
-    setMessage({ isError: false, msg: "" });
-
-    try {
-      const resp = await fetch("/api/auth/resend-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: user.email, userId: user.uid }),
-      });
-
-      const data = await resp.json();
-
-      if (resp.ok) {
-        setMessage({ isError: false, msg: "OTP resent successfully!" });
-      } else {
-        setMessage({
-          isError: true,
-          msg: data.error || "Failed to resend OTP",
-        });
-      }
-    } catch (error: any) {
-      setMessage({
-        isError: true,
-        msg: error.message || "Something went wrong",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {verifyOtp,resendOtp,loading,message} = useVerify()
 
   useEffect(() => {
     if (otpVal.length === 6) {
@@ -163,7 +69,7 @@ export default function VerifyAccount() {
       </InputOTP>
 
       <div className="mt-4 flex flex-col gap-2">
-        <Button onClick={() => verifyOtp()} disabled={loading}>
+        <Button onClick={() => verifyOtp(otpVal)} disabled={loading}>
           {loading ? "Verifying..." : "Submit"}
         </Button>
         <Button variant="secondary" onClick={resendOtp} disabled={loading}>

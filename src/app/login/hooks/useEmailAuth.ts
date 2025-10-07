@@ -1,17 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useAuth } from "../contexts/AuthContext";
-import {
-  loginWithEmail,
-  logOut,
-  signUpWithEmail,
-} from "../services/authService";
+import { loginWithEmail, signUpWithEmail } from "../services/authService";
 import { validatePassword } from "../utils/validatePassword";
 
 export const useEmailAuth = () => {
-  const { setLoading, setError } = useAuth();
-  const router = useRouter();
+  const { setError } = useAuth();
 
   const login = async (
     email: string,
@@ -52,14 +46,5 @@ export const useEmailAuth = () => {
     }
   };
 
-  const signOut = async () => {
-    try {
-      await logOut();
-      router.push("/login");
-    } catch (err: any) {
-      console.error(err);
-    }
-  };
-
-  return { login, signUp, signOut };
+  return { login, signUp };
 };

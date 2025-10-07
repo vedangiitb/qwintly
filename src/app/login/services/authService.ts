@@ -62,7 +62,3 @@ export const signUpWithEmail = async (
 
   return userCredential.user;
 };
-
-export async function logOut() {
-  return await signOut(auth);
-}

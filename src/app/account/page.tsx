@@ -59,7 +59,7 @@ export default function Account() {
               <div>
                 {!user?.emailVerified && (
                   <Button
-                    onClick={() => router.push(`/login/verify?id=${user?.uid}`)}
+                    onClick={() => router.push(`/login/verify`)}
                     className="h-8 px-3 py-0.5 text-xs rounded focus:ring-2 focus:ring-blue-400 transition-all"
                     variant="outline"
                   >

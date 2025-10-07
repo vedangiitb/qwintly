@@ -1,5 +1,8 @@
 "use client";
 
+import { auth } from "@/lib/firebaseConfig";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
 import React, {
   createContext,
   SetStateAction,
@@ -7,9 +10,6 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "@/lib/firebaseConfig";
-import { useRouter } from "next/navigation";
 
 type User = {
   uid: string;
@@ -20,13 +20,10 @@ type User = {
 
 type AuthContextType = {
   user: User;
-  loading: boolean;
-  setLoading: React.Dispatch<SetStateAction<boolean>>;
   currentUser: string;
   error: string;
   setError: React.Dispatch<SetStateAction<string>>;
   logout: () => Promise<void>;
-  refreshUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,18 +34,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const refreshUser = async () => {
-    if (auth.currentUser) {
-      await auth.currentUser.reload(); // reloads user info from Firebase
-      const firebaseUser = auth.currentUser;
-      setUser({
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        displayName: firebaseUser.displayName,
-        emailVerified: firebaseUser.emailVerified,
-      });
-    }
-  };
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
@@ -79,13 +64,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     user,
-    loading,
-    setLoading,
     error,
     setError,
     currentUser: user?.displayName || user?.email?.split("@")[0] || "Login",
     logout,
-    refreshUser,
   };
 
   return (
