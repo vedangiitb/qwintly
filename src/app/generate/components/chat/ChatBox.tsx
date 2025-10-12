@@ -27,7 +27,7 @@ export default function ChatBox({
     >
       <Textarea
         className={cn(
-          "rounded-2xl border-none outline-none focus:outline-none resize-none flex-1 text-lg text-accent-foreground font-medium shadow-none bg-accent p-3 md:p-4 min-h-[48px] max-h-48 transition-all duration-200 focus:ring-2 focus:ring-teal-200/50 focus:bg-white/10 backdrop-blur-sm",
+          "text-vsm rounded-2xl border-none outline-none focus:outline-none resize-none flex-1 text-accent-foreground shadow-none  bg-accent p-3 md:p-4 max-h-16 md:min-h-[48px] md:max-h-48 transition-all duration-200 focus:ring-2 focus:ring-teal-200/50 focus:bg-white/10 backdrop-blur-sm",
           isResponseLoading ? "opacity-60 pointer-events-none" : "opacity-100"
         )}
         value={prompt}
@@ -43,7 +43,7 @@ export default function ChatBox({
         aria-label="Prompt"
         disabled={isResponseLoading}
         style={{
-          backgroundColor:"var(--accent)"
+          backgroundColor: "var(--accent)",
         }}
       />
       <Button
@@ -51,10 +51,10 @@ export default function ChatBox({
         disabled={isResponseLoading || !prompt}
         aria-label="Submit prompt"
         className={cn(
-          "ml-2 rounded-full bg-gradient-to-br from-teal-400/90 via-purple-500/90 to-cyan-400/70 shadow-xl w-12 h-12 flex items-center justify-center p-0 transition-all duration-150 relative group disabled:opacity-80",
+          "ml-2 rounded-full bg-gradient-to-br dark:from-teal-400/90 dark:via-purple-500/90 dark:to-cyan-400/70 from-teal-600 via-purple-600 to-cyan-600 shadow-xl w-12 h-12 flex items-center justify-center p-0 transition-all duration-150 relative group disabled:opacity-80",
           isResponseLoading
             ? "cursor-not-allowed animate-pulse"
-            : "hover:scale-105 hover:shadow-2xl hover:bg-gradient-to-br from-cyan-300/60 via-fuchsia-400/80 to-purple-500/80"
+            : "hover:scale-105 hover:shadow-2xl hover:bg-gradient-to-br dark:from-cyan-300/60 dark:via-fuchsia-400/80 dark:to-purple-500/80"
         )}
         tabIndex={0}
       >
@@ -67,13 +67,12 @@ export default function ChatBox({
           />
         )}
         <span className="sr-only">Send</span>
-        {/* Magic glow ring on focus */}
         <span className="absolute -inset-1.5 opacity-0 group-focus-within:opacity-80 rounded-full bg-gradient-to-tr from-purple-400/60 via-teal-200/40 to-cyan-200/30 blur-xl pointer-events-none transition-opacity"></span>
       </Button>
-      {/* Extra styling for .glassmorphic */}
       <style jsx>{`
         .glassmorphic {
-          box-shadow: 0 8px 48px 0 rgba(109, 231, 225, 0.1),
+          box-shadow:
+            0 8px 48px 0 rgba(109, 231, 225, 0.1),
             0 1.5px 4px 0 rgba(80, 68, 204, 0.08);
           backdrop-filter: blur(24px) saturate(180%);
         }

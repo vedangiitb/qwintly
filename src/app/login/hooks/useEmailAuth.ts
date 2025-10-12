@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "./AuthContext";
 import { loginWithEmail, signUpWithEmail } from "../services/authService";
 import { validatePassword } from "../utils/validatePassword";
 

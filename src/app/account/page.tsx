@@ -7,7 +7,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuth } from "@/app/login/contexts/AuthContext";
+import { useAuth } from "@/app/login/hooks/AuthContext";
 import { useRouter } from "next/navigation";
 
 export default function Account() {

@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/input-otp";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../hooks/AuthContext";
 import { useVerify } from "../hooks/useVerify";
 
 export default function VerifyAccount() {

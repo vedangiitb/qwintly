@@ -7,7 +7,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CircleUser, HelpCircle, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/services/authServices/AuthContext";
+import { useAuth } from "@/app/login/hooks/AuthContext";
 import PrefDialog from "./prefDialog";
 import SettingsDialog from "./settingsDialog";
 
@@ -17,7 +17,6 @@ export default function UserPopover({ isExpanded }: { isExpanded: boolean }) {
 
   if (currentUser === "Login") return null;
 
-  // Avatar letter fallback
   const fallback = String(currentUser?.[0] || "").toUpperCase();
 
   return (
