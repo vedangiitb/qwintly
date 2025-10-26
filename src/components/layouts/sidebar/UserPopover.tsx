@@ -29,7 +29,6 @@ export default function UserPopover({ isExpanded }: { isExpanded: boolean }) {
         >
           <span className="relative inline-block">
             <Avatar className="w-9 h-9 shadow-lg">
-              {/* gradient border ring */}
               <span className="absolute -inset-1 left-1/2 -translate-x-1/2 w-[44px] h-[44px] rounded-full bg-gradient-to-tr from-teal-400/60 via-purple-300/30 to-pink-200/40 blur-md opacity-60 group-hover:opacity-80 group-hover:blur-xl transition-all pointer-events-none" />
               <AvatarFallback className="bg-gradient-to-tr from-teal-400/90 via-purple-500/90 to-cyan-400/70 text-white font-bold ring-1 ring-white/10 shadow">
                 {fallback}

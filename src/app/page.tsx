@@ -1,10 +1,10 @@
 "use client";
 import NavBar from "@/components/layouts/navbar/navbar";
 import SideBar from "@/components/layouts/sidebar/sidebar";
+import { useEffect, useState } from "react";
 import ChatBox from "./generate/components/chat/ChatBox";
 import { useInitConv } from "./generate/hooks/useInitConv";
 import { useAuth } from "./login/hooks/AuthContext";
-import { useEffect, useState } from "react";
 
 export default function Home() {
   const { user } = useAuth();
@@ -33,7 +33,7 @@ export default function Home() {
           <div className="h-[calc(100vh-5rem)] relative z-10 flex flex-col items-center justify-center px-4 py-4 md:py-12 text-center gap-10 md:gap-12">
             <h1 className="relative text-4xl md:text-6xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-tr dark:from-teal-200 dark:via-purple-300 dark:to-pink-400 from-teal-500 via-purple-600 to-pink-600  drop-shadow-2xl animate-fadein-smooth">
               <span className="block mb-2 animate-gradient-move">
-                Build Your Dream Website
+                Build Your Dream App
               </span>
               <span className="block text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-br dark:from-white dark:via-purple-100 dark:to-cyan-200 opacity-90 from-slate-700 via-purple-600 to-cyan-600">
                 in Just a Few Clicks
@@ -41,7 +41,7 @@ export default function Home() {
               <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-2/3 h-8 bg-gradient-to-r from-purple-300 via-transparent to-cyan-200 blur-2xl opacity-60 pointer-events-none"></span>
             </h1>
             <p className="text-base md:text-xl dark:text-slate-200/90 text-slate-800/90 font-medium leading-relaxed max-w-xl mx-auto drop-shadow-lg">
-              Describe your website idea and let{" "}
+              Describe your idea and let{" "}
               <span className="font-semibold dark:text-teal-300 text-teal-500">
                 Qwintly
               </span>{" "}

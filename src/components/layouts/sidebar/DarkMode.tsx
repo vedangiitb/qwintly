@@ -33,7 +33,6 @@ export default function DarkMode({ isExpanded }: { isExpanded: boolean }) {
             {darkMode ? "Dark Mode" : "Light Mode"}
           </span>
         ) : null}
-        {/* Animated shimmer/glow effect */}
         <span
           className={`absolute left-0 right-0 mx-auto w-3 h-3 rounded-full pointer-events-none ${
             darkMode ? "bg-blue-400/30" : "bg-amber-200/30"

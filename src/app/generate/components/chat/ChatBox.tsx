@@ -39,7 +39,7 @@ export default function ChatBox({
           }
         }}
         // TODO: Make this changing
-        placeholder="A landing page for my Japanese restaurant website…"
+        placeholder="An AI tutor for learning Data Structures…"
         aria-label="Prompt"
         disabled={isResponseLoading}
         style={{

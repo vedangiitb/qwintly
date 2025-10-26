@@ -1,10 +1,10 @@
 "use client";
-import { Sidebar as SidebarIcon } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { SidebarIcon, X } from "lucide-react";
 
 export default function SidebarToggle({
   isExpanded,
@@ -37,7 +37,11 @@ export default function SidebarToggle({
             aria-label={isExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
             tabIndex={0}
           >
-            <SidebarIcon className="w-5 h-5 text-chart-2 cursor-pointer" />
+            {isExpanded ? (
+              <X className="w-5 h-5 text-chart-2 cursor-pointer" />
+            ) : (
+              <SidebarIcon className="w-5 h-5 text-chart-2 cursor-pointer" />
+            )}
           </button>
         </TooltipTrigger>
         <TooltipContent side="right" className="text-xs">

@@ -19,7 +19,7 @@ export default function NavItems({ isExpanded }: { isExpanded: boolean }) {
     {
       icon: <Search className="w-5 h-5" />,
       label: "Search",
-      action: () => {}, // Your search logic
+      action: () => {},
     },
   ];
 

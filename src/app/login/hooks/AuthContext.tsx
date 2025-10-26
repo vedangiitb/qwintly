@@ -11,12 +11,6 @@ import React, {
   useState,
 } from "react";
 
-type User = {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  emailVerified: boolean;
-} | null;
 
 type AuthContextType = {
   user: User;
