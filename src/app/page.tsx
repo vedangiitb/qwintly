@@ -5,12 +5,15 @@ import { useEffect, useState } from "react";
 import ChatBox from "./generate/components/chat/ChatBox";
 import { useInitConv } from "./generate/hooks/useInitConv";
 import { useAuth } from "./login/hooks/AuthContext";
+import { usePrompt } from "./generate/hooks/chat/PromptContext";
 
 export default function Home() {
   const { user } = useAuth();
   const [showSidebar, setShowSidebar] = useState(false);
 
-  const { initiateConversation, loading, prompt, setPrompt } = useInitConv();
+  const { prompt, setPrompt } = usePrompt();
+
+  const { initiateConversation, loading } = useInitConv();
 
   useEffect(() => {
     if (showSidebar) {

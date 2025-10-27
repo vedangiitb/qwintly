@@ -5,6 +5,7 @@ const ai = new GoogleGenAI({});
 
 export async function POST(req: Request) {
   const { prompt } = await req.json();
+  console.log(prompt)
   try {
     const encoder = new TextEncoder();
     const stream = new ReadableStream({

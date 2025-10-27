@@ -3,7 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/app/login/hooks/AuthContext";
 import Script from "next/script";
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/sonner";
+import { PromptProvider } from "./generate/hooks/chat/PromptContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,7 +33,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-
         <Script
           src={enterpriseScriptUrl}
           strategy="beforeInteractive"
@@ -43,8 +43,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>{children}</AuthProvider>
-      <Toaster/>
+        <AuthProvider>
+          <PromptProvider>{children}</PromptProvider>
+        </AuthProvider>
+
+        <Toaster />
       </body>
     </html>
   );

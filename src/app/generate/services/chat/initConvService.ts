@@ -20,7 +20,9 @@ export const initConvService = async (
 
     const resp = await response.json();
 
-    if (!resp.ok) {
+    console.log(resp)
+
+    if (!response.ok) {
       throw new Error(resp.error || "Error occured while creating new chat");
     }
   } catch (e) {

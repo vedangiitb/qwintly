@@ -7,7 +7,7 @@ export default function ChatHistory({
   isResponseLoading,
   generatingsite,
 }: {
-  convHistory: { role: string; parts: { text: string }[] }[];
+  convHistory: { role: string; content: string }[];
   isResponseLoading: boolean;
   generatingsite: boolean;
 }) {
@@ -20,9 +20,9 @@ export default function ChatHistory({
       {convHistory.map((item, idx) => (
         <div key={idx}>
           {item.role === "user" ? (
-            <RenderUserMessage data={item.parts[0].text} />
+            <RenderUserMessage data={item.content} />
           ) : (
-            <RenderAIResponse data={item.parts[0].text} />
+            <RenderAIResponse data={item.content} />
           )}
         </div>
       ))}

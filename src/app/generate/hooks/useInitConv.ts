@@ -5,11 +5,12 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { initConvService } from "../services/chat/initConvService";
 import { generateConvId } from "../services/chat/generateConvId";
+import { usePrompt } from "./chat/PromptContext";
 
 export const useInitConv = () => {
   const router = useRouter();
   const [loading, setloading] = useState(false);
-  const [prompt, setPrompt] = useState<string>("");
+  const { prompt, setPrompt } = usePrompt();
   const { user } = useAuth();
 
   const initiateConversation = useCallback(
@@ -26,7 +27,6 @@ export const useInitConv = () => {
       const convId = generateConvId(user.uid);
       initConvService(prompt, convId, user.uid);
       router.push(`/generate/${convId}`);
-      setPrompt("");
     },
     [prompt, user, router]
   );
