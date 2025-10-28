@@ -17,7 +17,7 @@ export default function ChatBox({
   return (
     <form
       className="flex w-full max-w-2xl rounded-3xl glassmorphic shadow-2xl border p-3 md:p-4 mx-auto backdrop-blur-2xl transition-all duration-200"
-      onSubmit={submitPrompt}
+      onSubmit={()=>submitPrompt()}
       style={{
         background:
           "linear-gradient(110deg, rgba(255,255,255,0.16) 55%, rgba(195,189,255,0.10) 100%)",

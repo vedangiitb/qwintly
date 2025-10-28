@@ -1,5 +1,5 @@
 import { useConvHistory } from "../../hooks/chat/useConvHistory";
-import { useConversation } from "../../hooks/chat/useConversation";
+import { useConversation } from "../../hooks/chat/useChat";
 import ChatBox from "./ChatBox";
 import ChatHistory from "./ChatHistory";
 
