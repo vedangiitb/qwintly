@@ -1,3 +1,4 @@
+import { getAuth } from "firebase/auth";
 import { toast } from "sonner";
 
 export const initConvService = async (
@@ -8,11 +9,21 @@ export const initConvService = async (
   if (!prompt) return;
 
   try {
+    const token = await getAuth().currentUser?.getIdToken();
+
+    if (!token) {
+      throw new Error("User not authenticated");
+    }
+
     const response = await fetch("/api/chat/newchat", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+
       body: JSON.stringify({
-        id: convId,
+        convId: convId,
         userId: uid,
         prompt: prompt,
       }),
@@ -20,7 +31,7 @@ export const initConvService = async (
 
     const resp = await response.json();
 
-    console.log(resp)
+    console.log(resp);
 
     if (!response.ok) {
       throw new Error(resp.error || "Error occured while creating new chat");

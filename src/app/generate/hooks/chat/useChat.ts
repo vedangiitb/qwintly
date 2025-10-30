@@ -2,12 +2,18 @@
 import { useState, useRef } from "react";
 import { streamChatResponse } from "../../services/chat/chatService";
 import { usePrompt } from "./PromptContext";
+import { firestoreDb } from "@/lib/firebase-admin";
 
 export const useChat = () => {
   const { prompt, setPrompt } = usePrompt();
   const [messages, setMessages] = useState<Chat[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const hasSubmittedRef = useRef(false);
+
+  const fetchChat = (chatId:string,userId:string) => {
+    if (!chatId || !userId) return
+
+  }
 
   async function startStream(chatId: string) {
     const newMessages = [...messages, { role: "user", content: prompt }];

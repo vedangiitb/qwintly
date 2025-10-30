@@ -16,9 +16,12 @@ export default function Generate({ params }: Props) {
 
   useEffect(() => {
     console.log(prompt, id);
-    if (prompt && id && !hasSubmittedRef.current) {
+    if (!id) return
+    if (prompt && !hasSubmittedRef.current) {
       hasSubmittedRef.current = true;
       submitResponse(id);
+    } else if (!prompt){
+      
     }
   }, [id, prompt]);
 
