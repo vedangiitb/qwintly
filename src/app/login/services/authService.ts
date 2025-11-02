@@ -20,7 +20,6 @@ export const loginWithEmail = async (
     body: JSON.stringify({ recaptchaToken }),
   });
   const resp = await response.json();
-  console.log(resp);
 
   if (!response.ok) {
     const data = await response.json();

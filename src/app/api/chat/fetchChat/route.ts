@@ -1,73 +1,100 @@
-import { NextResponse } from "next/server";
-import { verifyFirebaseToken } from "@/lib/firebase-admin";
+import { authenticateRequest } from "@/lib/authUtils";
 import { supabase } from "@/lib/supabaseClient";
+import { NextResponse } from "next/server";
 
+/**
+ * GET /api/chat/fetchChat?chatId=<id>
+ * Fetch chat metadata (Firestore) and messages (Supabase)
+ */
 export async function GET(req: Request) {
   try {
-    // 🔒 1. Validate the Authorization header
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // --- Auth Verification ---
+    const auth = await authenticateRequest(req);
+    if (!auth.success) {
+      return NextResponse.json(
+        { success: false, error: auth.error },
+        { status: auth.status }
+      );
     }
 
-    const token = authHeader.split(" ")[1];
-    const decoded = await verifyFirebaseToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
+    const userId = auth.userId;
 
-    const userId = decoded.uid;
-
-    // 🧾 2. Extract chatId from query params
+    // --- Extract and validate chatId ---
     const { searchParams } = new URL(req.url);
     const chatId = searchParams.get("chatId");
     if (!chatId) {
-      return NextResponse.json({ error: "Missing chatId" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Missing chatId" },
+        { status: 400 }
+      );
     }
 
-    // 🧠 3. Fetch chat details from Firestore to verify ownership
-    // (assuming your chat meta is stored there)
-    const chatDoc = await (await import("@/lib/firebase-admin")).firestoreDb
-      .collection("users")
-      .doc(userId)
-      .collection("chats")
-      .doc(chatId)
-      .get();
+    // --- Verify chat ownership in Supabase (`chats` table) ---
+    const { data: chatRows, error: chatError } = await supabase
+      .from("chats")
+      .select("id, user_id, title, created_at, updated_at")
+      .eq("id", chatId)
+      .limit(1)
+      .single();
 
-    if (!chatDoc.exists) {
-      return NextResponse.json({ error: "Chat not found" }, { status: 404 });
+    if (chatError) {
+      // if the row is not found supabase returns error with code 'PGRST116' or returns null depending on settings
+      console.error("Supabase chat lookup error:", chatError.message);
+      return NextResponse.json({ success: false, error: "Chat not found" }, { status: 404 });
     }
 
-    const chatData = chatDoc.data();
+    const chatData = chatRows;
 
-    // 💬 4. Fetch messages from Supabase
-    const { data: messages, error } = await supabase
+    if (!chatData || chatData.user_id !== userId) {
+      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+    }
+
+    // --- Fetch messages from Supabase ---
+    const { data: messages, error: supabaseError } = await supabase
       .from("messages")
-      .select("*")
+      .select("id, role, content, created_at, token_count")
       .eq("conv_id", chatId)
       .eq("user_id", userId)
       .order("created_at", { ascending: true });
 
-    if (error) {
-      console.error(error);
+    if (supabaseError) {
+      console.error("Supabase error:", supabaseError.message);
       return NextResponse.json(
-        { error: "Failed to fetch messages" },
+        { success: false, error: "Failed to fetch messages" },
         { status: 500 }
       );
     }
 
-    // ✅ 5. Return chat + messages
+    //--- Update last accessed timestamp in Supabase ---
+    const { error: updateError } = await supabase
+      .from("chats")
+      .update({ updated_at: new Date().toISOString() })
+      .eq("id", chatId);
+    // ignore update errors for last-access tracking
+    if (updateError) {
+      console.warn("Failed updating chat updated_at:", updateError.message);
+    }
+
     return NextResponse.json(
       {
-        chat: chatData,
-        messages: messages ?? [],
+        success: true,
+        data: {
+          chat: {
+            id: chatId,
+            title: chatData.title ?? "Untitled Chat",
+            createdAt: chatData.created_at ?? null,
+            updatedAt: chatData.updated_at ?? null,
+          },
+          messages: messages ?? [],
+        },
+        error: null,
       },
       { status: 200 }
     );
-  } catch (e) {
-    console.error(e);
+  } catch (err: any) {
+    console.error("fetchChat error:", err);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { success: false, error: err.message || "Internal server error" },
       { status: 500 }
     );
   }

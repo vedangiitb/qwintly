@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { initConvService } from "../services/chat/initConvService";
-import { generateConvId } from "../services/chat/generateConvId";
 import { usePrompt } from "./chat/PromptContext";
 
 export const useInitConv = () => {
@@ -23,10 +22,25 @@ export const useInitConv = () => {
       }
       if (!prompt.trim()) return;
       setloading(true);
-      console.log(user);
-      const convId = generateConvId(user.uid);
-      initConvService(prompt, convId, user.uid);
-      router.push(`/generate/${convId}`);
+
+      try {
+        const result = await initConvService(prompt);
+
+        const convId = result?.id ?? null;
+
+        if (convId && typeof convId === "string" && convId.trim()) {
+          // optionally clear the prompt before navigating
+          router.push(`/generate/${convId}`);
+        } else {
+          console.error("initConvService did not return a valid id:", result);
+          toast.error("Could not create conversation. Please try again.");
+        }
+      } catch (err) {
+        console.error("Error initiating conversation:", err);
+        toast.error("Could not create conversation. Please try again.");
+      } finally {
+        setloading(false);
+      }
     },
     [prompt, user, router]
   );

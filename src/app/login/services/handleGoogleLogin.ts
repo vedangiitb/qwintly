@@ -13,10 +13,8 @@ export const handleGoogleLogin = async () => {
   try {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
-    console.log("Redirect result:", result);
 
     if (!result || !result.user) {
-      console.log("No redirect result or user");
       return null;
     }
 
@@ -25,7 +23,6 @@ export const handleGoogleLogin = async () => {
     const userSnap = await getDoc(userRef);
 
     if (!userSnap.exists()) {
-      console.log("Creating new user profile");
       await setDoc(userRef, {
         name: user.displayName || "",
         email: user.email,
@@ -35,7 +32,6 @@ export const handleGoogleLogin = async () => {
       });
     }
 
-    console.log("Login successful, returning user:", user);
     return user;
   } catch (error) {
     console.error("Error in completeGoogleLogin:", error);

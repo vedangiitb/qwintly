@@ -1,47 +1,69 @@
-import { verifyFirebaseToken } from "@/lib/firebase-admin";
-import { NextResponse } from "next/server";
+import { authenticateRequest } from "@/lib/authUtils";
 import { supabase } from "@/lib/supabaseClient";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { messages, chatId } = await req.json();
-
-    if (!messages || messages.length == 0) return;
-
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // --- Auth Verification ---
+    const auth = await authenticateRequest(req);
+    if (!auth.success) {
+      return NextResponse.json(
+        { success: false, error: auth.error },
+        { status: auth.status }
+      );
     }
 
-    const token = authHeader.split(" ")[1];
-    const decoded = await verifyFirebaseToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    const userId = auth.userId;
+
+    // --- Parse Input ---
+    const { message, chatId } = await req.json();
+
+    if (!message?.content || !chatId) {
+      return NextResponse.json(
+        { success: false, error: "Missing message content or chatId" },
+        { status: 400 }
+      );
     }
 
-    const userId = decoded.uid;
-
-    // add the message to supabase db
-    const { error } = await supabase.from("messages").insert([
-      messages.map((msg: Chat) => ({
-        conv_id: chatId,
-        user_id: userId,
-        sender: msg.role,
-        content: msg.content,
-        token_count: 0,
-        created_at: new Date().toISOString(),
-      })),
-    ]);
+    // --- Insert Message into Supabase ---
+    const { data, error } = await supabase
+      .from("messages")
+      .insert([
+        {
+          conv_id: chatId,
+          user_id: userId,
+          role: message.role || "user",
+          content: message.content,
+          token_count: message.token_count ?? 0,
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+      .single();
 
     if (error) {
-      throw new Error(error.message || "Unexpected issue occured");
+      console.error("Supabase Insert Error:", error);
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json({ message: "Message added" }, { status: 200 });
-  } catch (e: any) {
-    console.error(e);
+    // --- Return Normalized Success Response ---
     return NextResponse.json(
-      { message: e.message || "Unexpected issue occured" },
+      {
+        success: true,
+        data,
+      },
+      { status: 200 }
+    );
+  } catch (e: any) {
+    console.error("Unexpected error in updateDB:", e);
+    return NextResponse.json(
+      {
+        success: false,
+        error: e.message || "Unexpected error occurred",
+      },
       { status: 500 }
     );
   }

@@ -1,70 +1,76 @@
-import { NextResponse } from "next/server";
-import { firestoreDb, verifyFirebaseToken } from "@/lib/firebase-admin";
+import { authenticateRequest } from "@/lib/authUtils";
 import { supabase } from "@/lib/supabaseClient";
-// import { countTextTokens } from "@/utils/tokenCount";
+import { NextResponse } from "next/server";
 
-export async function POST(req: Request) {
-  try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const token = authHeader.split(" ")[1];
-    const decoded = await verifyFirebaseToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
-
-    const userId = decoded.uid;
-    const { convId: providedConvId, prompt } = await req.json();
-
-    if (!prompt) {
-      return NextResponse.json({ message: "Missing prompt" }, { status: 400 });
-    }
-
-    const convId = providedConvId || firestoreDb.collection("chats").doc().id;
-
-    // Firestore: store conversation metadata
-    const chatData = {
-      userId,
-      title: prompt.slice(0, 50),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      lastMessage: prompt,
-    };
-
-    await firestoreDb.collection("chats").doc(convId).set(chatData);
-
-    // Supabase: store message
-    await storeMessage("user", prompt, convId, userId);
-
-    return NextResponse.json(
-      { message: "Chat created successfully", chatData },
-      { status: 200 }
-    );
-  } catch (e: any) {
-    console.error(e);
-    return NextResponse.json({ message: e.message }, { status: 500 });
-  }
+interface NewChatRequestBody {
+  convId?: string;
+  prompt: string;
 }
 
-const storeMessage = async (
-  sender: string,
-  message: string,
-  convId: string,
-  userId: string
-) => {
-  const { error } = await supabase.from("messages").insert([
-    {
-      conv_id: convId,
-      user_id: userId,
-      sender: sender,
-      content: message,
-      token_count: 0,
-      created_at: new Date().toISOString(),
-    },
-  ]);
+/**
+ * POST /api/chat/newChat
+ * Creates a new chat document in Firestore.
+ */
+export async function POST(req: Request) {
+  try {
+    // --- Auth Verification ---
+    const auth = await authenticateRequest(req);
+    if (!auth.success) {
+      return NextResponse.json(
+        { success: false, error: auth.error },
+        { status: auth.status }
+      );
+    }
 
-  if (error) throw new Error(error.message);
-};
+    const userId = auth.userId;
+
+    // --- Parse body ---
+    const body: NewChatRequestBody = await req.json();
+
+    if (!body.prompt || typeof body.prompt !== "string") {
+      return NextResponse.json(
+        { success: false, error: "Missing or invalid 'prompt'" },
+        { status: 400 }
+      );
+    }
+
+    // --- Build chat row ---
+    const now = new Date().toISOString();
+    const chatRow = {
+      user_id: userId,
+      title: body.prompt.slice(0, 50).trim(),
+      created_at: now,
+      updated_at: now,
+      last_message: body.prompt,
+    } as const;
+
+    // --- Insert into Supabase ---
+    const { data, error } = await supabase
+      .from("chats")
+      .insert([chatRow])
+      .select()
+      .limit(1)
+      .single();
+
+    if (error) {
+      console.error("supabase insert error:", error);
+      return NextResponse.json(
+        { success: false, error: error.message || "DB error" },
+        { status: 500 }
+      );
+    }
+
+    const responseData = { id: (data as any)?.id ?? null, ...(data as any) };
+
+    return NextResponse.json(
+      { success: true, data: responseData, error: null },
+      { status: 200 }
+    );
+  } catch (err: any) {
+    console.error("newChat error:", err);
+    return NextResponse.json(
+      { success: false, error: err.message || "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
