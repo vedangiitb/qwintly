@@ -13,30 +13,37 @@ export default function SideBar({
   setSidebarExpanded: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   return (
-    <aside
-      className={`${sidebarExpanded ? "flex" : "hidden"} md:flex border-r flex-col justify-between h-screen transition-all duration-300 ease-in-out z-30 
-         ${
-           sidebarExpanded
-             ? "fixed w-full md:w-64 p-3  bg-card/95 "
-             : "w-16 p-2 bg-background/80"
-         }
+    <div>
+      <aside
+        className={`fixed md:static left-0 top-0 transform transition-all duration-300 ease-in-out z-30 border-r flex flex-col justify-between h-screen
+         ${sidebarExpanded ? "translate-x-0 w-full md:w-64 p-3 bg-card/95" : "-translate-x-full md:translate-x-0 md:w-16 p-2 bg-background/80"}
       `}
-    >
-      <div className="flex flex-col gap-5">
-        <SidebarToggle
-          isExpanded={sidebarExpanded}
-          onToggle={() => setSidebarExpanded(!sidebarExpanded)}
-        />
+      >
+        <div className="flex flex-col gap-5">
+          <SidebarToggle
+            isExpanded={sidebarExpanded}
+            onToggle={() => setSidebarExpanded(!sidebarExpanded)}
+          />
 
-        <div>
-          <NavItems isExpanded={sidebarExpanded} />
+          <div>
+            <NavItems isExpanded={sidebarExpanded} />
+          </div>
+          <RecentChats isExpanded={sidebarExpanded} />
         </div>
-        <RecentChats isExpanded={sidebarExpanded} />
-      </div>
-      <div className="space-y-2 pt-2">
-        <DarkMode isExpanded={sidebarExpanded} />
-        <UserPopover isExpanded={sidebarExpanded} />
-      </div>
-    </aside>
+        <div className="space-y-2 pt-2">
+          <DarkMode isExpanded={sidebarExpanded} />
+          <UserPopover isExpanded={sidebarExpanded} />
+        </div>
+      </aside>
+
+      {!sidebarExpanded && (
+        <div className="fixed top-2 left-2 md:hidden z-30">
+          <SidebarToggle
+            isExpanded={sidebarExpanded}
+            onToggle={() => setSidebarExpanded(!sidebarExpanded)}
+          />
+        </div>
+      )}
+    </div>
   );
 }

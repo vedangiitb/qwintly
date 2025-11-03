@@ -34,7 +34,10 @@ export default function RecentChats({ isExpanded }: { isExpanded: boolean }) {
           {recentChats.map((item) => (
             <button
               key={item.id}
-              onClick={() => router.push(`/generate/${item.id}`)}
+              onClick={() => {
+                console.log("navigating...")
+                router.push(`/generate/${item.id}`);
+              }}
               className="text-left px-2 py-2 rounded-md hover:bg-muted transition cursor-pointer overflow-hidden whitespace-nowrap text-ellipsis"
             >
               {item.title}

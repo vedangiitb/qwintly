@@ -17,7 +17,7 @@ export default function ChatBox({
   return (
     <form
       className="fixed bottom-2 flex w-full max-w-3xl rounded-3xl glassmorphic shadow-2xl border p-3 md:p-4 mx-auto backdrop-blur-2xl transition-all duration-200"
-      onSubmit={()=>submitPrompt()}
+      onSubmit={() => submitPrompt()}
       style={{
         background:
           "linear-gradient(110deg, rgba(255,255,255,0.16) 55%, rgba(195,189,255,0.10) 100%)",
@@ -26,8 +26,9 @@ export default function ChatBox({
       }}
     >
       <Textarea
+        wrap="off"
         className={cn(
-          "text-vsm rounded-2xl border-none outline-none focus:outline-none resize-none flex-1 text-accent-foreground shadow-none  bg-accent p-3 md:p-4 max-h-16 md:min-h-[48px] md:max-h-48 transition-all duration-200 focus:ring-2 focus:ring-teal-200/50 focus:bg-white/10 backdrop-blur-sm",
+          "rounded-2xl border-none outline-none focus:outline-none resize-none flex-1 text-accent-foreground shadow-none bg-accent p-3 md:p-4 min-h-[48px] max-h-48 transition-all duration-200 focus:ring-2 focus:ring-teal-200/50 focus:bg-white/10 backdrop-blur-sm",
           isResponseLoading ? "opacity-60 pointer-events-none" : "opacity-100"
         )}
         value={prompt}
@@ -44,6 +45,8 @@ export default function ChatBox({
         disabled={isResponseLoading}
         style={{
           backgroundColor: "var(--accent)",
+          fontSize: "14px",
+          overflowX: "hidden",
         }}
       />
       <Button
