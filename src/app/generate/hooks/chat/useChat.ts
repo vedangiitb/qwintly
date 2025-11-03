@@ -25,10 +25,13 @@ export const useChat = () => {
     const { messages: fetched, error } = await fetchChatMessages(chatId);
     if (!error && fetched && fetched.length > 0) {
       setMessages(fetched);
+      return true;
     } else if (error) {
       console.error("fetchChat error", error);
+      return false;
     } else {
       setMessages([]);
+      return false;
     }
   }, []);
 
@@ -125,6 +128,7 @@ export const useChat = () => {
     },
     [currentChatId, startStream]
   );
+
 
   return {
     prompt,

@@ -134,3 +134,36 @@ export async function fetchChatMessages(
     return { messages: null, error: e?.message || String(e) };
   }
 }
+
+export async function userChats() {
+  try {
+    const token = await getIdToken();
+    if (!token) throw new Error("User not authenticated");
+    const res = await withAuthRetry(() =>
+      fetch("/api/chat/userChats", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+    );
+    const json = await res.json();
+
+    if (!res.ok) {
+      return {
+        messages: null,
+        error: json?.error || json?.message || "Unknown error",
+      };
+    }
+
+    const chats = json.data ?? null;
+
+    console.log(chats);
+
+    return { chats: chats, error: null };
+  } catch (e: any) {
+    console.error("userChats error", e);
+    return { chats: null, error: e?.message || String(e) };
+  }
+}

@@ -16,7 +16,7 @@ export default function ChatBox({
 }) {
   return (
     <form
-      className="flex w-full max-w-2xl rounded-3xl glassmorphic shadow-2xl border p-3 md:p-4 mx-auto backdrop-blur-2xl transition-all duration-200"
+      className="fixed bottom-2 flex w-full max-w-3xl rounded-3xl glassmorphic shadow-2xl border p-3 md:p-4 mx-auto backdrop-blur-2xl transition-all duration-200"
       onSubmit={()=>submitPrompt()}
       style={{
         background:

@@ -1,6 +1,7 @@
 "use client";
 import DarkMode from "./DarkMode";
 import NavItems from "./NavItems";
+import RecentChats from "./RecentChats";
 import SidebarToggle from "./SidebarToggle";
 import UserPopover from "./UserPopover";
 
@@ -30,6 +31,7 @@ export default function SideBar({
         <div>
           <NavItems isExpanded={sidebarExpanded} />
         </div>
+        <RecentChats isExpanded={sidebarExpanded} />
       </div>
       <div className="space-y-2 pt-2">
         <DarkMode isExpanded={sidebarExpanded} />

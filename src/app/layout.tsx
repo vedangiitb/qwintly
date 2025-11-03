@@ -44,10 +44,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <PromptProvider>{children}</PromptProvider>
+          {" "}
+          <PromptProvider>{children}</PromptProvider>{" "}
         </AuthProvider>
 
-        <Toaster />
+        <Toaster position="top-center" />
       </body>
     </html>
   );

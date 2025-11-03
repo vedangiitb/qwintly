@@ -9,11 +9,10 @@ export default function RenderUserMessage({ data }: { data: string }) {
     <div className="flex justify-end px-2 my-4">
       <Card
         className={cn(
-          "max-w-[80%] px-4 py-2 rounded-2xl sm:rounded-3xl text-white text-sm",
-          "bg-gradient-to-br from-teal-500 via-fuchsia-600 to-purple-700",
-          "shadow-sm border border-transparent transition-all",
-          "hover:shadow-md",
-          "opacity-0 animate-[fadeIn_0.3s_ease-out_forwards]"
+          "max-w-[80%] sm:max-w-[75%] px-4 py-2 rounded-2xl",
+          "bg-muted text-primary",
+          "border border-border/60 shadow-sm transition-all",
+          "hover:border-indigo-400/40 hover:shadow-md"
         )}
         style={{ willChange: "transform, opacity" }}
       >

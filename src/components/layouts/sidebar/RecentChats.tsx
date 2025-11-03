@@ -1,41 +1,26 @@
 "use client";
-import { useEffect, useState } from "react";
+import { userChats } from "@/app/generate/services/chat/chatService";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
-import { useAuth } from "@/services/authServices/AuthContext";
+import { useEffect, useState } from "react";
 
 interface recentChatInterface {
-  chatId: string;
-  chatName: string;
+  id: string;
+  title: string;
+  updated_at: string;
 }
 
 export default function RecentChats({ isExpanded }: { isExpanded: boolean }) {
   const [recentChats, setRecentChats] = useState<recentChatInterface[]>([]);
-  const user = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    const getRecentChats = async () => {
-      if (!user?.userId) return;
-      try {
-        const { data } = await supabase
-          .from("user_conversations")
-          .select("id, name")
-          .eq("user_id", user.userId)
-          .order("created_at", { ascending: false })
-          .throwOnError();
-        if (data) {
-          setRecentChats(
-            data.map(({ id, name }) => ({ chatId: id, chatName: name }))
-          );
-        }
-      } catch (error) {
-        console.error("Failed to fetch recent chats:", error);
-      }
+    const fetchUserChats = async () => {
+      const { chats, error } = await userChats();
+      console.log(chats);
+      if (!error && chats) setRecentChats(chats);
     };
-
-    getRecentChats();
-  }, [user]);
+    fetchUserChats();
+  }, []);
 
   if (!isExpanded) return null;
 
@@ -48,11 +33,11 @@ export default function RecentChats({ isExpanded }: { isExpanded: boolean }) {
         <div className="flex flex-col gap-1 text-sm">
           {recentChats.map((item) => (
             <button
-              key={item.chatId}
-              onClick={() => router.push(`/generate?id=${item.chatId}`)}
+              key={item.id}
+              onClick={() => router.push(`/generate/${item.id}`)}
               className="text-left px-2 py-2 rounded-md hover:bg-muted transition cursor-pointer overflow-hidden whitespace-nowrap text-ellipsis"
             >
-              {item.chatName}
+              {item.title}
             </button>
           ))}
         </div>

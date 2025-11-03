@@ -14,7 +14,7 @@ export default function NavItems({ isExpanded }: { isExpanded: boolean }) {
     {
       icon: <SquarePen className="w-5 h-5" />,
       label: "New Chat",
-      action: () => router.push("/"),
+      action: () => router.push("/generate"),
     },
     {
       icon: <Search className="w-5 h-5" />,

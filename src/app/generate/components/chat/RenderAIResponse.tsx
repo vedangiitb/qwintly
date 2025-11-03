@@ -18,7 +18,7 @@ export default function RenderAIResponse({ data }: { data: string }) {
       <Card
         className={cn(
           "max-w-[85%] sm:max-w-[75%] px-4 py-2 rounded-2xl",
-          "bg-muted/40 text-sm text-muted-foreground",
+          "bg-muted text-primary",
           "border border-border/60 shadow-sm transition-all",
           "hover:border-indigo-400/40 hover:shadow-md"
         )}

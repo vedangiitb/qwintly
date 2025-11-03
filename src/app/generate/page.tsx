@@ -1,8 +1,24 @@
+"use client";
+import ChatBox from "./components/chat/ChatBox";
+import { usePrompt } from "./hooks/chat/PromptContext";
+import { useInitConv } from "./hooks/useInitConv";
+
 export default function Generate() {
-    // TODO: Make this into a chat like page
+  const { prompt, setPrompt } = usePrompt();
+
+  const { initiateConversation, loading } = useInitConv();
   return (
-    <div>
-      <p>Hello</p>
+    <div className="w-full pl-4 pr-2 pb-2 h-screen flex justify-center overflow-hidden shadow-xl backdrop-blur-2xl bg-background">
+      <div className="py-4 my-auto max-w-3xl text-center">
+        <p className="text-4xl">Start with your application by typing your first message</p>
+      </div>
+
+      <ChatBox
+        prompt={prompt}
+        submitPrompt={initiateConversation}
+        setPrompt={setPrompt}
+        isResponseLoading={loading}
+      />
     </div>
   );
 }
