@@ -28,7 +28,10 @@ export default function SideBar({
           <div>
             <NavItems isExpanded={sidebarExpanded} />
           </div>
-          <RecentChats isExpanded={sidebarExpanded} />
+          <RecentChats
+            isExpanded={sidebarExpanded}
+            setSidebarExpanded={setSidebarExpanded}
+          />
         </div>
         <div className="space-y-2 pt-2">
           <DarkMode isExpanded={sidebarExpanded} />

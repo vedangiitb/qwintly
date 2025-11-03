@@ -9,7 +9,13 @@ interface recentChatInterface {
   updated_at: string;
 }
 
-export default function RecentChats({ isExpanded }: { isExpanded: boolean }) {
+export default function RecentChats({
+  isExpanded,
+  setSidebarExpanded,
+}: {
+  isExpanded: boolean;
+  setSidebarExpanded: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const [recentChats, setRecentChats] = useState<recentChatInterface[]>([]);
   const router = useRouter();
 
@@ -34,11 +40,14 @@ export default function RecentChats({ isExpanded }: { isExpanded: boolean }) {
           {recentChats.map((item) => (
             <button
               key={item.id}
-              onClick={() => {
-                console.log("navigating...")
-                router.push(`/generate/${item.id}`);
-              }}
-              className="text-left px-2 py-2 rounded-md hover:bg-muted transition cursor-pointer overflow-hidden whitespace-nowrap text-ellipsis"
+                onClick={() => {
+                  console.log("navigating...");
+                  if (typeof window !== "undefined" && window.innerWidth < 768) {
+                    setSidebarExpanded(false);
+                  }
+                  router.push(`/generate/${item.id}`);
+                }}
+              className="text-left border border-border/60 hover:border-indigo-400/40 hover:shadow-sm px-2 py-2 rounded-md hover:bg-muted transition cursor-pointer overflow-hidden whitespace-nowrap text-ellipsis"
             >
               {item.title}
             </button>

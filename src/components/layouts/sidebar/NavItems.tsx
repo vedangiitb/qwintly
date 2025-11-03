@@ -31,7 +31,7 @@ export default function NavItems({ isExpanded }: { isExpanded: boolean }) {
             <button
               className={`cursor-pointer flex items-center gap-3 w-full text-base px-2 py-2 rounded-lg
                 hover:bg-muted
-                border border-white/10 shadow
+                border border-white/10 shadow hover:border-indigo-400/40 hover:shadow-sm
                 transition-all duration-110
                 ${!isExpanded ? "justify-center" : ""}
               `}

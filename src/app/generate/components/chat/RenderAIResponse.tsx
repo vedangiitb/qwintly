@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 
 export default function RenderAIResponse({ data }: { data: string }) {
   return (
-    <div className="flex items-start gap-3 px-2 my-4">
+    <div className="flex items-start gap-3 my-4">
       {/* Avatar */}
       <Avatar className="hidden sm:flex h-8 w-8 ring-2 ring-indigo-400/40">
         <AvatarFallback>⚡</AvatarFallback>
