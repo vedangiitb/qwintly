@@ -1,13 +1,6 @@
 "use client";
-import { userChats } from "@/app/generate/services/chat/chatService";
+import { useChat } from "@/app/generate/hooks/chat/useChat";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-
-interface recentChatInterface {
-  id: string;
-  title: string;
-  updated_at: string;
-}
 
 export default function RecentChats({
   isExpanded,
@@ -16,17 +9,8 @@ export default function RecentChats({
   isExpanded: boolean;
   setSidebarExpanded: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const [recentChats, setRecentChats] = useState<recentChatInterface[]>([]);
+  const { recentChats } = useChat();
   const router = useRouter();
-
-  useEffect(() => {
-    const fetchUserChats = async () => {
-      const { chats, error } = await userChats();
-      console.log(chats);
-      if (!error && chats) setRecentChats(chats);
-    };
-    fetchUserChats();
-  }, []);
 
   if (!isExpanded) return null;
 
@@ -40,14 +24,13 @@ export default function RecentChats({
           {recentChats.map((item) => (
             <button
               key={item.id}
-                onClick={() => {
-                  console.log("navigating...");
-                  if (typeof window !== "undefined" && window.innerWidth < 768) {
-                    setSidebarExpanded(false);
-                  }
-                  router.push(`/generate/${item.id}`);
-                }}
-              className="text-left border border-border/60 hover:border-indigo-400/40 hover:shadow-sm px-2 py-2 rounded-md hover:bg-muted transition cursor-pointer overflow-hidden whitespace-nowrap text-ellipsis"
+              onClick={() => {
+                if (typeof window !== "undefined" && window.innerWidth < 768) {
+                  setSidebarExpanded(false);
+                }
+                router.push(`/generate/${item.id}`);
+              }}
+              className="text-left border border-border/60 hover:border-indigo-400/40 hover:shadow-sm px-2 py-2 rounded-md hover:bg-muted/30 transition cursor-pointer overflow-hidden whitespace-nowrap text-ellipsis"
             >
               {item.title}
             </button>

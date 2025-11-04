@@ -16,7 +16,7 @@ export default function DarkMode({ isExpanded }: { isExpanded: boolean }) {
         className={`
           cursor-pointer flex items-center rounded-xl border border-white/10 shadow bg-white/10 px-2 py-2 gap-2 transition
           hover:bg-gradient-to-tr hover:from-indigo-400/20 hover:to-purple-300/10
-          ${isExpanded ? "w-full justify-between" : "justify-center w-11"}
+          ${isExpanded ? "w-full" : "justify-center w-11"}
         `}
         tabIndex={0}
         aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}

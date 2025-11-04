@@ -1,10 +1,11 @@
 "use client";
-import { Message } from "@/types/chat";
-import { useCallback, useRef, useState } from "react";
+import { Message, recentChatInterface } from "@/types/chat";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   addToDB,
   fetchChatMessages,
   streamChatResponse,
+  userChats,
 } from "../../services/chat/chatService";
 import { usePrompt } from "./PromptContext";
 
@@ -16,6 +17,7 @@ export const useChat = () => {
   const hasSubmittedRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [isResponseLoading, setResponseLoading] = useState(false);
+  const [recentChats, setRecentChats] = useState<recentChatInterface[]>([]);
 
   // fetch existing chat messages and set currentChatId
   const fetchChat = useCallback(async (chatId: string) => {
@@ -129,6 +131,14 @@ export const useChat = () => {
     [currentChatId, startStream]
   );
 
+  useEffect(() => {
+    const fetchUserChats = async () => {
+      const { chats, error } = await userChats();
+      console.log(chats);
+      if (!error && chats) setRecentChats(chats);
+    };
+    fetchUserChats();
+  }, []);
 
   return {
     prompt,
@@ -142,5 +152,6 @@ export const useChat = () => {
     setCurrentChatId,
     cancelStream,
     isResponseLoading,
+    recentChats,
   } as const;
 };

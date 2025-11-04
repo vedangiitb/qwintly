@@ -11,3 +11,9 @@ export interface FetchChatResult {
 }
 
 export type Role = "user" | "assistant" | "system";
+
+export interface recentChatInterface {
+  id: string;
+  title: string;
+  updated_at: string;
+}
