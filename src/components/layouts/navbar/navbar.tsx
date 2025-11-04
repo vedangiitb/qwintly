@@ -19,13 +19,13 @@ export default function NavBar({
     <div>
       <header className="sticky top-0 z-20 flex items-center justify-between px-4 py-2 md:px-8 md:py-4">
         <div className="flex items-center gap-3 justify-center">
-          <div className={`${showSidebar ? "hidden" : ""} md:hidden`}>
+          {/* <div className={`${showSidebar ? "hidden" : ""} md:hidden`}>
             <SidebarToggle
               isExpanded={showSidebar}
               onToggle={() => setShowSidebar(!showSidebar)}
             />
-          </div>
-          <div className={`${showSidebar ? "hidden" : ""}`}>
+          </div> */}
+          <div className={`${showSidebar ? "" : "md:block"} hidden `}>
             <span className="font-extrabold text-lg tracking-wider text-transparent bg-gradient-to-tr dark:from-teal-200 dark:via-purple-300 dark:to-pink-400 from-teal-600 via-purple-600 to-pink-600 bg-clip-text drop-shadow select-none ml-2 transition">
               Qwintly
             </span>

@@ -34,11 +34,13 @@ export default function AuthForm({ isExistingUser }: Props) {
       typeof window.grecaptcha === "undefined" ||
       typeof window.grecaptcha.enterprise === "undefined"
     ) {
+      console.log(window)
       setError("reCAPTCHA Enterprise service is loading. Please wait.");
       return;
     }
 
     try {
+      console.log("1")
       setLoading(true);
       setError("");
 
@@ -49,6 +51,8 @@ export default function AuthForm({ isExistingUser }: Props) {
         siteKey,
         { action }
       );
+
+      console.log(recaptchaToken)
 
       const user = isExistingUser
         ? await login(email, password, recaptchaToken)

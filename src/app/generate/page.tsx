@@ -10,7 +10,7 @@ export default function Generate() {
   return (
     <div className="w-full pl-4 pr-2 pb-2 h-screen flex justify-center overflow-hidden shadow-xl backdrop-blur-2xl bg-background">
       <div className="py-4 my-auto max-w-3xl text-center">
-        <p className="text-4xl">Start with your application by typing your first message</p>
+        <p className="md:text-4xl text-2xl">Start with your application by typing your first message</p>
       </div>
 
       <ChatBox
