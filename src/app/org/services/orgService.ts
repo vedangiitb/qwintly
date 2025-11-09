@@ -1,43 +1,110 @@
-import { getIdToken } from "@/utils/userIdTokenUtil";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { toast } from "sonner";
 
-export async function addOrganization({ org_name }: { org_name: string }) {
+interface AddOrgResponse {
+  id: string;
+  name: string;
+}
+
+interface AddOrgMemberRequest {
+  org_id: string;
+  member_id: string;
+  role: string;
+}
+
+interface OrgMember {
+  member_entry_id: string;
+  member_org_id: string;
+  member_user_id: string;
+  member_role: string;
+  member_created_at: string;
+}
+
+/**
+ * Add a new organization
+ */
+export async function addOrganization({
+  org_name,
+}: {
+  org_name: string;
+}): Promise<{ id: string | null; data?: AddOrgResponse }> {
   try {
-    const token = await getIdToken();
-    if (!token) throw new Error("User not authenticated");
-    const response = await fetch("/api/org/new", {
+    const json = await fetchWithAuth<AddOrgResponse>("/api/org/new", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        org_name: org_name,
-      }),
+      body: JSON.stringify({ org_name }),
     });
 
-    const resp = await response.json();
-
-    if (!response.ok || !resp?.success) {
-      const errMsg = resp?.error || "Error occurred while creating new chat";
-      throw new Error(errMsg);
-    }
-
-    const id: string | null = resp?.data?.id ?? null;
-    return { id, data: resp?.data };
-  } catch (err: any) {
-    console.error("initConvService error:", err);
-    toast.error(
-      err?.message ||
-        "Error occurred while creating new organization, please try again!"
-    );
+    toast.success(`Organization "${org_name}" created successfully!`);
+    return { id: json.data?.id ?? null, data: json.data };
+  } catch (error: any) {
+    console.error("addOrganization error:", error);
+    toast.error(error?.message || "Failed to create organization.");
     return { id: null };
   }
 }
 
-export async function getOrganizations({ user_id }: { user_id: string }) {
+/**
+ * Fetch all organizations for the logged-in user
+ */
+export async function getOrganizations(): Promise<{
+  data: any[] | null;
+  error: string | null;
+}> {
   try {
-  } catch (e) {}
+    const json = await fetchWithAuth<any[]>("/api/org/new", { method: "GET" });
+    return { data: json.data ?? [], error: null };
+  } catch (error: any) {
+    console.error("getOrganizations error:", error);
+    toast.error(error?.message || "Failed to fetch organizations.");
+    return { data: null, error: error.message };
+  }
+}
+
+/**
+ * Fetch all projects under a specific organization
+ */
+export async function getOrgProjects({
+  org_id,
+}: {
+  org_id: string;
+}): Promise<{ data: any[] | null; error: string | null }> {
+  try {
+    const json = await fetchWithAuth<any[]>(
+      `/api/org/org-projects?org-id=${encodeURIComponent(org_id)}`,
+      { method: "GET" }
+    );
+    return { data: json.data ?? [], error: null };
+  } catch (error: any) {
+    console.error("getOrgProjects error:", error);
+    toast.error(error?.message || "Failed to load organization projects.");
+    return { data: null, error: error.message };
+  }
+}
+
+/**
+ * Add a member to an organization
+ */
+export async function addOrgMember({
+  org_id,
+  member_id,
+  role,
+}: AddOrgMemberRequest): Promise<{
+  data: OrgMember | null;
+  error: string | null;
+}> {
+  try {
+    const json = await fetchWithAuth<OrgMember>("/api/org/add-member", {
+      method: "POST",
+      body: JSON.stringify({ org_id, member_id, role }),
+    });
+
+    toast.success(`Member added successfully as "${role}".`);
+    return { data: json.data ?? null, error: null };
+  } catch (error: any) {
+    console.error("❌ addOrgMember error:", error);
+    toast.error(error?.message || "Failed to add organization member.");
+    return { data: null, error: error.message };
+  }
 }
 
 export async function getOrganizationDetails({ org_id }: { org_id: string }) {
