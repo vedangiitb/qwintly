@@ -101,7 +101,7 @@ export async function addOrgMember({
     toast.success(`Member added successfully as "${role}".`);
     return { data: json.data ?? null, error: null };
   } catch (error: any) {
-    console.error("❌ addOrgMember error:", error);
+    console.error("addOrgMember error:", error);
     toast.error(error?.message || "Failed to add organization member.");
     return { data: null, error: error.message };
   }

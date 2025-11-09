@@ -10,12 +10,12 @@ export const POST = postHandler(
   async ({ userId, body }: { userId: string; body: NewChatRequestBody }) => {
     const { prompt } = body;
 
-    // ✅ Validate input
+    // Validate input
     if (!prompt || typeof prompt !== "string") {
       throw new Error("Missing or invalid 'prompt'");
     }
 
-    // ✅ Prepare chat row
+    // Prepare chat row
     const now = new Date().toISOString();
     const chatRow = {
       user_id: userId,
@@ -25,7 +25,7 @@ export const POST = postHandler(
       last_message: prompt,
     };
 
-    // ✅ Insert into Supabase
+    // Insert into Supabase
     const { data, error } = await supabase
       .from("chats")
       .insert([chatRow])
@@ -38,7 +38,7 @@ export const POST = postHandler(
       throw new Error(error.message || "Failed to create chat");
     }
 
-    // ✅ Return structured response
+    // Return structured response
     return { id: data?.id ?? null, ...data };
   }
 );

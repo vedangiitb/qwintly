@@ -1,13 +1,13 @@
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { toast } from "sonner";
 
-interface CreateProjectRequest {
+export interface CreateProjectRequest {
   project_name: string;
   project_type: string;
   org_id: string;
 }
 
-interface Project {
+export interface Project {
   project_id: string;
   project_name: string;
   project_type: string;
@@ -17,13 +17,13 @@ interface Project {
   role?: string;
 }
 
-interface AddProjectMemberRequest {
+export interface AddProjectMemberRequest {
   project_id: string;
   member_id: string;
   role: string;
 }
 
-interface ProjectMember {
+export interface ProjectMember {
   project_id: string;
   member_id: string;
   role: string;
@@ -31,7 +31,7 @@ interface ProjectMember {
   expires_at?: string | null;
 }
 
-interface UserProject {
+export interface UserProject {
   project_id: string;
   project_name: string;
   project_type: string;

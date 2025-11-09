@@ -4,12 +4,12 @@ import { postHandler } from "@/lib/apiHandler";
 export const POST = postHandler(async ({ userId, body }) => {
   const { message, chatId } = body;
 
-  // ✅ Validate input
+  // Validate input
   if (!message?.content || !chatId) {
     throw new Error("Missing message content or chatId");
   }
 
-  // ✅ Insert message into Supabase
+  // Insert message into Supabase
   const { data, error } = await supabase
     .from("messages")
     .insert([
@@ -30,6 +30,6 @@ export const POST = postHandler(async ({ userId, body }) => {
     throw new Error(error.message || "Failed to insert message");
   }
 
-  // ✅ Return structured response
+  // Return structured response
   return data;
 });
