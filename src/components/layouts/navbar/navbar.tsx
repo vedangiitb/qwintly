@@ -3,8 +3,8 @@ import { useAuth } from "@/app/login/hooks/AuthContext";
 import { Button } from "@/components/ui/button";
 import { LogIn } from "lucide-react";
 import Link from "next/link";
-import DarkMode from "../sidebar/DarkMode";
-import UserPopover from "../sidebar/UserPopover";
+import DarkMode from "./DarkMode";
+import UserPopover from "./UserPopover";
 
 export default function NavBar() {
   const user = useAuth();

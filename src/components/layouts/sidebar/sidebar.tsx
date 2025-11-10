@@ -1,10 +1,8 @@
 "use client";
-import DarkMode from "./DarkMode";
 import NavItems from "./NavItems";
 import ProjectList from "./ProjectList";
 import RecentChats from "./RecentChats";
 import SidebarToggle from "./SidebarToggle";
-import UserPopover from "./UserPopover";
 
 export default function SideBar({
   sidebarExpanded,

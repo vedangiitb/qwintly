@@ -8,8 +8,8 @@ import {
 } from "@/components/ui/popover";
 import { CircleUser, FolderKanban, HelpCircle, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-import PrefDialog from "./prefDialog";
-import SettingsDialog from "./settingsDialog";
+import PrefDialog from "../navbar/prefDialog";
+import SettingsDialog from "../navbar/settingsDialog";
 import { Button } from "@/components/ui/button";
 export default function ProjectList({ isExpanded }: { isExpanded: boolean }) {
   const router = useRouter();

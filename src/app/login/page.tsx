@@ -9,7 +9,7 @@ export default function AuthContainer() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-sky-100 to-purple-100 dark:from-gray-900 dark:via-gray-950 dark:to-gray-800 px-4 transition-colors duration-300">
+      <div className="flex h-full items-center justify-center bg-gradient-to-br from-indigo-50 via-sky-100 to-purple-100 dark:from-gray-900 dark:via-gray-950 dark:to-gray-800 px-4 transition-colors duration-300">
         <div className="w-full max-w-md px-6 sm:px-8 py-10 rounded-xl shadow-xl bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg border border-slate-200 dark:border-slate-700 space-y-8 transition-colors duration-300">
           <AuthHeader isExistingUser={isExistingUser} />
 

@@ -20,7 +20,7 @@ export default function LoginLayout({
 
   return (
     <>
-      <div className="show-recaptcha">{children}</div>;
+      <div className="show-recaptcha flex flex-col flex-1">{children}</div>
     </>
   );
 }
