@@ -1,11 +1,10 @@
 "use client";
-import NavBar from "@/components/layouts/navbar/navbar";
 import SideBar from "@/components/layouts/sidebar/sidebar";
 import { useEffect, useState } from "react";
 import ChatBox from "./generate/components/chat/ChatBox";
+import { usePrompt } from "./generate/hooks/chat/PromptContext";
 import { useInitConv } from "./generate/hooks/useInitConv";
 import { useAuth } from "./login/hooks/AuthContext";
-import { usePrompt } from "./generate/hooks/chat/PromptContext";
 
 export default function Home() {
   const { user } = useAuth();
@@ -24,15 +23,14 @@ export default function Home() {
   }, [showSidebar]);
 
   return (
-    <div className="h-screen text-foreground flex">
+    <div className="h-full text-foreground flex">
       <SideBar
         sidebarExpanded={showSidebar}
         setSidebarExpanded={setShowSidebar}
       />
 
-      <div className="w-full flex flex-col h-screen">
+      <div className="w-full flex flex-col h-full">
         <main className="flex-1 relative overflow-hidden">
-          <NavBar showSidebar={showSidebar} />
           <div className="h-[calc(100vh-5rem)] relative z-10 flex flex-col items-center justify-center px-4 py-4 md:py-12 text-center gap-10 md:gap-12">
             <h1 className="relative text-4xl md:text-6xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-tr dark:from-teal-200 dark:via-purple-300 dark:to-pink-400 from-teal-500 via-purple-600 to-pink-600  drop-shadow-2xl animate-fadein-smooth">
               <span className="block mb-2 animate-gradient-move">

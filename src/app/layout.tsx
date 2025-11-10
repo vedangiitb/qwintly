@@ -1,11 +1,11 @@
 import { AuthProvider } from "@/app/login/hooks/AuthContext";
+import NavBar from "@/components/layouts/navbar/navbar";
 import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { PromptProvider } from "./generate/hooks/chat/PromptContext";
 import "./globals.css";
-import NavBarWrapper from "@/components/layouts/navbar/navbarWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,13 +42,13 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased  h-screen overflow-hidden`}
       >
         <AuthProvider>
           {" "}
           <PromptProvider>
             <div className="flex flex-col h-screen">
-              <NavBarWrapper />
+              <NavBar />
               {children}
             </div>
           </PromptProvider>{" "}

@@ -9,7 +9,7 @@ export default function GenerateLayout({
 }>) {
   const [showSidebar, setShowSidebar] = useState(false);
   return (
-    <div className="flex-1 h-full text-foreground flex">
+    <div className="flex flex-1 overflow-hidden text-foreground">
       <SideBar
         sidebarExpanded={showSidebar}
         setSidebarExpanded={setShowSidebar}

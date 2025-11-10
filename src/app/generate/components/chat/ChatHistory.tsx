@@ -13,20 +13,20 @@ export default function ChatHistory({
 }) {
   return (
     <div
-      className="flex-1 overflow-y-auto custom-scrollbar px-2 py-8 space-y-2 mb-16 "
+      className="flex-1 overflow-y-auto custom-scrollbar px-2 py-8 space-y-2"
       aria-live="polite"
       tabIndex={0}
     >
-
-      {convHistory.length >0 && convHistory.map((item, idx) => (
-        <div key={idx}>
-          {item.role === "user" ? (
-            <RenderUserMessage data={item.content} />
-          ) : (
-            <RenderAIResponse data={item.content} />
-          )}
-        </div>
-      ))}
+      {convHistory.length > 0 &&
+        convHistory.map((item, idx) => (
+          <div key={idx}>
+            {item.role === "user" ? (
+              <RenderUserMessage data={item.content} />
+            ) : (
+              <RenderAIResponse data={item.content} />
+            )}
+          </div>
+        ))}
       {isResponseLoading && <TypingIndicator generatingsite={generatingsite} />}
     </div>
   );

@@ -16,7 +16,7 @@ export default function ChatBox({
 }) {
   return (
     <form
-      className="fixed bottom-2 right-0.5 left-0.5 md:mx-auto flex md:w-full md:max-w-3xl rounded-3xl glassmorphic shadow-2xl border p-3 md:p-4 backdrop-blur-2xl transition-all duration-200"
+      className="sticky bottom-2 right-0.5 left-0.5 md:mx-auto flex md:w-full md:max-w-3xl rounded-3xl glassmorphic shadow-2xl border p-3 md:p-4 backdrop-blur-2xl transition-all duration-200"
       onSubmit={() => submitPrompt()}
       style={{
         background:

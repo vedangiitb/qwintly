@@ -23,7 +23,7 @@ export default function UserPopover({ isExpanded }: { isExpanded: boolean }) {
     <Popover>
       <PopoverTrigger asChild>
         <div
-          className={`flex gap-3 items-center group rounded-xl cursor-pointer mt-1 transition min-h-10
+          className={`flex gap-3 items-center group rounded-xl cursor-pointer transition min-h-10
             ${isExpanded ? "border py-1 px-1" : "justify-center w-11 p-0"}
             hover:bg-accent hover:backdrop-blur-sm hover:shadow focus:outline-none`}
         >

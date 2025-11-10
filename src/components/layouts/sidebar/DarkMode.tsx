@@ -10,7 +10,7 @@ export default function DarkMode({ isExpanded }: { isExpanded: boolean }) {
   }, [darkMode]);
 
   return (
-    <div className="mb-2">
+    <div>
       <button
         onClick={() => setDarkMode(!darkMode)}
         className={`

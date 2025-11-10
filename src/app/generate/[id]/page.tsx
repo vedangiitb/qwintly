@@ -42,12 +42,14 @@ export default function Generate({ params }: Props) {
   }, [id, prompt]);
 
   return (
-    <div className="w-full md:px-2 pb-2 h-full flex justify-center overflow-hidden shadow-xl backdrop-blur-2xl bg-background">
-      <ChatHistory
-        convHistory={messages}
-        isResponseLoading={isResponseLoading}
-        generatingsite={generatingsite}
-      />
+    <div className="flex flex-col flex-1 w-full justify-between bg-background shadow-xl backdrop-blur-2xl overflow-hidden">
+      <div className="flex-1 overflow-y-auto px-2 py-4 custom-scrollbar">
+        <ChatHistory
+          convHistory={messages}
+          isResponseLoading={isResponseLoading}
+          generatingsite={generatingsite}
+        />
+      </div>
       <ChatBox
         prompt={prompt}
         submitPrompt={() => submitResponse(id)}

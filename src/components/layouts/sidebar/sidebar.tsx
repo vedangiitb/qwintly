@@ -36,8 +36,6 @@ export default function SideBar({
         </div>
         <div className="space-y-2 py-1">
           <ProjectList isExpanded={sidebarExpanded} />
-          <DarkMode isExpanded={sidebarExpanded} />
-          <UserPopover isExpanded={sidebarExpanded} />
         </div>
       </aside>
 
