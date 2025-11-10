@@ -32,7 +32,7 @@ export default function Home() {
 
       <div className="w-full flex flex-col h-screen">
         <main className="flex-1 relative overflow-hidden">
-          <NavBar showSidebar={showSidebar} setShowSidebar={setShowSidebar} />
+          <NavBar showSidebar={showSidebar} />
           <div className="h-[calc(100vh-5rem)] relative z-10 flex flex-col items-center justify-center px-4 py-4 md:py-12 text-center gap-10 md:gap-12">
             <h1 className="relative text-4xl md:text-6xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-tr dark:from-teal-200 dark:via-purple-300 dark:to-pink-400 from-teal-500 via-purple-600 to-pink-600  drop-shadow-2xl animate-fadein-smooth">
               <span className="block mb-2 animate-gradient-move">

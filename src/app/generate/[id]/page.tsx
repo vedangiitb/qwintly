@@ -42,7 +42,7 @@ export default function Generate({ params }: Props) {
   }, [id, prompt]);
 
   return (
-    <div className="w-full md:px-2 pb-2 h-screen flex justify-center overflow-hidden shadow-xl backdrop-blur-2xl bg-background">
+    <div className="w-full md:px-2 pb-2 h-full flex justify-center overflow-hidden shadow-xl backdrop-blur-2xl bg-background">
       <ChatHistory
         convHistory={messages}
         isResponseLoading={isResponseLoading}

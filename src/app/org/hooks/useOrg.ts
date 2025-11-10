@@ -10,9 +10,9 @@ import {
 } from "../services/orgService";
 
 interface Org {
-  id: string;
-  name: string;
-  created_at?: string;
+  org_id: string;
+  org_name: string;
+  created_at: string;
 }
 
 export function useOrg() {

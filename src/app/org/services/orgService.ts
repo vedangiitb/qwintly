@@ -51,7 +51,7 @@ export async function getOrganizations(): Promise<{
   error: string | null;
 }> {
   try {
-    const json = await fetchWithAuth<any[]>("/api/org/new", { method: "GET" });
+    const json = await fetchWithAuth<any[]>("/api/org/get-orgs", { method: "GET" });
     return { data: json.data ?? [], error: null };
   } catch (error: any) {
     console.error("getOrganizations error:", error);

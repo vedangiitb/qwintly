@@ -3,5 +3,5 @@ export default function GenerateLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <div className="h-screen text-foreground flex w-full">{children}</div>;
+  return <div className="h-full text-foreground flex w-full">{children}</div>;
 }

@@ -1,10 +1,11 @@
+import { AuthProvider } from "@/app/login/hooks/AuthContext";
+import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { AuthProvider } from "@/app/login/hooks/AuthContext";
 import Script from "next/script";
-import { Toaster } from "@/components/ui/sonner";
 import { PromptProvider } from "./generate/hooks/chat/PromptContext";
+import "./globals.css";
+import NavBarWrapper from "@/components/layouts/navbar/navbarWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,11 +42,16 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
       >
         <AuthProvider>
           {" "}
-          <PromptProvider>{children}</PromptProvider>{" "}
+          <PromptProvider>
+            <div className="flex flex-col h-screen">
+              <NavBarWrapper />
+              {children}
+            </div>
+          </PromptProvider>{" "}
         </AuthProvider>
 
         <Toaster position="top-center" />

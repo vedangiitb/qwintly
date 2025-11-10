@@ -1,23 +1,15 @@
 "use client";
-import { LogIn } from "lucide-react";
-import Link from "next/link";
 import { useAuth } from "@/app/login/hooks/AuthContext";
 import { Button } from "@/components/ui/button";
-import SidebarToggle from "../sidebar/SidebarToggle";
-import { SetStateAction } from "react";
+import { LogIn } from "lucide-react";
+import Link from "next/link";
 
-export default function NavBar({
-  showSidebar,
-  setShowSidebar,
-}: {
-  showSidebar: boolean;
-  setShowSidebar: React.Dispatch<SetStateAction<boolean>>;
-}) {
+export default function NavBar({ showSidebar }: { showSidebar: boolean }) {
   const user = useAuth();
 
   return (
     <div>
-      <header className="sticky top-0 z-20 flex items-center justify-between px-4 py-2 md:px-8 md:py-4">
+      <header className="sticky top-0 z-20 flex items-center justify-between px-4 py-2 md:px-8 border-b">
         <div className="flex items-center gap-3 justify-center">
           {/* <div className={`${showSidebar ? "hidden" : ""} md:hidden`}>
             <SidebarToggle
