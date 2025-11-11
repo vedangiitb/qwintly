@@ -2,7 +2,7 @@
 import SideBar from "@/components/layouts/sidebar/sidebar";
 import { useEffect, useState } from "react";
 import ChatBox from "./generate/components/chat/ChatBox";
-import { usePrompt } from "./generate/hooks/chat/PromptContext";
+import { useChat } from "./generate/hooks/chat/useChat";
 import { useInitConv } from "./generate/hooks/useInitConv";
 import { useAuth } from "./login/hooks/AuthContext";
 
@@ -10,7 +10,7 @@ export default function Home() {
   const { user } = useAuth();
   const [showSidebar, setShowSidebar] = useState(false);
 
-  const { prompt, setPrompt } = usePrompt();
+  const { prompt, setPrompt } = useChat();
 
   const { initiateConversation, loading } = useInitConv();
 

@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
 import ChatBox from "../components/chat/ChatBox";
 import ChatHistory from "../components/chat/ChatHistory";
-import { usePrompt } from "../hooks/chat/PromptContext";
 import { useChat } from "../hooks/chat/useChat";
-import { toast } from "sonner";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -14,7 +13,7 @@ export default function Generate({ params }: Props) {
   const { id } = React.use(params);
   const [generatingsite, setSiteGenerating] = useState(false);
   const router = useRouter();
-  const { prompt, setPrompt } = usePrompt();
+  const { prompt, setPrompt } = useChat();
   const {
     submitResponse,
     messages,
@@ -25,6 +24,7 @@ export default function Generate({ params }: Props) {
 
   useEffect(() => {
     const run = async () => {
+      console.log(prompt)
       if (!id || hasSubmittedRef.current) return;
       if (prompt && !hasSubmittedRef.current) {
         hasSubmittedRef.current = true;

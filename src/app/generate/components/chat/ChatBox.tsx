@@ -11,7 +11,7 @@ export default function ChatBox({
 }: {
   prompt: string;
   submitPrompt: any;
-  setPrompt: React.Dispatch<React.SetStateAction<string>>;
+  setPrompt: (p: string) => void;
   isResponseLoading: boolean;
 }) {
   return (

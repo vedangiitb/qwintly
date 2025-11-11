@@ -1,10 +1,10 @@
 "use client";
 import ChatBox from "./components/chat/ChatBox";
-import { usePrompt } from "./hooks/chat/PromptContext";
+import { useChat } from "./hooks/chat/useChat";
 import { useInitConv } from "./hooks/useInitConv";
 
 export default function Generate() {
-  const { prompt, setPrompt } = usePrompt();
+  const { prompt, setPrompt } = useChat();
 
   const { initiateConversation, loading } = useInitConv();
   return (
@@ -12,7 +12,9 @@ export default function Generate() {
       {/* Main content: flex-1 so it takes remaining height */}
       <div className="flex-1 flex items-center justify-center pb-28">
         <div className="py-4 max-w-3xl text-center">
-          <p className="md:text-4xl text-2xl">Start with your application by typing your first message</p>
+          <p className="md:text-4xl text-2xl">
+            Start with your application by typing your first message
+          </p>
         </div>
       </div>
 

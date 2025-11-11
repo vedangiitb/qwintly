@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import orgReducer from "@/lib/features/orgSlice";
+import promptReducer from "@/lib/features/promptSlice";
 
 export const store = configureStore({
   reducer: {
     org: orgReducer,
+    prompt: promptReducer,
   },
 });
 

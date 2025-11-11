@@ -16,6 +16,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useOrg } from "./hooks/useOrg";
 import { cn } from "@/lib/utils"; // optional, but handy if you have shadcn’s cn helper
 import NewOrgDialog from "./components/orgDialog";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
 
 interface Org {
   org_id: string;
@@ -25,16 +27,12 @@ interface Org {
 
 export default function Org() {
   const { fetchOrganizations, loading } = useOrg();
-  const [organizations, setOrganizations] = useState<Org[]>([]);
+  const organizations = useSelector((state: RootState) => state.org.list);
   const router = useRouter();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   useEffect(() => {
-    const fetchOrgs = async () => {
-      const { data } = await fetchOrganizations();
-      if (data) setOrganizations(data);
-    };
-    fetchOrgs();
+    fetchOrganizations();
   }, []);
 
   return (

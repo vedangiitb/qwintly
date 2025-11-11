@@ -1,6 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { setOrganizations } from "@/lib/features/orgSlice";
+import { AppDispatch } from "@/lib/store";
+import { useCallback, useState } from "react";
+import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 import {
   addOrganization as apiAddOrganization,
@@ -12,15 +15,22 @@ import {
 export function useOrg() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
 
   /** Fetch all organizations */
-  const fetchOrganizations = useCallback(async (): Promise<{ data: any[] | null }> => {
+  const fetchOrganizations = useCallback(async (): Promise<{
+    data: any[] | null;
+  }> => {
     setLoading(true);
     setError(null);
+
     try {
       const { data, error } = await apiGetOrganizations();
       if (error) throw new Error(error);
-      return { data: data };
+
+      dispatch(setOrganizations(data || []));
+
+      return { data };
     } catch (err: any) {
       console.error("useOrganizations fetch error:", err);
       setError(err.message);
@@ -29,7 +39,7 @@ export function useOrg() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [dispatch]);
 
   /** Add a new organization */
   const addOrganization = useCallback(

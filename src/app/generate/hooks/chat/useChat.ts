@@ -1,16 +1,17 @@
 "use client";
+import { AppDispatch, RootState } from "@/lib/store";
 import { Message, recentChatInterface } from "@/types/chat";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   addToDB,
   fetchChatMessages,
   streamChatResponse,
   userChats,
 } from "../../services/chat/chatService";
-import { usePrompt } from "./PromptContext";
+import { setChatPrompt } from "@/lib/features/promptSlice";
 
 export const useChat = () => {
-  const { prompt, setPrompt } = usePrompt();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
@@ -18,6 +19,12 @@ export const useChat = () => {
   const abortControllerRef = useRef<AbortController | null>(null);
   const [isResponseLoading, setResponseLoading] = useState(false);
   const [recentChats, setRecentChats] = useState<recentChatInterface[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const prompt = useSelector((state: RootState) => state.prompt.prompt);
+  const setPrompt: (p: string) => any = (p: string) => {
+    // console.log(prompt)
+    dispatch(setChatPrompt(p));
+  };
 
   // fetch existing chat messages and set currentChatId
   const fetchChat = useCallback(async (chatId: string) => {

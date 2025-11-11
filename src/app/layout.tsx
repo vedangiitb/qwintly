@@ -48,12 +48,10 @@ export default function RootLayout({
         <AuthProvider>
           {" "}
           <Providers>
-            <PromptProvider>
-              <div className="flex flex-col h-screen">
-                <NavBar />
-                {children}
-              </div>
-            </PromptProvider>{" "}
+            <div className="flex flex-col h-screen">
+              <NavBar />
+              {children}
+            </div>
           </Providers>
         </AuthProvider>
 

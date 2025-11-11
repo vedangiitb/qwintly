@@ -44,7 +44,7 @@ export default function NewOrgDialog() {
       {/* 🔹 Trigger Button */}
       <DialogTrigger asChild>
         <div className="flex gap-2">
-          <Button className="gap-2 rounded-xl">
+          <Button className="gap-2 rounded-lg cursor-pointer">
             <Plus className="w-4 h-4" />
             Create Organization
           </Button>

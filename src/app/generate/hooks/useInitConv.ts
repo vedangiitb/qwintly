@@ -4,12 +4,12 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { initConvService } from "../services/chat/initConvService";
-import { usePrompt } from "./chat/PromptContext";
+import { useChat } from "./chat/useChat";
 
 export const useInitConv = () => {
   const router = useRouter();
   const [loading, setloading] = useState(false);
-  const { prompt, setPrompt } = usePrompt();
+  const { prompt } = useChat();
   const { user } = useAuth();
 
   const initiateConversation = useCallback(
@@ -45,5 +45,5 @@ export const useInitConv = () => {
     [prompt, user, router]
   );
 
-  return { initiateConversation, loading, prompt, setPrompt };
+  return { initiateConversation, loading, prompt };
 };
