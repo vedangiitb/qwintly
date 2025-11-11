@@ -6,6 +6,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { PromptProvider } from "./generate/hooks/chat/PromptContext";
 import "./globals.css";
+import { Providers } from "@/lib/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,12 +47,14 @@ export default function RootLayout({
       >
         <AuthProvider>
           {" "}
-          <PromptProvider>
-            <div className="flex flex-col h-screen">
-              <NavBar />
-              {children}
-            </div>
-          </PromptProvider>{" "}
+          <Providers>
+            <PromptProvider>
+              <div className="flex flex-col h-screen">
+                <NavBar />
+                {children}
+              </div>
+            </PromptProvider>{" "}
+          </Providers>
         </AuthProvider>
 
         <Toaster position="top-center" />

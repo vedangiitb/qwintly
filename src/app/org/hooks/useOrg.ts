@@ -9,29 +9,23 @@ import {
   getOrgProjects as apiGetOrgProjects,
 } from "../services/orgService";
 
-interface Org {
-  org_id: string;
-  org_name: string;
-  created_at: string;
-}
-
 export function useOrg() {
-  const [organizations, setOrganizations] = useState<Org[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   /** Fetch all organizations */
-  const fetchOrganizations = useCallback(async () => {
+  const fetchOrganizations = useCallback(async (): Promise<{ data: any[] | null }> => {
     setLoading(true);
     setError(null);
     try {
       const { data, error } = await apiGetOrganizations();
       if (error) throw new Error(error);
-      setOrganizations(data || []);
+      return { data: data };
     } catch (err: any) {
       console.error("useOrganizations fetch error:", err);
       setError(err.message);
       toast.error(err.message || "Failed to fetch organizations");
+      return { data: [] };
     } finally {
       setLoading(false);
     }
@@ -48,7 +42,7 @@ export function useOrg() {
         return id;
       } catch (err: any) {
         console.error("useOrganizations addOrganization error:", err);
-        toast.error(err.message || "Failed to create organization");
+        toast.error("Failed to create organization");
         throw err;
       }
     },
@@ -81,7 +75,7 @@ export function useOrg() {
     try {
       const { data, error } = await apiGetOrgProjects({ org_id });
       if (error) throw new Error(error);
-      return data || [];
+      return { data: data || [] };
     } catch (err: any) {
       console.error("useOrganizations getOrgProjects error:", err);
       toast.error(err.message || "Failed to fetch organization projects");
@@ -90,15 +84,11 @@ export function useOrg() {
   }, []);
 
   /** Initial fetch */
-  useEffect(() => {
-    fetchOrganizations();
-  }, [fetchOrganizations]);
 
   return {
-    organizations,
     loading,
     error,
-    refreshOrganizations: fetchOrganizations,
+    fetchOrganizations,
     addOrganization,
     addOrgMember,
     getOrgProjects,

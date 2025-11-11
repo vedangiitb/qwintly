@@ -70,7 +70,7 @@ export async function getOrgProjects({
 }): Promise<{ data: any[] | null; error: string | null }> {
   try {
     const json = await fetchWithAuth<any[]>(
-      `/api/org/org-projects?org-id=${encodeURIComponent(org_id)}`,
+      `/api/org/org-projects?org_id=${encodeURIComponent(org_id)}`,
       { method: "GET" }
     );
     return { data: json.data ?? [], error: null };

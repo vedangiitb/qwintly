@@ -13,19 +13,11 @@ export default function NavBar() {
 
   return (
     <div>
-      <header className="sticky top-0 z-20 flex items-center justify-between p-1 border-b">
-        <div className="flex items-center gap-3 justify-center">
-          {/* <div className={`${showSidebar ? "hidden" : ""} md:hidden`}>
-            <SidebarToggle
-              isExpanded={showSidebar}
-              onToggle={() => setShowSidebar(!showSidebar)}
-            />
-          </div> */}
-          <div className={`md:block hidden`} onClick={() => router.push("/")}>
-            <span className="font-medium text-base tracking-wider text-transparent bg-gradient-to-tr dark:from-teal-200 dark:via-purple-300 dark:to-pink-400 from-teal-600 via-purple-600 to-pink-600 bg-clip-text drop-shadow select-none ml-2 transition">
-              Qwintly
-            </span>
-          </div>
+      <header className="sticky top-0 z-20 flex items-center justify-between py-1 px-4 md:px-32 border-b">
+        <div className={`md:block hidden`} onClick={() => router.push("/")}>
+          <span className="font-medium text-base tracking-wider text-transparent bg-gradient-to-tr dark:from-teal-200 dark:via-purple-300 dark:to-pink-400 from-teal-600 via-purple-600 to-pink-600 bg-clip-text drop-shadow select-none ml-2 transition">
+            Qwintly
+          </span>
         </div>
 
         <div className="flex items-center gap-8">
