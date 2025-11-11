@@ -9,7 +9,7 @@ import { useAuthForm } from "../hooks/useAuthForm";
 import { mapError } from "../utils/mapError";
 import { validatePassword } from "../utils/validatePassword";
 import PasswordInput from "./PasswordInput";
-import { useAuth } from "../hooks/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
 declare global {
   interface Window {

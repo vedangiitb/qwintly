@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import ChatBox from "./generate/components/chat/ChatBox";
 import { useChat } from "./generate/hooks/chat/useChat";
 import { useInitConv } from "./generate/hooks/useInitConv";
-import { useAuth } from "./login/hooks/AuthContext";
+import { useAuth } from "./login/hooks/useAuth";
 
 export default function Home() {
   const { user } = useAuth();

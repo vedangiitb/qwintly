@@ -1,7 +1,7 @@
 "use client";
 
 import { handleGoogleLogin } from "../services/handleGoogleLogin";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "./useAuth";
 import { useCallback } from "react";
 
 export const useGoogleLogin = () => {

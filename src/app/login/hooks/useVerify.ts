@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "./useAuth";
 import { resendOtpService, verifyOtpService } from "../services/verifyService";
 
 export const useVerify = () => {

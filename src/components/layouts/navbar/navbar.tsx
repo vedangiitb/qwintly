@@ -1,5 +1,5 @@
 "use client";
-import { useAuth } from "@/app/login/hooks/AuthContext";
+import { useAuth } from "@/app/login/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { LogIn } from "lucide-react";
 import Link from "next/link";
@@ -8,12 +8,12 @@ import DarkMode from "./DarkMode";
 import UserPopover from "./UserPopover";
 
 export default function NavBar() {
-  const user = useAuth();
+  const { currentUser, loading } = useAuth();
   const router = useRouter();
 
   return (
     <div>
-      <header className="sticky top-0 z-20 flex items-center justify-between py-1 px-4 md:px-32 border-b">
+      <header className="sticky top-0 z-20 flex items-center justify-end  md:justify-between py-1 px-4 md:px-32 border-b">
         <div className={`md:block hidden`} onClick={() => router.push("/")}>
           <span className="font-medium text-base tracking-wider text-transparent bg-gradient-to-tr dark:from-teal-200 dark:via-purple-300 dark:to-pink-400 from-teal-600 via-purple-600 to-pink-600 bg-clip-text drop-shadow select-none ml-2 transition">
             Qwintly
@@ -27,7 +27,7 @@ export default function NavBar() {
             <UserPopover />
           </div>
 
-          {user.currentUser === "Login" ? (
+          {!loading && currentUser === "Login" ? (
             <>
               <Link href="/login">
                 <Button

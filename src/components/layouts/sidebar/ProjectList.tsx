@@ -1,5 +1,5 @@
 "use client";
-import { useAuth } from "@/app/login/hooks/AuthContext";
+import { useAuth } from "@/app/login/hooks/useAuth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Popover,
