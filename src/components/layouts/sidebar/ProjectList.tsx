@@ -12,21 +12,19 @@ import PrefDialog from "../navbar/prefDialog";
 import SettingsDialog from "../navbar/settingsDialog";
 import { Button } from "@/components/ui/button";
 export default function ProjectList({ isExpanded }: { isExpanded: boolean }) {
-  const router = useRouter();
-  const { currentUser, logout } = useAuth();
+  const { currentUser } = useAuth();
 
   if (currentUser === "Login") return null;
 
-  const fallback = String(currentUser?.[0] || "").toUpperCase();
   return (
     <Popover>
       <PopoverTrigger asChild>
         <button
-          // onClick={}
           className={`
+            cursor-pointer
     flex items-center justify-center
-   h-9 rounded-lg  shadow-sm
-     hover:bg-muted hover:shadow-md
+   h-9 rounded-lg
+     hover:bg-muted
     transition-all duration-200
     ${!isExpanded ? "justify-center w-9" : "justify-start w-full gap-2 px-2"}
         `}
@@ -36,9 +34,7 @@ export default function ProjectList({ isExpanded }: { isExpanded: boolean }) {
             <FolderKanban className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors"></FolderKanban>
           </span>
           {isExpanded ? (
-            <span className="text-sm font-medium ml-2 select-none">
-              Projects
-            </span>
+            <span className="text-sm ml-2 select-none">Projects</span>
           ) : null}
           <span
             className={`absolute left-0 right-0 mx-auto w-3 h-3 rounded-full pointer-events-none blur opacity-70 animate-pulse`}

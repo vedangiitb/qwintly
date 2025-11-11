@@ -30,7 +30,7 @@ export default function RecentChats({
                 }
                 router.push(`/generate/${item.id}`);
               }}
-              className="text-left border border-border/60 hover:border-indigo-400/40 hover:shadow-sm px-2 py-2 rounded-md hover:bg-muted/30 transition cursor-pointer overflow-hidden whitespace-nowrap text-ellipsis"
+              className="text-left px-2 py-2 rounded-md hover:bg-muted transition cursor-pointer overflow-hidden whitespace-nowrap text-ellipsis"
             >
               {item.title}
             </button>

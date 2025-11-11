@@ -14,19 +14,16 @@ export default function SidebarToggle({
   onToggle: () => void;
 }) {
   return (
-    <div
-      className={`relative flex items-center  ${
-        isExpanded ? "p-2 justify-end" : "p-0"
-      }`}
-    >
+    <div className={`flex items-center  ${isExpanded ? "justify-end" : ""}`}>
       <Tooltip>
         <TooltipTrigger asChild>
           <button
             onClick={onToggle}
             className={`
+              cursor-pointer
     flex items-center justify-center
-   h-9 rounded-lg  shadow-sm
-     hover:bg-muted hover:shadow-md
+   h-9 rounded-lg
+     hover:bg-muted
     transition-all duration-200
     ${!isExpanded ? "justify-center w-9" : "justify-start gap-2 px-2"}
   `}

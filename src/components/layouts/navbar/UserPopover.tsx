@@ -1,17 +1,17 @@
 "use client";
+import { useAuth } from "@/app/login/hooks/AuthContext";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CircleUser, HelpCircle, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/app/login/hooks/AuthContext";
 import PrefDialog from "./prefDialog";
 import SettingsDialog from "./settingsDialog";
 
-export default function UserPopover({ isExpanded }: { isExpanded: boolean }) {
+export default function UserPopover() {
   const router = useRouter();
   const { currentUser, logout } = useAuth();
 
@@ -23,23 +23,17 @@ export default function UserPopover({ isExpanded }: { isExpanded: boolean }) {
     <Popover>
       <PopoverTrigger asChild>
         <div
-          className={`flex gap-3 items-center group rounded-xl cursor-pointer transition min-h-10
-            ${isExpanded ? "border py-1 px-1" : "justify-center w-11 p-0"}
-            hover:bg-accent hover:backdrop-blur-sm hover:shadow focus:outline-none`}
+          className={`flex gap-3 items-center group rounded-lg cursor-pointer transition w-9 h-9 justify-center
+            hover:bg-muted hover:backdrop-blur-sm focus:outline-none`}
         >
           <span className="relative inline-block">
-            <Avatar className="w-9 h-9 shadow-lg">
-              <span className="absolute -inset-1 left-1/2 -translate-x-1/2 w-[44px] h-[44px] rounded-full bg-gradient-to-tr from-teal-400/60 via-purple-300/30 to-pink-200/40 blur-md opacity-60 group-hover:opacity-80 group-hover:blur-xl transition-all pointer-events-none" />
-              <AvatarFallback className="bg-gradient-to-tr from-teal-400/90 via-purple-500/90 to-cyan-400/70 text-white font-bold ring-1 ring-white/10 shadow">
+            <Avatar className="w-6 h-6">
+              <span className="absolute -inset-1 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-gradient-to-tr from-teal-400/60 via-purple-300/30 to-pink-200/40 blur-md opacity-60 group-hover:opacity-80 group-hover:blur-xl transition-all pointer-events-none" />
+              <AvatarFallback className="bg-gradient-to-tr from-teal-400/90 via-purple-500/90 to-cyan-400/70 text-white font-bold ring-1 ring-white/10">
                 {fallback}
               </AvatarFallback>
             </Avatar>
           </span>
-          {isExpanded && (
-            <span className="font-medium tracking-tight text-base text-foreground/80 transition select-none truncate">
-              {currentUser}
-            </span>
-          )}
         </div>
       </PopoverTrigger>
       <PopoverContent

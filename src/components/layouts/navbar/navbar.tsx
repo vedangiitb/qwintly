@@ -3,15 +3,17 @@ import { useAuth } from "@/app/login/hooks/AuthContext";
 import { Button } from "@/components/ui/button";
 import { LogIn } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import DarkMode from "./DarkMode";
 import UserPopover from "./UserPopover";
 
 export default function NavBar() {
   const user = useAuth();
+  const router = useRouter();
 
   return (
     <div>
-      <header className="sticky top-0 z-20 flex items-center justify-between px-2 py-2 border-b">
+      <header className="sticky top-0 z-20 flex items-center justify-between p-1 border-b">
         <div className="flex items-center gap-3 justify-center">
           {/* <div className={`${showSidebar ? "hidden" : ""} md:hidden`}>
             <SidebarToggle
@@ -19,8 +21,8 @@ export default function NavBar() {
               onToggle={() => setShowSidebar(!showSidebar)}
             />
           </div> */}
-          <div className={`md:block hidden`}>
-            <span className="font-extrabold text-lg tracking-wider text-transparent bg-gradient-to-tr dark:from-teal-200 dark:via-purple-300 dark:to-pink-400 from-teal-600 via-purple-600 to-pink-600 bg-clip-text drop-shadow select-none ml-2 transition">
+          <div className={`md:block hidden`} onClick={() => router.push("/")}>
+            <span className="font-medium text-base tracking-wider text-transparent bg-gradient-to-tr dark:from-teal-200 dark:via-purple-300 dark:to-pink-400 from-teal-600 via-purple-600 to-pink-600 bg-clip-text drop-shadow select-none ml-2 transition">
               Qwintly
             </span>
           </div>
@@ -28,9 +30,9 @@ export default function NavBar() {
 
         <div className="flex items-center gap-8">
           <div className="flex gap-4 items-center">
-            <DarkMode isExpanded={false} />
+            <DarkMode />
 
-            <UserPopover isExpanded={false} />
+            <UserPopover />
           </div>
 
           {user.currentUser === "Login" ? (
