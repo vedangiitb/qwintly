@@ -24,14 +24,16 @@ export default function ProjectList({ isExpanded }: { isExpanded: boolean }) {
         <button
           // onClick={}
           className={`
-          cursor-pointer flex items-center rounded-xl border border-white/10 shadow bg-white/10 px-2 py-2 gap-2 transition
-          hover:bg-gradient-to-tr hover:from-indigo-400/20 hover:to-purple-300/10
-          ${isExpanded ? "w-full " : "justify-center w-11"}
+    flex items-center justify-center
+   h-9 rounded-lg  shadow-sm
+     hover:bg-muted hover:shadow-md
+    transition-all duration-200
+    ${!isExpanded ? "justify-center w-9" : "justify-start w-full gap-2 px-2"}
         `}
           tabIndex={0}
         >
           <span>
-            <FolderKanban className="w-5 h-5"></FolderKanban>
+            <FolderKanban className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors"></FolderKanban>
           </span>
           {isExpanded ? (
             <span className="text-sm font-medium ml-2 select-none">

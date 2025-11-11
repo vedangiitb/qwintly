@@ -15,32 +15,27 @@ export default function SidebarToggle({
 }) {
   return (
     <div
-      className={`relative flex items-center justify-between ${
-        isExpanded ? "p-2" : "p-0"
+      className={`relative flex items-center  ${
+        isExpanded ? "p-2 justify-end" : "p-0"
       }`}
     >
-      {isExpanded ? (
-        <span className="font-extrabold text-lg tracking-wider text-transparent bg-gradient-to-tr dark:from-teal-200 dark:via-purple-300 dark:to-pink-400 from-teal-600 via-purple-600 to-pink-600 bg-clip-text drop-shadow select-none ml-2 transition">
-          Qwintly
-        </span>
-      ) : null}
       <Tooltip>
         <TooltipTrigger asChild>
           <button
             onClick={onToggle}
             className={`
-              flex justify-center items-center p-2 rounded-xl shadow hover:shadow-xl border
-              hover:bg-muted
-              transition-colors duration-150
-              ${isExpanded ? "" : "w-full"}
-            `}
+    flex items-center justify-center
+   h-9 rounded-lg  shadow-sm
+     hover:bg-muted hover:shadow-md
+    transition-all duration-200
+    ${!isExpanded ? "justify-center w-9" : "justify-start gap-2 px-2"}
+  `}
             aria-label={isExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
-            tabIndex={0}
           >
             {isExpanded ? (
-              <X className="w-5 h-5 text-chart-2 cursor-pointer" />
+              <X className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
             ) : (
-              <SidebarIcon className="w-5 h-5 text-chart-2 cursor-pointer" />
+              <SidebarIcon className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
             )}
           </button>
         </TooltipTrigger>

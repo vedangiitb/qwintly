@@ -12,12 +12,12 @@ export default function NavItems({ isExpanded }: { isExpanded: boolean }) {
 
   const navItems = [
     {
-      icon: <SquarePen className="w-5 h-5" />,
+      icon: <SquarePen className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />, // slightly smaller icons
       label: "New Chat",
       action: () => router.push("/generate"),
     },
     {
-      icon: <Search className="w-5 h-5" />,
+      icon: <Search className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />,
       label: "Search",
       action: () => {},
     },
@@ -29,18 +29,24 @@ export default function NavItems({ isExpanded }: { isExpanded: boolean }) {
         <Tooltip key={idx}>
           <TooltipTrigger asChild>
             <button
-              className={`cursor-pointer flex items-center gap-3 w-full text-base px-2 py-2 rounded-lg
-                hover:bg-muted/30
-                border border-white/10 shadow hover:border-indigo-400/40 hover:shadow-sm
-                transition-all duration-110 
-                ${!isExpanded ? "justify-center" : ""}
-              `}
+              className={`
+    flex items-center justify-center
+   h-9 rounded-lg  shadow-sm
+     hover:bg-muted hover:shadow-md
+    transition-all duration-200
+    ${!isExpanded ? "justify-center w-9" : "justify-start w-full gap-2 px-2"}
+  `}
               onClick={item.action}
               tabIndex={0}
             >
-              <span className="">{item.icon}</span>
+              <span className="flex items-center justify-center w-5 h-5 text-muted-foreground group-hover:text-indigo-500 transition-colors">
+                {item.icon}
+              </span>
+
               {isExpanded && (
-                <span className="font-semibold">{item.label}</span>
+                <span className="truncate group-hover:text-foreground">
+                  {item.label}
+                </span>
               )}
             </button>
           </TooltipTrigger>
