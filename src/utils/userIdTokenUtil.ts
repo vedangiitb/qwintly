@@ -1,11 +1,24 @@
-import { getAuth } from "firebase/auth";
-
 // The Purpose of this file is to handle token expiry more gracefully
 // If we see the token expired, we would retry once to get new id token
 
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
 export async function getIdToken(reload = false) {
-  const user = getAuth().currentUser;
+  const auth = getAuth();
+
+  // Wait for Firebase to initialize user
+  if (!auth.currentUser) {
+    await new Promise<void>((resolve) => {
+      const unsub = onAuthStateChanged(auth, () => {
+        unsub();
+        resolve();
+      });
+    });
+  }
+
+  const user = auth.currentUser;
   if (!user) return null;
+
   try {
     return await user.getIdToken(reload);
   } catch (e) {

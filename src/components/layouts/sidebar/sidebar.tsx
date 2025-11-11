@@ -1,5 +1,6 @@
 "use client";
 import NavItems from "./NavItems";
+import OrgList from "./OrgList";
 import ProjectList from "./ProjectList";
 import RecentChats from "./RecentChats";
 import SidebarToggle from "./SidebarToggle";
@@ -33,6 +34,7 @@ export default function SideBar({
           />
         </div>
         <div className="space-y-2 py-1">
+          <OrgList isExpanded={sidebarExpanded} />
           <ProjectList isExpanded={sidebarExpanded} />
         </div>
       </aside>

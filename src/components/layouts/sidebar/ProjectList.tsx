@@ -1,16 +1,12 @@
 "use client";
 import { useAuth } from "@/app/login/hooks/useAuth";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CircleUser, FolderKanban, HelpCircle, LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
-import PrefDialog from "../navbar/prefDialog";
-import SettingsDialog from "../navbar/settingsDialog";
-import { Button } from "@/components/ui/button";
+import { FolderKanban } from "lucide-react";
 export default function ProjectList({ isExpanded }: { isExpanded: boolean }) {
   const { currentUser } = useAuth();
 
