@@ -10,6 +10,7 @@ import {
   addOrgMember as apiAddOrgMember,
   getOrganizations as apiGetOrganizations,
   getOrgProjects as apiGetOrgProjects,
+  getOrgDetails as apigetOrganizations,
 } from "../services/orgService";
 
 export function useOrg() {
@@ -18,28 +19,40 @@ export function useOrg() {
   const dispatch = useDispatch<AppDispatch>();
 
   /** Fetch all organizations */
-  const fetchOrganizations = useCallback(async (): Promise<{
-    data: any[] | null;
-  }> => {
+  const fetchOrganizations = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
       const { data, error } = await apiGetOrganizations();
       if (error) throw new Error(error);
-
       dispatch(setOrganizations(data || []));
-
-      return { data };
     } catch (err: any) {
       console.error("useOrganizations fetch error:", err);
       setError(err.message);
       toast.error(err.message || "Failed to fetch organizations");
-      return { data: [] };
     } finally {
       setLoading(false);
     }
   }, [dispatch]);
+
+  const fetchOrgDetails = useCallback(
+    async (
+      org_id: string
+    ): Promise<{
+      data: any | null;
+    }> => {
+      try {
+        const { data, error } = await apigetOrganizations(org_id);
+        if (error) throw new Error(error);
+        return { data };
+      } catch (err: any) {
+        toast.error(err.message || "Failed to fetch organization details");
+        return { data: null };
+      }
+    },
+    []
+  );
 
   /** Add a new organization */
   const addOrganization = useCallback(
@@ -102,5 +115,6 @@ export function useOrg() {
     addOrganization,
     addOrgMember,
     getOrgProjects,
+    fetchOrgDetails,
   };
 }

@@ -51,7 +51,31 @@ export async function getOrganizations(): Promise<{
   error: string | null;
 }> {
   try {
-    const json = await fetchWithAuth<any[]>("/api/org/get-orgs", { method: "GET" });
+    const json = await fetchWithAuth<any[]>("/api/org/get-orgs", {
+      method: "GET",
+    });
+    return { data: json.data ?? [], error: null };
+  } catch (error: any) {
+    console.error("getOrganizations error:", error);
+    toast.error(error?.message || "Failed to fetch organizations.");
+    return { data: null, error: error.message };
+  }
+}
+
+/**
+ * Fetches organization details
+ */
+export async function getOrgDetails(org_id: string): Promise<{
+  data: any[] | null;
+  error: string | null;
+}> {
+  try {
+    const json = await fetchWithAuth<any[]>(
+      `/api/org/details?org_id=${encodeURIComponent(org_id)}`,
+      {
+        method: "GET",
+      }
+    );
     return { data: json.data ?? [], error: null };
   } catch (error: any) {
     console.error("getOrganizations error:", error);
@@ -105,9 +129,4 @@ export async function addOrgMember({
     toast.error(error?.message || "Failed to add organization member.");
     return { data: null, error: error.message };
   }
-}
-
-export async function getOrganizationDetails({ org_id }: { org_id: string }) {
-  try {
-  } catch (e) {}
 }
