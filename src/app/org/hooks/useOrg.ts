@@ -106,7 +106,6 @@ export function useOrg() {
     }
   }, []);
 
-  /** Initial fetch */
 
   return {
     loading,
