@@ -23,7 +23,7 @@ export const useAuth = () => {
   }, [dispatch, router]);
 
   const currentUser =
-    user?.displayName || user?.email?.split("@")[0] || "Login";
+    user?.displayName || user?.email?.split("@")[0] || "";
 
   return {
     user,

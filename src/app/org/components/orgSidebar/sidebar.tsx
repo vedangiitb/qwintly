@@ -15,23 +15,25 @@ export default function OrgSidebar({
   return (
     <div>
       <aside
-        className={`fixed md:static bg-background left-0 top-0 transform transition-all duration-300 ease-in-out z-30 border-r flex flex-col justify-between h-full p-2
-         ${sidebarExpanded ? "translate-x-0 w-full md:w-64" : "-translate-x-full md:translate-x-0 md:w-14"}
+        onMouseEnter={() => setSidebarExpanded(true)}
+        onMouseLeave={() => setSidebarExpanded(false)}
+        className={`fixed bg-background left-0 top-0 md:top-auto transform transition-all duration-300 ease-in-out z-30 border-r flex flex-col justify-between h-full p-2
+         ${sidebarExpanded ? "translate-x-0 w-full md:w-56" : "-translate-x-full md:translate-x-0 md:w-14"}
       `}
       >
         <div className="flex flex-col gap-2">
+          <div className="space-y-2 py-1 md:hidden">
+            <SidebarToggle
+              isExpanded={sidebarExpanded}
+              onToggle={() => setSidebarExpanded(!sidebarExpanded)}
+            />
+          </div>
           <ProjectSidebarIcon isExpanded={sidebarExpanded} isActive={true} />
           <OrgSettings isExpanded={sidebarExpanded} isActive={false} />
           <OrgMembers isExpanded={sidebarExpanded} isActive={false} />
           <OrgBilling isExpanded={sidebarExpanded} isActive={false} />
           {/* <OrgList isExpanded={sidebarExpanded} /> */}
           {/* <ProjectList isExpanded={sidebarExpanded} /> */}
-        </div>
-        <div className="space-y-2 py-1">
-          <SidebarToggle
-            isExpanded={sidebarExpanded}
-            onToggle={() => setSidebarExpanded(!sidebarExpanded)}
-          />
         </div>
       </aside>
 

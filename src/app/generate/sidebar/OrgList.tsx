@@ -30,7 +30,7 @@ export default function OrgList({ isExpanded }: { isExpanded: boolean }) {
             <Building2 className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors"></Building2>
           </span>
           {isExpanded ? (
-            <span className="text-sm ml-2 select-none">Projects</span>
+            <span className="text-sm ml-2 select-none">Organization</span>
           ) : null}
           <span
             className={`absolute left-0 right-0 mx-auto w-3 h-3 rounded-full pointer-events-none blur opacity-70 animate-pulse`}

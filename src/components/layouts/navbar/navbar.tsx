@@ -13,9 +13,9 @@ export default function NavBar() {
 
   return (
     <div>
-      <header className="sticky top-0 z-20 flex items-center justify-end  md:justify-between py-1 px-4 md:px-32 border-b">
+      <header className="sticky top-0 z-20 flex items-center justify-end  md:justify-between py-1 px-2 border-b">
         <div className={`md:block hidden`} onClick={() => router.push("/")}>
-          <span className="font-medium text-base tracking-wider text-transparent bg-gradient-to-tr dark:from-teal-200 dark:via-purple-300 dark:to-pink-400 from-teal-600 via-purple-600 to-pink-600 bg-clip-text drop-shadow select-none ml-2 transition">
+          <span className="cursor-pointer font-medium text-base tracking-wider text-transparent bg-gradient-to-tr dark:from-teal-200 dark:via-purple-300 dark:to-pink-400 from-teal-600 via-purple-600 to-pink-600 bg-clip-text drop-shadow select-none ml-2 transition">
             Qwintly
           </span>
         </div>
@@ -24,10 +24,21 @@ export default function NavBar() {
           <div className="flex gap-4 items-center">
             <DarkMode />
 
+            {!loading && currentUser && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="cursor-pointer"
+                onClick={() => router.push("/org")}
+              >
+                Dashboard
+              </Button>
+            )}
+
             <UserPopover />
           </div>
 
-          {!loading && currentUser === "Login" ? (
+          {!loading && !currentUser ? (
             <>
               <Link href="/login">
                 <Button

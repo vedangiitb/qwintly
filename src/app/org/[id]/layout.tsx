@@ -1,5 +1,5 @@
 "use client";
-import OrgSidebar from "@/components/layouts/orgSidebar/sidebar";
+import OrgSidebar from "@/app/org/components/orgSidebar/sidebar";
 import { useState } from "react";
 
 export default function GenerateLayout({
@@ -15,7 +15,7 @@ export default function GenerateLayout({
         sidebarExpanded={showSidebar}
         setSidebarExpanded={setShowSidebar}
       />
-      <div className="px-4 md:px-32 py-8 w-full">{children}</div>
+      <div className="px-4 md:px-56 py-8 w-full">{children}</div>
     </div>
   );
 }

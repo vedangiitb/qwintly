@@ -1,5 +1,5 @@
 "use client";
-import SideBar from "@/components/layouts/sidebar/sidebar";
+import SideBar from "@/app/generate/sidebar/sidebar";
 import { useEffect, useState } from "react";
 import ChatBox from "./generate/components/chat/ChatBox";
 import { useChat } from "./generate/hooks/chat/useChat";

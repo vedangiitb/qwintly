@@ -15,7 +15,7 @@ export default function UserPopover() {
   const router = useRouter();
   const { currentUser, logout } = useAuth();
 
-  if (currentUser === "Login") return null;
+  if (!currentUser) return null;
 
   const fallback = String(currentUser?.[0] || "").toUpperCase();
 

@@ -1,5 +1,5 @@
 "use client";
-import SideBar from "@/components/layouts/sidebar/sidebar";
+import SideBar from "@/app/generate/sidebar/sidebar";
 import { useState } from "react";
 
 export default function GenerateLayout({
