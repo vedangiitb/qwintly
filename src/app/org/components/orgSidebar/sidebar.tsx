@@ -32,8 +32,6 @@ export default function OrgSidebar({
           <OrgSettings isExpanded={sidebarExpanded} isActive={false} />
           <OrgMembers isExpanded={sidebarExpanded} isActive={false} />
           <OrgBilling isExpanded={sidebarExpanded} isActive={false} />
-          {/* <OrgList isExpanded={sidebarExpanded} /> */}
-          {/* <ProjectList isExpanded={sidebarExpanded} /> */}
         </div>
       </aside>
 

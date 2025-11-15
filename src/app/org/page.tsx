@@ -96,7 +96,7 @@ export default function Org() {
             {organizations.map((org) => (
               <Card
                 key={org.org_id}
-                className="rounded-2xl border shadow-sm hover:border-muted-foreground/60 transition-all duration-200 cursor-pointer"
+                className="rounded-2xl border shadow-sm hover:bg-muted/60 transition-all duration-200 cursor-pointer"
                 onClick={() => router.push(`/org/${org.org_id}`)}
               >
                 <CardContent

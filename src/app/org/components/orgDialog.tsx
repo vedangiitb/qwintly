@@ -41,7 +41,6 @@ export default function NewOrgDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* 🔹 Trigger Button */}
       <DialogTrigger asChild>
         <div className="flex gap-2">
           <Button className="gap-2 rounded-lg cursor-pointer">
@@ -51,7 +50,6 @@ export default function NewOrgDialog() {
         </div>
       </DialogTrigger>
 
-      {/* 🔹 Dialog Content */}
       <DialogContent className="sm:max-w-md rounded-xl bg-background/80 backdrop-blur-md border border-white/10 shadow-lg">
         <DialogHeader>
           <DialogTitle>Create a New Organization</DialogTitle>

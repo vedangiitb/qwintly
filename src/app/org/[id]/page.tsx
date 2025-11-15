@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useOrg } from "../hooks/useOrg";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import ProjectsPgSectionSkeleton from "@/components/skeletons/org/ProjectsPgSkeleton";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Folder, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useOrg } from "../hooks/useOrg";
+import { useRouter } from "next/navigation";
 
 interface OrgDetails {
   org_name: string;
@@ -26,6 +27,7 @@ export default function ManageOrg({ params }: Props) {
   const [orgProjects, setOrgProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const id = params.id;
+  const router = useRouter()
 
   useEffect(() => {
     const loadData = async () => {
@@ -48,16 +50,7 @@ export default function ManageOrg({ params }: Props) {
   }, [id, fetchOrgDetails, getOrgProjects]);
 
   if (loading) {
-    return (
-      <div className="px-4 md:px-32 py-4 space-y-6">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-4 w-40" />
-        </div>
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
-      </div>
-    );
+    return <ProjectsPgSectionSkeleton />;
   }
 
   if (!details) {
@@ -70,30 +63,9 @@ export default function ManageOrg({ params }: Props) {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">
-            {details.org_name}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>
-            <strong>Created:</strong>{" "}
-            {new Date(details.created_at).toLocaleDateString()}
-          </p>
-          <p>
-            <strong>Subscription:</strong> {details.subscription_status}
-          </p>
-          <p>
-            <strong>Expires:</strong>{" "}
-            {new Date(details.subscription_expires_at).toLocaleDateString()}
-          </p>
-        </CardContent>
-      </Card>
-
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Projects</h2>
-        <Button className="gap-2 rounded-xl">
+        <Button onClick={()=>router.push("/project/new")} className="gap-2 rounded-lg" size="sm">
           <Plus className="w-4 h-4" /> Create Project
         </Button>
       </div>
@@ -105,10 +77,10 @@ export default function ManageOrg({ params }: Props) {
           {orgProjects.map((p, idx) => (
             <Card
               key={idx}
-              className="rounded-2xl hover:shadow transition-all cursor-pointer"
+              className="rounded-xl hover:shadow transition-all cursor-pointer hover:bg-muted/60"
             >
-              <CardContent className="flex items-center gap-4 py-6">
-                <Folder className="w-8 h-8" />
+              <CardContent className="flex items-center gap-4 py-2">
+                <Folder className="w-4 h-4" />
                 <div>
                   <p className="font-medium text-lg">
                     {p.project_name || "Untitled Project"}
