@@ -19,7 +19,7 @@ export default function RecentChats({
       <p className="text-xs font-semibold text-chart-2 uppercase tracking-wide mb-2 px-1">
         Recent Chats
       </p>{" "}
-      <div className="h-[50vh] overflow-y-auto custom-scrollbar">
+      <div className="h-[50vh] overflow-y-auto">
       {recentChats.length ? (
         <div className="flex flex-col gap-1 text-sm">
           {recentChats.map((item) => (

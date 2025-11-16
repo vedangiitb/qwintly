@@ -1,22 +1,10 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus } from "lucide-react";
 
 export default function ProjectsPgSectionSkeleton() {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Projects</h2>
-
-        <Button className="gap-2 rounded-xl">
-          <Plus className="w-4 h-4" />
-          Create Project
-        </Button>
-      </div>
-
       {/* Empty State */}
       <div className="grid md:grid-cols-2 gap-4">
         {[1, 2].map((i) => (

@@ -43,7 +43,7 @@ export default function Generate({ params }: Props) {
 
   return (
     <div className="flex flex-col flex-1 w-full justify-between bg-background shadow-xl backdrop-blur-2xl overflow-hidden">
-      <div className="flex-1 overflow-y-auto px-2 py-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-2 py-4">
         <ChatHistory
           convHistory={messages}
           isResponseLoading={isResponseLoading}

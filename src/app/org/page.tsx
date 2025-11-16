@@ -84,7 +84,7 @@ export default function Org() {
           <p>Loading organizations...</p>
         </div>
       ) : organizations && organizations.length > 0 ? (
-        <div className="flex-1 overflow-y-auto custom-scrollbar pb-12 min-h-0">
+        <div className="flex-1 overflow-y-auto pb-12 min-h-0">
           <div
             className={cn(
               "transition-all duration-200 overflow-y-auto",

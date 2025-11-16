@@ -27,7 +27,7 @@ export default function ManageOrg({ params }: Props) {
   const [orgProjects, setOrgProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const id = params.id;
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     const loadData = async () => {
@@ -49,11 +49,7 @@ export default function ManageOrg({ params }: Props) {
     loadData();
   }, [id, fetchOrgDetails, getOrgProjects]);
 
-  if (loading) {
-    return <ProjectsPgSectionSkeleton />;
-  }
-
-  if (!details) {
+  if (!loading && !details) {
     return (
       <div className="flex justify-center items-center">
         <p className="text-red-500 text-lg">Organization details not found.</p>
@@ -65,12 +61,18 @@ export default function ManageOrg({ params }: Props) {
     <div className="space-y-8 animate-in fade-in duration-300">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Projects</h2>
-        <Button onClick={()=>router.push("/project/new")} className="gap-2 rounded-lg" size="sm">
+        <Button
+          onClick={() => router.push("/project/new")}
+          className="gap-2 rounded-lg"
+          size="sm"
+        >
           <Plus className="w-4 h-4" /> Create Project
         </Button>
       </div>
 
-      {orgProjects.length === 0 ? (
+      {loading && <ProjectsPgSectionSkeleton />}
+
+      {!loading && orgProjects.length === 0 ? (
         <p className="text-muted-foreground">No projects found.</p>
       ) : (
         <div className="grid md:grid-cols-2 gap-4">

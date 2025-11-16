@@ -13,7 +13,7 @@ export default function ChatHistory({
 }) {
   return (
     <div
-      className="flex-1 overflow-y-auto custom-scrollbar px-2 py-8 space-y-2"
+      className="flex-1 overflow-y-auto px-2 py-8 space-y-2"
       aria-live="polite"
       tabIndex={0}
     >
