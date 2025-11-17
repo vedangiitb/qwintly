@@ -11,6 +11,7 @@ import { SectionCard } from "./shared/SectionCard";
 import { ArrowLeft, Rocket, FileText } from "lucide-react";
 import { aiPlatforms } from "@/data/projects/configs/aiPlatforms";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function ReviewProject() {
   const { details, setStep, setName } = useNewProject();
@@ -32,6 +33,13 @@ export default function ReviewProject() {
         title="Review your setup"
         description="Make sure everything looks good before we generate your project."
       />
+
+      <Link
+        href="/api/github/login"
+        className="px-4 py-2 rounded-lg bg-black text-white"
+      >
+        Connect GitHub
+      </Link>
 
       {/* PROJECT NAME */}
       <SectionCard>
