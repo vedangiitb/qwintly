@@ -1,53 +1,42 @@
-import { firestoreDb, adminAuth } from "@/lib/firebase-admin";
 import { NextResponse } from "next/server";
-import crypto from "crypto";
-
-function safeCompare(a: string, b: string) {
-  if (!a || !b) return false;
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  return bufA.length === bufB.length && crypto.timingSafeEqual(bufA, bufB);
-}
-
-function hashOtp(otp: string) {
-  if (typeof otp !== "string") otp = String(otp);
-  return crypto.createHash("sha256").update(otp, "utf8").digest("hex");
-}
+import { supabaseAdmin } from "@/lib/supabase-admin";
+import { hashOtp, safeCompare } from "@/lib/otp-utils";
 
 export async function POST(req: Request) {
   try {
     const { otp, userId } = await req.json();
+
     if (!otp || !userId)
       return NextResponse.json({ message: "Missing fields" }, { status: 400 });
 
-    const docRef = firestoreDb.collection("verificationOtps").doc(userId);
-    const docSnap = await docRef.get();
+    const { data, error } = await supabaseAdmin
+      .from("verification_otps")
+      .select("*")
+      .eq("user_id", userId)
+      .single();
 
-    if (!docSnap.exists)
+    if (error || !data)
       return NextResponse.json({ message: "Invalid OTP" }, { status: 400 });
 
-    const data = docSnap.data();
-    const firestoreOtp = data?.otpHash;
-    const expiresAt = data?.expiresAt?.toMillis?.();
-
-    if (!firestoreOtp || (expiresAt && Date.now() > expiresAt))
+    if (Date.now() > new Date(data.expires_at).getTime())
       return NextResponse.json({ message: "OTP expired" }, { status: 400 });
 
-    if (!safeCompare(firestoreOtp, hashOtp(otp)))
+    if (!safeCompare(data.otp_hash, hashOtp(otp)))
       return NextResponse.json({ message: "Invalid OTP" }, { status: 400 });
 
-    await docRef.delete();
+    // delete used OTP
+    await supabaseAdmin
+      .from("verification_otps")
+      .delete()
+      .eq("user_id", userId);
 
-    adminAuth.updateUser(userId, {
-      emailVerified: true,
+    // Mark email verified
+    await supabaseAdmin.auth.admin.updateUserById(userId, {
+      email_confirm: true,
     });
 
     return NextResponse.json({ message: "Verified" }, { status: 200 });
   } catch (error) {
-    console.error("OTP verification error:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }

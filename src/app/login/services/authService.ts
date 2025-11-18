@@ -1,63 +1,58 @@
-import { auth } from "@/lib/firebaseConfig";
-import {
-  getAuth,
-  signInWithCustomToken,
-  signInWithEmailAndPassword,
-  signOut,
-} from "firebase/auth";
+import { createClient } from "@supabase/supabase-js";
 
-/**
- * Login with email + password
- */
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 export const loginWithEmail = async (
   email: string,
   password: string,
   recaptchaToken: string
 ) => {
-  const response = await fetch("/api/auth/login", {
+  const resp = await fetch("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ recaptchaToken }),
   });
-  const resp = await response.json();
 
-  if (!response.ok) {
-    const data = await response.json();
-    throw new Error(data.message || "Failed to login");
+  if (!resp.ok) {
+    const data = await resp.json();
+    throw new Error(data.message);
   }
 
-  const auth = getAuth();
-  const userCredential = await signInWithEmailAndPassword(
-    auth,
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
-    password
-  );
-  return userCredential.user;
+    password,
+  });
+
+  if (error) throw error;
+
+  return data.user;
 };
 
-/**
- * Sign up with email + password + username
- */
 export const signUpWithEmail = async (
   email: string,
   password: string,
   userName: string,
   recaptchaToken: string
 ) => {
-  const response = await fetch("/api/auth/signup", {
+  const resp = await fetch("/api/auth/signup", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password, userName, recaptchaToken }),
   });
 
-  const data = await response.json();
+  const data = await resp.json();
 
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to sign up.");
-  }
+  if (!resp.ok) throw new Error(data.message);
 
-  const auth = getAuth();
-  const userCredential = await signInWithCustomToken(auth, data.customToken);
+  // now login with password
+  const { data: session, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-  return userCredential.user;
+  if (error) throw error;
+  return session.user;
 };

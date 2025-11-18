@@ -1,109 +1,47 @@
-import { RecaptchaEnterpriseServiceClient } from "@google-cloud/recaptcha-enterprise";
-import * as admin from "firebase-admin";
 import { NextResponse } from "next/server";
-import { adminAuth, firestoreDb } from "@/lib/firebase-admin";
+import { supabaseAdmin } from "@/lib/supabase-admin";
+import { validateRecaptcha } from "@/lib/google-recaptcha";
 import { enqueueEmail } from "@/lib/queue";
 
-const PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT_ID;
-
-async function createAssessment(token: string, action: string) {
-  if (!PROJECT_ID) {
-    throw new Error("GOOGLE_CLOUD_PROJECT_ID is not set.");
-  }
-
-  const serviceAccountJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
-
-  const clientOptions = serviceAccountJson
-    ? { credentials: JSON.parse(serviceAccountJson) }
-    : {};
-
-  const client = new RecaptchaEnterpriseServiceClient(clientOptions);
-  const projectPath = client.projectPath(PROJECT_ID);
-
-  const request = {
-    assessment: {
-      event: {
-        token: token,
-        siteKey: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
-        expectedAction: action,
-      },
-    },
-    parent: projectPath,
-  };
-
-  const [response] = await client.createAssessment(request);
-
-  if (!response.tokenProperties || !response.riskAnalysis) {
-    throw new Error("Invalid assessment response from reCAPTCHA Enterprise.");
-  }
-
-  if (
-    !response.tokenProperties.valid ||
-    response.tokenProperties.action !== action
-  ) {
-    throw new Error("Token is invalid or action mismatch.");
-  }
-
-  return response.riskAnalysis.score;
-}
-
-// This function will handle all POST requests to /api/auth/signup
 export async function POST(req: Request) {
   try {
     const { email, password, userName, recaptchaToken } = await req.json();
 
-    const score = await createAssessment(recaptchaToken, "signup");
-
-    const MINIMUM_SCORE = 0.65;
-
-    if (!score || score < MINIMUM_SCORE) {
-      console.warn("Low score detected:", score);
+    const score = await validateRecaptcha(recaptchaToken, "signup");
+    if (score < 0.65)
       return NextResponse.json(
-        { message: "Security check failed. Score too low." },
+        { message: "Security check failed" },
         { status: 403 }
       );
-    }
 
-    const userRecord = await adminAuth.createUser({
+    // 1. Create user
+    const { data: user, error } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      displayName: userName,
+      email_confirm: false,
+      user_metadata: { userName },
     });
 
-    await firestoreDb.collection("users").doc(userRecord.uid).set({
+    if (error)
+      return NextResponse.json({ message: error.message }, { status: 500 });
+
+    // 2. Insert into your own table
+    await supabaseAdmin.from("users").insert({
+      id: user.user.id,
       name: userName,
       email,
       plan: "free",
-      usageCount: 0,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      usage_count: 0,
     });
 
-    await enqueueEmail({
-      email: email,
-      userId: userRecord.uid,
-    });
-
-    const customToken = await adminAuth.createCustomToken(userRecord.uid);
+    // 3. Queue your OTP email
+    await enqueueEmail({ email, userId: user.user.id });
 
     return NextResponse.json(
-      {
-        message:
-          "User created successfully. Check your email for verification.",
-        customToken,
-      },
+      { message: "User created. Check email for OTP." },
       { status: 200 }
     );
-  } catch (error: any) {
-    if (error.code === "auth/email-already-in-use") {
-      return NextResponse.json(
-        { message: "Email already in use." },
-        { status: 409 }
-      );
-    }
-    console.error("API Sign-up Error:", error);
-    return NextResponse.json(
-      { message: error.message || "An unknown error occurred." },
-      { status: 500 }
-    );
+  } catch (err: any) {
+    return NextResponse.json({ message: err.message }, { status: 500 });
   }
 }
