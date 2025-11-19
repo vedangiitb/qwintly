@@ -27,6 +27,8 @@ export default function AuthForm({ isExistingUser }: Props) {
   const [loading, setLoading] = useState(false);
   const { login, signUp } = useEmailAuth();
 
+  console.log(error)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -59,6 +61,7 @@ export default function AuthForm({ isExistingUser }: Props) {
         : await signUp(email, password, userName, recaptchaToken);
 
       if (user) {
+        console.log("hello")
         isExistingUser ? router.push("/account") : router.push(`/login/verify`);
       }
     } catch (err: any) {

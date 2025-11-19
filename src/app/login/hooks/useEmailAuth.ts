@@ -5,7 +5,7 @@ import { loginWithEmail, signUpWithEmail } from "../services/authService";
 import { validatePassword } from "../utils/validatePassword";
 
 export const useEmailAuth = () => {
-  const { setError } = useAuth();
+  const { setError,error } = useAuth();
 
   const login = async (
     email: string,
@@ -42,6 +42,8 @@ export const useEmailAuth = () => {
       return user;
     } catch (err: any) {
       console.error(err);
+      console.log(err.message)
+      console.log(error)
       setError(err.message);
     }
   };

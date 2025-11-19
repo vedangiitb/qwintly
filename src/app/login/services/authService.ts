@@ -53,6 +53,8 @@ export const signUpWithEmail = async (
     password,
   });
 
+  console.log(session)
+
   if (error) throw error;
   return session.user;
 };

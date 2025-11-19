@@ -1,6 +1,10 @@
 import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
-import { auth } from "@/lib/firebaseConfig";
-import { onAuthStateChanged, signOut, User as FirebaseUser } from "firebase/auth";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export interface User {
   uid: string;
@@ -21,34 +25,62 @@ const initialState: AuthState = {
   error: null,
 };
 
+// -----------------------------------
+// Listens for Supabase auth changes
+// -----------------------------------
 export const listenToAuthChanges = createAsyncThunk(
   "auth/listenToAuthChanges",
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { dispatch }) => {
     return new Promise<void>((resolve) => {
-      onAuthStateChanged(auth, (firebaseUser) => {
-        if (firebaseUser) {
-          const user: User = {
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
-            displayName: firebaseUser.displayName,
-            emailVerified: firebaseUser.emailVerified,
-          };
-          dispatch(setUser(user));
+      // Initial check (supabase v2)
+      supabase.auth.getUser().then(({ data }) => {
+        if (data?.user) {
+          dispatch(
+            setUser({
+              uid: data.user.id,
+              email: data.user.email || null,
+              displayName: data.user.user_metadata?.userName || null,
+              emailVerified: data.user.email_confirmed_at ? true : false,
+            })
+          );
         } else {
           dispatch(setUser(null));
         }
         dispatch(setLoading(false));
-        resolve();
       });
+
+      // Realtime auth listener
+      supabase.auth.onAuthStateChange((event, session) => {
+        if (session?.user) {
+          dispatch(
+            setUser({
+              uid: session.user.id,
+              email: session.user.email || null,
+              displayName: session.user.user_metadata?.userName || null,
+              emailVerified: session.user.email_confirmed_at ? true : false,
+            })
+          );
+        } else {
+          dispatch(setUser(null));
+        }
+      });
+
+      resolve();
     });
   }
 );
 
+// -----------------------------------
+// Logout
+// -----------------------------------
 export const logoutUser = createAsyncThunk("auth/logoutUser", async () => {
-  await signOut(auth);
+  await supabase.auth.signOut();
   return null;
 });
 
+// -----------------------------------
+// Slice
+// -----------------------------------
 const authSlice = createSlice({
   name: "auth",
   initialState,
