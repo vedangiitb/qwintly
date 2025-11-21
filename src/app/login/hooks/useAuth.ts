@@ -22,8 +22,7 @@ export const useAuth = () => {
     router.push("/");
   }, [dispatch, router]);
 
-  const currentUser =
-    user?.displayName || user?.email?.split("@")[0] || "";
+  const currentUser = user?.displayName || user?.email?.split("@")[0] || "";
 
   return {
     user,
@@ -31,6 +30,6 @@ export const useAuth = () => {
     loading,
     error,
     logout,
-    setError
+    setError,
   };
 };

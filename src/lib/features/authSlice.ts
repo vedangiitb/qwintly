@@ -7,7 +7,7 @@ const supabase = createClient(
 );
 
 export interface User {
-  uid: string;
+  id: string;
   email: string | null;
   displayName: string | null;
   emailVerified: boolean;
@@ -32,15 +32,14 @@ export const listenToAuthChanges = createAsyncThunk(
   "auth/listenToAuthChanges",
   async (_, { dispatch }) => {
     return new Promise<void>((resolve) => {
-      // Initial check (supabase v2)
       supabase.auth.getUser().then(({ data }) => {
         if (data?.user) {
           dispatch(
             setUser({
-              uid: data.user.id,
+              id: data.user.id,
               email: data.user.email || null,
               displayName: data.user.user_metadata?.userName || null,
-              emailVerified: data.user.email_confirmed_at ? true : false,
+              emailVerified: !!data.user.email_confirmed_at,
             })
           );
         } else {
@@ -49,15 +48,14 @@ export const listenToAuthChanges = createAsyncThunk(
         dispatch(setLoading(false));
       });
 
-      // Realtime auth listener
       supabase.auth.onAuthStateChange((event, session) => {
         if (session?.user) {
           dispatch(
             setUser({
-              uid: session.user.id,
+              id: session.user.id,
               email: session.user.email || null,
               displayName: session.user.user_metadata?.userName || null,
-              emailVerified: session.user.email_confirmed_at ? true : false,
+              emailVerified: !!session.user.email_confirmed_at,
             })
           );
         } else {

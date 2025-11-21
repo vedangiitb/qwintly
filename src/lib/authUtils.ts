@@ -1,23 +1,24 @@
-import { verifyFirebaseToken } from "@/lib/firebase-admin";
+import { supabaseAdmin } from "./supabase-server";
 
 export async function authenticateRequest(req: Request) {
-  const authHeader = req.headers.get("authorization");
-
-  if (!authHeader?.startsWith("Bearer ")) {
-    return { success: false, status: 401, error: "Unauthorized" };
-  }
-
-  const token = authHeader.split(" ")[1];
-
   try {
-    const decoded = await verifyFirebaseToken(token);
-    if (!decoded) {
-      return { success: false, status: 401, error: "Invalid token" };
+    const supabase = supabaseAdmin();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (error || !user) {
+      return { success: false, status: 401, error: "Unauthorized" };
     }
 
-    return { success: true, userId: decoded.uid };
+    return { success: true, userId: user.id };
   } catch (err: any) {
-    console.error("Token verification failed:", err);
-    return { success: false, status: 401, error: "Token verification failed" };
+    console.error("Supabase token verification failed:", err);
+    return {
+      success: false,
+      status: 401,
+      error: "Token verification failed",
+    };
   }
 }

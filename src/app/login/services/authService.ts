@@ -1,24 +1,55 @@
-import { createClient } from "@supabase/supabase-js";
+"use client";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { NOT_HUMAN_ERROR } from "@/data/error/authErrors";
+import { supabase } from "@/lib/supabase-client";
 
-export const loginWithEmail = async (
+export async function signup(
   email: string,
   password: string,
-  recaptchaToken: string
-) => {
-  const resp = await fetch("/api/auth/login", {
+  userName: string,
+  turnstileToken: string
+) {
+  // Verify human
+  const resp = await fetch("/api/auth/verify-human", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ recaptchaToken }),
+    body: JSON.stringify({ turnstileToken }),
   });
 
   if (!resp.ok) {
     const data = await resp.json();
-    throw new Error(data.message);
+    throw new Error(data.message || NOT_HUMAN_ERROR);
+  }
+
+  // Supabase signup
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { userName },
+      emailRedirectTo: `${location.origin}/login/callback`,
+    },
+  });
+
+  if (error) throw error;
+
+  return data.user;
+}
+
+export async function login(
+  email: string,
+  password: string,
+  turnstileToken: string
+) {
+  const resp = await fetch("/api/auth/verify-human", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ turnstileToken }),
+  });
+
+  if (!resp.ok) {
+    const data = await resp.json();
+    throw new Error(data.message || NOT_HUMAN_ERROR);
   }
 
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -29,32 +60,15 @@ export const loginWithEmail = async (
   if (error) throw error;
 
   return data.user;
-};
+}
 
-export const signUpWithEmail = async (
-  email: string,
-  password: string,
-  userName: string,
-  recaptchaToken: string
-) => {
-  const resp = await fetch("/api/auth/signup", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, userName, recaptchaToken }),
+export async function googleLogin() {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${location.origin}/login/callback`,
+    },
   });
-
-  const data = await resp.json();
-
-  if (!resp.ok) throw new Error(data.message);
-
-  // now login with password
-  const { data: session, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  console.log(session)
 
   if (error) throw error;
-  return session.user;
-};
+}

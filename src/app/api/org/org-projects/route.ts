@@ -1,5 +1,5 @@
 import { getHandler } from "@/lib/apiHandler";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase-client";
 
 export const GET = getHandler(async ({ userId, query }) => {
   const org_id = query.get("org_id");

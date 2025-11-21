@@ -1,0 +1,1 @@
+export const NOT_HUMAN_ERROR = "Failed to authenticate human";

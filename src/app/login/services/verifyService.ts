@@ -1,25 +1,20 @@
-export const verifyOtpService = async (otp: string, userId: string) => {
-  const resp = await fetch("/api/auth/verify", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ otp, userId }),
+import { supabase } from "@/lib/supabase-client";
+
+export async function checkEmailVerified() {
+  const { data, error } = await supabase.auth.getUser();
+
+  if (error) throw error;
+
+  return data.user?.email_confirmed_at !== null;
+}
+
+export async function resendVerificationEmail(email: string) {
+  const { data, error } = await supabase.auth.resend({
+    email,
+    type: "signup",
   });
 
-  const data = await resp.json();
-  if (resp.ok) return { isVerified: true, error: null };
+  if (error) throw error;
 
-  return { isVerified: false, error: data.message };
-};
-
-export const resendOtpService = async (email: string, userId: string) => {
-  const resp = await fetch("/api/auth/resend-otp", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, userId }),
-  });
-
-  const data = await resp.json();
-  if (resp.ok) return { sent: true, error: null };
-
-  return { sent: false, error: data.message };
-};
+  return true;
+}

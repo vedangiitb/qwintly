@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase-client";
 import { postHandler } from "@/lib/apiHandler";
 
 export const POST = postHandler(async ({ userId, body }) => {

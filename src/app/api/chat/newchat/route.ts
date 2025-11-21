@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase-client";
 import { postHandler } from "@/lib/apiHandler";
 
 interface NewChatRequestBody {

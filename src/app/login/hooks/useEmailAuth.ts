@@ -1,52 +1,45 @@
 "use client";
-
-import { useAuth } from "./useAuth";
-import { loginWithEmail, signUpWithEmail } from "../services/authService";
+import { login, signup } from "../services/authService";
 import { validatePassword } from "../utils/validatePassword";
+import { useAuth } from "./useAuth";
 
 export const useEmailAuth = () => {
-  const { setError,error } = useAuth();
+  const { setError } = useAuth();
 
-  const login = async (
+  const loginUser = async (
     email: string,
     password: string,
-    recaptchaToken: string
+    turnstileToken: string
   ) => {
     try {
-      const user = await loginWithEmail(email, password, recaptchaToken);
+      setError("");
+      const user = await login(email, password, turnstileToken);
       return user;
     } catch (err: any) {
       setError(err.message);
     }
   };
 
-  const signUp = async (
+  const registerUser = async (
     email: string,
     password: string,
     userName: string,
-    recaptchaToken: string
+    turnstileToken: string
   ) => {
-    if (!validatePassword(password).isValid) {
-      console.error("Invalid password");
+    const validation = validatePassword(password);
+    if (!validation.isValid) {
       setError("Invalid password");
       return;
     }
+
     try {
       setError("");
-      const user = await signUpWithEmail(
-        email,
-        password,
-        userName,
-        recaptchaToken
-      );
+      const user = await signup(email, password, userName, turnstileToken);
       return user;
     } catch (err: any) {
-      console.error(err);
-      console.log(err.message)
-      console.log(error)
       setError(err.message);
     }
   };
 
-  return { login, signUp };
+  return { login: loginUser, signUp: registerUser };
 };

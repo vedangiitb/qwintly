@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase-client";
 import { getHandler } from "@/lib/apiHandler";
 
 export const GET = getHandler(async ({ userId }) => {

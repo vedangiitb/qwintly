@@ -1,23 +1,20 @@
 "use client";
 
-import { handleGoogleLogin } from "../services/handleGoogleLogin";
-import { useAuth } from "./useAuth";
 import { useCallback } from "react";
+import { googleLogin } from "../services/authService";
+import { useAuth } from "./useAuth";
 
 export const useGoogleLogin = () => {
   const { setError } = useAuth();
 
-  const loginWithGoogle = useCallback(async () => {
+  const login = useCallback(async () => {
     try {
       setError("");
-      const user = await handleGoogleLogin();
-      return user;
+      await googleLogin();
     } catch (err: any) {
-      console.error(err);
       setError(err.message);
-      return null;
     }
-  }, [setError]);
+  }, []);
 
-  return { loginWithGoogle };
+  return { login };
 };
