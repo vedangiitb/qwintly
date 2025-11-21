@@ -11,7 +11,7 @@ const ai = new GoogleGenAI({});
 export async function POST(req: Request) {
   try {
     // --- Auth Verification ---
-    const auth = await authenticateRequest(req);
+    const auth = await authenticateRequest();
     if (!auth.success) {
       return NextResponse.json(
         { success: false, error: auth.error },

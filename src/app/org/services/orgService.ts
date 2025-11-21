@@ -1,4 +1,4 @@
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { fetchUtil } from "@/utils/fetchUtil";
 import { toast } from "sonner";
 
 interface AddOrgResponse {
@@ -29,7 +29,7 @@ export async function addOrganization({
   org_name: string;
 }): Promise<{ id: string | null; data?: AddOrgResponse }> {
   try {
-    const json = await fetchWithAuth<AddOrgResponse>("/api/org/new", {
+    const json = await fetchUtil<AddOrgResponse>("/api/org/new", {
       method: "POST",
       body: JSON.stringify({ org_name }),
     });
@@ -51,7 +51,7 @@ export async function getOrganizations(): Promise<{
   error: string | null;
 }> {
   try {
-    const json = await fetchWithAuth<any[]>("/api/org/get-orgs", {
+    const json = await fetchUtil<any[]>("/api/org/get-orgs", {
       method: "GET",
     });
     return { data: json.data ?? [], error: null };
@@ -70,7 +70,7 @@ export async function getOrgDetails(org_id: string): Promise<{
   error: string | null;
 }> {
   try {
-    const json = await fetchWithAuth<any[]>(
+    const json = await fetchUtil<any[]>(
       `/api/org/details?org_id=${encodeURIComponent(org_id)}`,
       {
         method: "GET",
@@ -93,7 +93,7 @@ export async function getOrgProjects({
   org_id: string;
 }): Promise<{ data: any[] | null; error: string | null }> {
   try {
-    const json = await fetchWithAuth<any[]>(
+    const json = await fetchUtil<any[]>(
       `/api/org/org-projects?org_id=${encodeURIComponent(org_id)}`,
       { method: "GET" }
     );
@@ -117,7 +117,7 @@ export async function addOrgMember({
   error: string | null;
 }> {
   try {
-    const json = await fetchWithAuth<OrgMember>("/api/org/add-member", {
+    const json = await fetchUtil<OrgMember>("/api/org/add-member", {
       method: "POST",
       body: JSON.stringify({ org_id, member_id, role }),
     });

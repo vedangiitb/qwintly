@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "./supabase-server";
 
-export async function authenticateRequest(req: Request) {
+export async function authenticateRequest() {
   try {
     const supabase = supabaseAdmin();
     const {

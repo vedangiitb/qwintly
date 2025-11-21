@@ -27,42 +27,22 @@ export default function AuthForm({ isExistingUser }: Props) {
   const [loading, setLoading] = useState(false);
   const { login, signUp } = useEmailAuth();
 
-  console.log(error)
+  console.log(error);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      typeof window.grecaptcha === "undefined" ||
-      typeof window.grecaptcha.enterprise === "undefined"
-    ) {
-      console.log(window)
-      setError("reCAPTCHA Enterprise service is loading. Please wait.");
-      return;
-    }
-
     try {
-      console.log("1")
+      console.log("1");
       setLoading(true);
       setError("");
 
-      const action = isExistingUser ? "login" : "signup";
-      const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-
-      const recaptchaToken = await window.grecaptcha.enterprise.execute(
-        siteKey,
-        { action }
-      );
-
-      console.log(recaptchaToken)
-
       const user = isExistingUser
-        ? await login(email, password, recaptchaToken)
-        : await signUp(email, password, userName, recaptchaToken);
+        ? await login(email, password, "1")
+        : await signUp(email, password, userName, "1");
 
       if (user) {
-        console.log("hello")
-        isExistingUser ? router.push("/account") : router.push(`/login/verify`);
+        router.push("/account");
       }
     } catch (err: any) {
       console.error("Auth failed");

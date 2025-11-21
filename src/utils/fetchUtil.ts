@@ -1,23 +1,17 @@
-import { getIdToken } from "@/utils/userIdTokenUtil";
-
 interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
   error?: string;
 }
 
-export async function fetchWithAuth<T>(
+export async function fetchUtil<T>(
   url: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
-  const token = await getIdToken();
-  if (!token) throw new Error("You must be logged in to perform this action.");
-
   const response = await fetch(url, {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
       ...(options.headers || {}),
     },
   });

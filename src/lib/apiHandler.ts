@@ -12,7 +12,7 @@ export const ApiResponse = {
     NextResponse.json(
       {
         success: false,
-        error: message || "Error while authenticating user",
+        error: message || "Unexpected error occured",
         data: null,
       },
       { status }
@@ -30,10 +30,10 @@ export function postHandler(
 ) {
   return async function (req: Request) {
     try {
-      const auth = await authenticateRequest(req);
+      const auth = await authenticateRequest();
       const userId = auth.userId;
       if (!auth.success || !userId) {
-        return ApiResponse.error(auth.error, auth.status);
+        return ApiResponse.error(auth.error || "Error while authenticating user", auth.status);
       }
 
       let body: any = {};
@@ -64,7 +64,7 @@ export function getHandler(
 ) {
   return async function (req: Request) {
     try {
-      const auth = await authenticateRequest(req);
+      const auth = await authenticateRequest();
       const userId = auth.userId;
       if (!auth.success || !userId) {
         return ApiResponse.error(auth.error, auth.status);

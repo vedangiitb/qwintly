@@ -1,4 +1,4 @@
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { fetchUtil } from "@/utils/fetchUtil";
 import { toast } from "sonner";
 
 export interface CreateProjectRequest {
@@ -52,7 +52,7 @@ export async function createProject({
   error: string | null;
 }> {
   try {
-    const json = await fetchWithAuth<Project>("/api/project/new", {
+    const json = await fetchUtil<Project>("/api/project/new", {
       method: "POST",
       body: JSON.stringify({ project_name, project_type, org_id }),
     });
@@ -78,7 +78,7 @@ export async function addProjectMember({
   error: string | null;
 }> {
   try {
-    const json = await fetchWithAuth<ProjectMember>("/api/project/add-member", {
+    const json = await fetchUtil<ProjectMember>("/api/project/add-member", {
       method: "POST",
       body: JSON.stringify({ project_id, member_id, role }),
     });
@@ -100,7 +100,7 @@ export async function getUserProjects(): Promise<{
   error: string | null;
 }> {
   try {
-    const json = await fetchWithAuth<UserProject[]>(
+    const json = await fetchUtil<UserProject[]>(
       "/api/project/user-projects",
       {
         method: "GET",
