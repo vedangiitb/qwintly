@@ -7,6 +7,7 @@ import { Folder, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useOrg } from "../hooks/useOrg";
 import { useRouter } from "next/navigation";
+import React from "react";
 
 interface OrgDetails {
   org_name: string;
@@ -26,7 +27,7 @@ export default function ManageOrg({ params }: Props) {
   const [details, setDetails] = useState<OrgDetails | null>(null);
   const [orgProjects, setOrgProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const id = params.id;
+  const { id } = React.use(params);
   const router = useRouter();
 
   useEffect(() => {

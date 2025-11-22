@@ -15,17 +15,15 @@ export async function streamChatResponse(
 
   const payload = JSON.stringify({ chatId, messages });
 
-  const res = await withAuthRetry(() =>
-    fetch("/api/chat/stream", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: payload,
-      signal: options?.signal,
-    })
-  );
+  const res = await fetch("/api/chat/stream", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: payload,
+    signal: options?.signal,
+  });
 
   if (!res.ok) {
     const text = await res.text();

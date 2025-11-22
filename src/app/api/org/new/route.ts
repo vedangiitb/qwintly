@@ -1,8 +1,20 @@
 import { postHandler } from "@/lib/apiHandler";
-import { supabase } from "@/lib/supabase-client";
+import { createClient } from "@supabase/supabase-js";
 
-export const POST = postHandler(async ({ userId, body }) => {
+export const POST = postHandler(async ({ userId, body, token }) => {
   const { org_name } = body;
+
+  const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      }
+    );
 
   if (!org_name) {
     throw new Error("Missing or invalid organization name");

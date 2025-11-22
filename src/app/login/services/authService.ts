@@ -59,6 +59,8 @@ export async function login(
 
   if (error) throw error;
 
+  await supabase.auth.getSession();
+
   return data.user;
 }
 
