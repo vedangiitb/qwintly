@@ -9,12 +9,14 @@ export async function checkEmailVerified() {
 }
 
 export async function resendVerificationEmail(email: string) {
-  const { data, error } = await supabase.auth.resend({
+  const { error } = await supabase.auth.resend({
     email,
     type: "signup",
   });
 
-  if (error) throw error;
+  if (error) {
+    return { sent: false, error: error };
+  }
 
-  return true;
+  return { sent: true, error: null };
 }

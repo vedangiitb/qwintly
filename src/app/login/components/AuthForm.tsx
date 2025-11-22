@@ -42,7 +42,13 @@ export default function AuthForm({ isExistingUser }: Props) {
         : await signUp(email, password, userName, "1");
 
       if (user) {
-        router.push("/account");
+        if (isExistingUser) {
+          router.push("/account");
+        } else {
+          router.push(
+            `/login/account-created?email=${encodeURIComponent(email)}`
+          );
+        }
       }
     } catch (err: any) {
       console.error("Auth failed");
