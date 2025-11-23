@@ -1,5 +1,5 @@
-import { supabase } from "@/lib/supabase-client";
 import { postHandler } from "@/lib/apiHandler";
+import { supabaseServer } from "@/lib/supabase-server";
 
 interface NewChatRequestBody {
   convId?: string;
@@ -7,38 +7,27 @@ interface NewChatRequestBody {
 }
 
 export const POST = postHandler(
-  async ({ userId, body }: { userId: string; body: NewChatRequestBody }) => {
+  async ({ token, body }: { token: string; body: NewChatRequestBody }) => {
     const { prompt } = body;
 
-    // Validate input
     if (!prompt || typeof prompt !== "string") {
       throw new Error("Missing or invalid 'prompt'");
     }
 
-    // Prepare chat row
-    const now = new Date().toISOString();
-    const chatRow = {
-      user_id: userId,
-      title: prompt.slice(0, 50).trim(),
-      created_at: now,
-      updated_at: now,
-      last_message: prompt,
-    };
+    const supabase = supabaseServer(token);
 
-    // Insert into Supabase
-    const { data, error } = await supabase
-      .from("chats")
-      .insert([chatRow])
-      .select()
-      .limit(1)
-      .single();
+    const { data, error } = await supabase.rpc("create_new_chat", {
+      p_message: prompt,
+      p_chat_title: prompt.slice(0, 50).trim(),
+    });
 
     if (error) {
       console.error("Supabase insert error:", error);
       throw new Error(error.message || "Failed to create chat");
     }
+    console.log(data, error);
 
     // Return structured response
-    return { id: data?.id ?? null, ...data };
+    return { id: data[0]?.id ?? null, ...data[0] };
   }
 );

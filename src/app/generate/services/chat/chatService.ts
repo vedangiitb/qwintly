@@ -1,5 +1,7 @@
 import { FetchChatResult, Message } from "@/types/chat";
-import { getIdToken, withAuthRetry } from "@/utils/userIdTokenUtil";
+import { fetchStreamUtil, fetchUtil } from "@/utils/fetchUtil";
+
+// ------------------------ STREAM RESPONSE ------------------------
 
 export async function streamChatResponse(
   messages: Message[],
@@ -7,31 +9,15 @@ export async function streamChatResponse(
   onChunk: (chunk: string) => void,
   options?: { signal?: AbortSignal }
 ) {
-  // Validate input
   if (!chatId) throw new Error("Missing chatId");
 
-  const token = await getIdToken();
-  if (!token) throw new Error("User not authenticated");
+  const bodyPayload = JSON.stringify({ chatId, messages });
 
-  const payload = JSON.stringify({ chatId, messages });
-
-  const res = await fetch("/api/chat/stream", {
+  const reader = await fetchStreamUtil("/api/chat/stream", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: payload,
+    body: bodyPayload,
     signal: options?.signal,
   });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Stream endpoint returned ${res.status}: ${text}`);
-  }
-
-  const reader = res.body?.getReader();
-  if (!reader) return;
 
   const decoder = new TextDecoder();
   let buffer = "";
@@ -40,23 +26,26 @@ export async function streamChatResponse(
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
+
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split("\n\n");
       buffer = lines.pop() || "";
 
       for (const line of lines) {
         if (!line.startsWith("data: ")) continue;
+
         const text = line.replace(/^data: /, "");
+
         if (text === "[DONE]") return;
+
         try {
           onChunk(text);
-        } catch (e) {
-          console.error("onChunk handler failed", e);
+        } catch (err) {
+          console.error("onChunk failed:", err);
         }
       }
     }
   } catch (err: any) {
-    // If the abort signal triggered, surface a clear message
     if (err?.name === "AbortError") {
       console.warn("Stream aborted by user");
       return;
@@ -65,103 +54,60 @@ export async function streamChatResponse(
   }
 }
 
-export const addToDB = async (message: Message, chatId: string) => {
+// ------------------------ ADD MESSAGE TO DB ------------------------
+
+export async function addToDB(message: Message, chatId: string) {
   try {
-    const token = await getIdToken();
-    if (!token) throw new Error("User not authenticated");
+    const json = await fetchUtil("/api/chat/updateDB", {
+      method: "POST",
+      body: JSON.stringify({ message, chatId }),
+    });
 
-    const res = await withAuthRetry(() =>
-      fetch("/api/chat/updateDB", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message, chatId }),
-      })
-    );
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Failed to add message: ${text}`);
-    }
-
-    return true;
+    return json.success;
   } catch (e: any) {
     console.error("addToDB error", e);
     return false;
   }
-};
+}
+
+// ------------------------ FETCH CHAT MESSAGES ------------------------
 
 export async function fetchChatMessages(
   chatId: string
 ): Promise<FetchChatResult> {
   try {
-    const token = await getIdToken();
-    if (!token) throw new Error("User not authenticated");
-
-    const res = await withAuthRetry(() =>
-      fetch(`/api/chat/fetchChat?chatId=${encodeURIComponent(chatId)}`, {
+    const json = (await fetchUtil(
+      `/api/chat/fetchChat?chatId=${encodeURIComponent(chatId)}`,
+      {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      })
-    );
+      }
+    )) as { data?: { messages?: any[] } };
 
-    const json = await res.json();
+    const messagesRaw = json.data?.messages ?? [];
 
-    if (!res.ok) {
-      return {
-        messages: null,
-        error: json?.error || json?.message || "Unknown error",
-      };
-    }
-
-    const messagesRaw = json.data?.messages ?? null;
-
-    const normalizedMessages: Message[] = (messagesRaw ?? []).map((m: any) => ({
+    const normalized: Message[] = messagesRaw.map((m: any) => ({
       role: m.role,
       content: m.content,
     }));
 
-    return { messages: normalizedMessages, error: null };
+    return { messages: normalized, error: null };
   } catch (e: any) {
     console.error("fetchChatMessages error", e);
-    return { messages: null, error: e?.message || String(e) };
+    return { messages: null, error: e?.message };
   }
 }
 
+// ------------------------ USER CHATS ------------------------
+
 export async function userChats() {
   try {
-    const token = await getIdToken();
-    if (!token) throw new Error("User not authenticated");
-    const res = await withAuthRetry(() =>
-      fetch("/api/chat/userChats", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      })
-    );
-    const json = await res.json();
+    const json = await fetchUtil("/api/chat/userChats", {
+      method: "GET",
+    });
 
-    if (!res.ok) {
-      return {
-        messages: null,
-        error: json?.error || json?.message || "Unknown error",
-      };
-    }
-
-    const chats = json.data ?? null;
-
-    console.log(chats);
-
-    return { chats: chats, error: null };
+    return { chats: json.data ?? null, error: null };
   } catch (e: any) {
     console.error("userChats error", e);
-    return { chats: null, error: e?.message || String(e) };
+    return { chats: null, error: e?.message };
   }
 }

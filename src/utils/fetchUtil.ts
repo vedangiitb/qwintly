@@ -37,3 +37,35 @@ export async function fetchUtil<T>(
 
   return json;
 }
+
+// fetchStreamUtil.ts
+export async function fetchStreamUtil(
+  url: string,
+  options: RequestInit = {}
+): Promise<ReadableStreamDefaultReader<Uint8Array>> {
+  // Grab Supabase token from localStorage
+  const raw = localStorage.getItem("sb-jxceaahrdymuhokduqdt-auth-token");
+  const session = raw ? JSON.parse(raw) : null;
+  const token = session?.access_token;
+
+  // Perform the request without JSON parsing
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
+    },
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(`Stream request failed: ${response.status} - ${text}`);
+  }
+
+  if (!response.body) {
+    throw new Error("Streaming response body missing (response.body is null).");
+  }
+
+  return response.body.getReader();
+}

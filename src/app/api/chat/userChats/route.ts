@@ -1,20 +1,14 @@
-import { supabase } from "@/lib/supabase-client";
 import { getHandler } from "@/lib/apiHandler";
+import { supabaseServer } from "@/lib/supabase-server";
 
-export const GET = getHandler(async ({ userId }) => {
-  // ✅ Fetch all chats for this user
-  const { data: chats, error } = await supabase
-    .from("chats")
-    .select("id, title, created_at")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+export const GET = getHandler(async ({ token }) => {
+  const supabase = supabaseServer(token);
+  const { data: chats, error } = await supabase.rpc("fetch_user_all_chats");
 
-  // ✅ Handle Supabase error
   if (error) {
     console.error("Supabase chat lookup error:", error.message);
     throw new Error("Failed to fetch chats");
   }
 
-  // ✅ Return the chat list
   return chats ?? [];
 });

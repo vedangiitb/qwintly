@@ -142,7 +142,7 @@ export const useChat = () => {
     const fetchUserChats = async () => {
       const { chats, error } = await userChats();
       console.log(chats);
-      if (!error && chats) setRecentChats(chats);
+      if (!error && chats) setRecentChats(chats as recentChatInterface[]);
     };
     fetchUserChats();
   }, []);

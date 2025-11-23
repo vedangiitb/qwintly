@@ -1,8 +1,10 @@
-import { supabase } from "@/lib/supabase-client";
 import { postHandler } from "@/lib/apiHandler";
+import { supabaseServer } from "@/lib/supabase-server";
 
-export const POST = postHandler(async ({ userId, body }) => {
+export const POST = postHandler(async ({ token, body }) => {
   const { message, chatId } = body;
+
+  const supabase = supabaseServer(token);
 
   // Validate input
   if (!message?.content || !chatId) {
@@ -10,20 +12,12 @@ export const POST = postHandler(async ({ userId, body }) => {
   }
 
   // Insert message into Supabase
-  const { data, error } = await supabase
-    .from("messages")
-    .insert([
-      {
-        conv_id: chatId,
-        user_id: userId,
-        role: message.role || "user",
-        content: message.content,
-        token_count: message.token_count ?? 0,
-        created_at: new Date().toISOString(),
-      },
-    ])
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc("insert_message", {
+    p_chat_id: chatId,
+    p_role: message.role,
+    p_content: message.content,
+    p_token_count: 0,
+  });
 
   if (error) {
     console.error("Supabase insert error:", error);
