@@ -27,7 +27,7 @@ export default function ManageOrg({ params }: Props) {
   const [details, setDetails] = useState<OrgDetails | null>(null);
   const [orgProjects, setOrgProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { id } = React.use(params);
+  const { id } = params;
   const router = useRouter();
 
   useEffect(() => {

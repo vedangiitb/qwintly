@@ -1,18 +1,16 @@
 // supabase-server.ts
-import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 
-export function supabaseServer(cookieStore: {
-  get: (name: string) => string | undefined;
-}) {
-  return createServerClient(
+export const supabaseServer = (token: string) => {
+  return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      cookies: {
-        get: cookieStore.get,
-        set() {},
-        remove() {},
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
     }
   );
-}
+};

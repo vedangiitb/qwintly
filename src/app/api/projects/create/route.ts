@@ -1,8 +1,9 @@
-import { supabase } from "@/lib/supabase-client";
 import { postHandler } from "@/lib/apiHandler";
+import { supabaseServer } from "@/lib/supabase-server";
 
-export const POST = postHandler(async ({ userId, body }) => {
+export const POST = postHandler(async ({ body,token }) => {
   const { project_name, project_type, org_id } = body;
+  const supabase = supabaseServer(token);
 
   if (!project_name || !project_type || !org_id) {
     throw new Error(
@@ -12,7 +13,6 @@ export const POST = postHandler(async ({ userId, body }) => {
 
   const { data, error } = await supabase.rpc("create_project_with_member", {
     p_name: project_name,
-    p_creator_id: userId,
     p_type: project_type,
     p_org_id: org_id,
   });

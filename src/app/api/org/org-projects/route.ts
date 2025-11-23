@@ -1,15 +1,15 @@
 import { getHandler } from "@/lib/apiHandler";
-import { supabase } from "@/lib/supabase-client";
+import { supabaseServer } from "@/lib/supabase-server";
 
-export const GET = getHandler(async ({ userId, query }) => {
+export const GET = getHandler(async ({ query, token }) => {
   const org_id = query.get("org_id");
+  const supabase = supabaseServer(token);
 
   if (!org_id) {
     throw new Error("Missing organization ID (org_id)");
   }
 
   const { data: orgProjects, error } = await supabase.rpc("get_org_projects", {
-    p_user_id: userId,
     p_org_id: org_id,
   });
 
