@@ -105,7 +105,14 @@ export async function userChats() {
       method: "GET",
     });
 
-    return { chats: json.data ?? null, error: null };
+    return {
+      chats:
+        (json.data as any[])?.map((data: any) => ({
+          id: data.chat_id,
+          ...data,
+        })) ?? null,
+      error: null,
+    };
   } catch (e: any) {
     console.error("userChats error", e);
     return { chats: null, error: e?.message };

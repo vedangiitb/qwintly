@@ -1,7 +1,7 @@
 "use client";
-import SideBar from "@/app/generate/sidebar/sidebar";
 import { useEffect, useState } from "react";
 import ChatBox from "./generate/components/chat/ChatBox";
+import SideBar from "./generate/components/sidebar/sidebar";
 import { useChat } from "./generate/hooks/chat/useChat";
 import { useInitConv } from "./generate/hooks/useInitConv";
 import { useAuth } from "./login/hooks/useAuth";
@@ -60,7 +60,7 @@ export default function Home() {
                 setPrompt={setPrompt}
                 isResponseLoading={loading}
               />
-              {!user?.uid ? (
+              {!user?.id ? (
                 <p className="mt-4 text-slate-400 text-xs opacity-90 select-none">
                   🚀 <b>No pricing setup needed</b> to try the demo — sign in to
                   save your progress &amp; unlock full features!

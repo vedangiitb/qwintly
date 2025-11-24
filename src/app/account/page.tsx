@@ -19,7 +19,7 @@ export default function Account() {
       <Card className="w-full max-w-md mx-auto shadow-lg border border-gray-200 dark:border-gray-800 bg-white/85 dark:bg-gray-950/90 backdrop-blur-md transition-colors duration-300">
         <CardHeader className="flex flex-col items-center gap-4 py-8">
           <Avatar className="w-20 h-20 mb-1 ring-4 ring-blue-200 dark:ring-blue-700 ring-offset-2">
-            <AvatarImage src={user?.avatar || ""} alt="User avatar" />
+            {/* <AvatarImage src={ || ""} alt="User avatar" /> */}
             <AvatarFallback className="bg-blue-500 text-white text-3xl">
               {user?.displayName?.charAt(0)?.toUpperCase() || "A"}
             </AvatarFallback>

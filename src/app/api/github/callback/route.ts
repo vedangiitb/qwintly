@@ -28,12 +28,9 @@ export async function GET(req: NextRequest) {
   const accessToken = resp.data.access_token;
 
   // Encrypt before storing
-  const encrypted = await encrypt(accessToken);
+  const encrypted = encrypt(accessToken);
 
-  (
-    await
-    cookies()
-  ).set("gh_token", encrypted, {
+  (await cookies()).set("gh_token", encrypted, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     path: "/",

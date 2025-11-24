@@ -1,4 +1,5 @@
 "use client";
+import { setChatPrompt } from "@/lib/features/promptSlice";
 import { AppDispatch, RootState } from "@/lib/store";
 import { Message, recentChatInterface } from "@/types/chat";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -9,7 +10,6 @@ import {
   streamChatResponse,
   userChats,
 } from "../../services/chat/chatService";
-import { setChatPrompt } from "@/lib/features/promptSlice";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);

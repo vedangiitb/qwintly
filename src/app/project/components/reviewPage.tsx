@@ -34,12 +34,31 @@ export default function ReviewProject() {
         description="Make sure everything looks good before we generate your project."
       />
 
-      <Link
-        href="/api/github/login"
-        className="px-4 py-2 rounded-lg bg-black text-white"
-      >
-        Connect GitHub
-      </Link>
+
+      <div>
+    {/* TODO: Check if the user has linked the github account and only show if NOT! */}
+        <button
+          type="button"
+          className="px-4 py-2 rounded-lg bg-muted cursor-pointer border hover:bg-muted/60 transition-all"
+          onClick={() => {
+            const url = "/api/github/login";
+            const width = 600;
+            const height = 700;
+            const left = window.screenX + (window.innerWidth - width) / 2;
+            const top = window.screenY + (window.innerHeight - height) / 2;
+            const features = `width=${width},height=${height},left=${Math.max(left, 0)},top=${Math.max(top, 0)},menubar=no,toolbar=no,location=no,resizable=yes,scrollbars=yes`;
+            const popup = window.open(url, "github_oauth", features);
+            if (popup) {
+              popup.focus();
+            } else {
+              // Fallback to full navigation if popup blocked
+              window.location.href = url;
+            }
+          }}
+        >
+          Connect GitHub
+        </button>
+      </div>
 
       {/* PROJECT NAME */}
       <SectionCard>
@@ -102,8 +121,9 @@ export default function ReviewProject() {
             <ConfigRow
               label="AI"
               value={
-                details.config.ai
-                  ? aiPlatforms[details.config.ai!].name || "None"
+                details.config.ai && typeof details.config.ai === "string"
+                  ? aiPlatforms[details.config.ai as keyof typeof aiPlatforms]
+                      ?.name || "None"
                   : false
               }
             />

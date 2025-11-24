@@ -2,9 +2,9 @@
 import crypto from "crypto";
 
 const KEY = process.env.TOKEN_SECRET!;
-if (!KEY || KEY.length !== 32) {
-  throw new Error("TOKEN_SECRET must be set and 32 characters long");
-}
+// if (!KEY || KEY.length !== 32) {
+//   throw new Error("TOKEN_SECRET must be set and 32 characters long");
+// }
 
 const ALGO = "aes-256-ctr";
 
