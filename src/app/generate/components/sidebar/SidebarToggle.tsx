@@ -4,7 +4,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { SidebarIcon, X } from "lucide-react";
+import { SidebarClose, SidebarIcon } from "lucide-react";
 
 export default function SidebarToggle({
   isExpanded,
@@ -30,7 +30,7 @@ export default function SidebarToggle({
             aria-label={isExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
           >
             {isExpanded ? (
-              <X className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+              <SidebarClose className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
             ) : (
               <SidebarIcon className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
             )}

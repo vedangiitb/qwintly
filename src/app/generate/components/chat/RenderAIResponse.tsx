@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 
 export default function RenderAIResponse({ data }: { data: string }) {
   return (
-    <div className="flex items-start gap-3 my-4">
+    <div className="flex items-start  gap-3 my-4">
       {/* Avatar */}
       <Avatar className="hidden sm:flex h-8 w-8 ring-2 ring-indigo-400/40">
         <AvatarFallback>⚡</AvatarFallback>
@@ -19,7 +19,7 @@ export default function RenderAIResponse({ data }: { data: string }) {
         className={cn(
           "w-full md:max-w-[75%] px-4 py-2 rounded-2xl",
           "bg-muted/40 text-primary text-sm md:text-base",
-          "border-2 border-border transition-all",
+          "border transition-all",
         )}
         style={{ willChange: "transform" }}
       >
