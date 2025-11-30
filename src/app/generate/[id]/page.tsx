@@ -1,17 +1,23 @@
 "use client";
 
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import ChatBox from "../components/chat/ChatBox";
 import ChatHistory from "../components/chat/ChatHistory";
+import PreviewPanel from "../components/preview/previewPanel/PreviewPanel";
 import { useChat } from "../hooks/chat/useChat";
+import { useChatUi } from "../hooks/chat/useChatUi";
 
 type Props = { params: Promise<{ id: string }> };
 
 export default function Generate({ params }: Props) {
   const { id } = React.use(params);
-  const [generatingsite, setSiteGenerating] = useState(false);
   const router = useRouter();
   const { prompt, setPrompt } = useChat();
   const {
@@ -20,11 +26,14 @@ export default function Generate({ params }: Props) {
     hasSubmittedRef,
     fetchChat,
     isResponseLoading,
+    generatingsite,
   } = useChat();
+
+  const { chatVisible } = useChatUi();
 
   useEffect(() => {
     const run = async () => {
-      console.log(prompt)
+      console.log(prompt);
       if (!id || hasSubmittedRef.current) return;
       if (prompt && !hasSubmittedRef.current) {
         hasSubmittedRef.current = true;
@@ -42,20 +51,36 @@ export default function Generate({ params }: Props) {
   }, [id, prompt]);
 
   return (
-    <div className="flex flex-col flex-1 w-full justify-between bg-background shadow-xl backdrop-blur-2xl overflow-hidden">
-      <div className="flex-1 overflow-y-auto px-2 py-4">
-        <ChatHistory
-          convHistory={messages}
-          isResponseLoading={isResponseLoading}
-          generatingsite={generatingsite}
+    <div className="flex flex-col flex-1 overflow-hidden">
+      {/* <div className="flex"> */}
+      <ResizablePanelGroup direction="horizontal" className="h-full flex">
+        <ResizablePanel
+          className={`flex flex-col flex-1 overflow-y-auto px-2 py-4 h-full ${!chatVisible ? "hidden" : ""}`}
+        >
+          <ChatHistory
+            convHistory={messages}
+            isResponseLoading={isResponseLoading}
+            generatingsite={generatingsite}
+          />
+          <ChatBox
+            prompt={prompt}
+            submitPrompt={() => submitResponse(id)}
+            setPrompt={setPrompt}
+            isResponseLoading={isResponseLoading}
+          />
+        </ResizablePanel>
+
+        <ResizableHandle
+          withHandle
+          className={`${!chatVisible ? "hidden" : ""}`}
         />
-      </div>
-      <ChatBox
-        prompt={prompt}
-        submitPrompt={() => submitResponse(id)}
-        setPrompt={setPrompt}
-        isResponseLoading={isResponseLoading}
-      />
+
+        <ResizablePanel minSize={50} className={`flex flex-col flex-1 p-2`}>
+          {/* <PreviewFrame /> */}
+          <PreviewPanel />
+        </ResizablePanel>
+      </ResizablePanelGroup>
+      {/* </div> */}
     </div>
   );
 }

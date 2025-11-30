@@ -13,14 +13,18 @@ import {
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isStreaming, setIsStreaming] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const hasSubmittedRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [isResponseLoading, setResponseLoading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [recentChats, setRecentChats] = useState<recentChatInterface[]>([]);
   const dispatch = useDispatch<AppDispatch>();
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [generatingsite, setSiteGenerating] = useState(false);
   const prompt = useSelector((state: RootState) => state.prompt.prompt);
+  const [changes, setChanges] = useState(false);
+
   const setPrompt: (p: string) => any = (p: string) => {
     // console.log(prompt)
     dispatch(setChatPrompt(p));
@@ -152,7 +156,6 @@ export const useChat = () => {
     setPrompt,
     submitResponse,
     messages,
-    isStreaming,
     hasSubmittedRef,
     fetchChat,
     currentChatId,
@@ -160,5 +163,12 @@ export const useChat = () => {
     cancelStream,
     isResponseLoading,
     recentChats,
+    isStreaming,
+    showPreview,
+    setShowPreview,
+    generatingsite,
+    setSiteGenerating,
+    changes,
+    setChanges
   } as const;
 };
