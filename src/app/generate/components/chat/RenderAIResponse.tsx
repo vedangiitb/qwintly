@@ -2,26 +2,61 @@
 
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import { cn } from "@/lib/utils"; // from shadcn
+import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 
 export default function RenderAIResponse({ data }: { data: string }) {
+  let displayMessage: string = data;
+
+  // Try to parse JSON from agent
+  try {
+    console.log(data)
+    let cleaned = data.trim();
+
+    // remove ```json ... ``` or ``` ... ```
+    cleaned = cleaned
+      .replace(/```json/gi, "")
+      .replace(/```/g, "")
+      .trim();
+
+    const firstBraceIndex = cleaned.indexOf("{");
+
+    if (firstBraceIndex !== -1) {
+      cleaned = cleaned.slice(firstBraceIndex);
+    }
+
+    console.log(cleaned);
+
+    const parsed = JSON.parse(cleaned);
+    console.log(parsed);
+
+    // If structured agent output → render nextQuestion or completion message
+    if (parsed?.status === "COLLECTING" && parsed?.nextQuestion) {
+      displayMessage = parsed.nextQuestion;
+    }
+
+    if (parsed?.status === "COMPLETE") {
+      displayMessage =
+        "Great! I have everything. Generating your website now...";
+    }
+  } catch (e) {
+    console.error(e);
+    // Not JSON → just render as markdown (normal LLM message)
+  }
+
   return (
-    <div className="flex items-start  gap-3 my-4">
-      {/* Avatar */}
+    <div className="flex items-start gap-3 my-4">
       <Avatar className="hidden sm:flex h-8 w-8 ring-2 ring-indigo-400/40">
         <AvatarFallback>⚡</AvatarFallback>
       </Avatar>
 
-      {/* Message bubble */}
       <Card
         className={cn(
           "w-full md:max-w-[75%] px-4 py-2 rounded-2xl",
           "bg-muted/40 text-primary text-sm md:text-base",
-          "border transition-all",
+          "border transition-all"
         )}
-        style={{ willChange: "transform" }}
       >
         <ReactMarkdown
           components={{
@@ -51,12 +86,9 @@ export default function RenderAIResponse({ data }: { data: string }) {
             p({ children }) {
               return <p className="leading-relaxed my-1">{children}</p>;
             },
-            li({ children }) {
-              return <li className="my-0.5">{children}</li>;
-            },
           }}
         >
-          {data}
+          {displayMessage}
         </ReactMarkdown>
       </Card>
     </div>
