@@ -25,7 +25,7 @@ export const POST = postHandler(
       console.error("Supabase insert error:", error);
       throw new Error(error.message || "Failed to create chat");
     }
-    console.log(data, error);
+    // console.log(data, error);
 
     // Return structured response
     return { id: data[0]?.id ?? null, ...data[0] };

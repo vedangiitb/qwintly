@@ -11,8 +11,6 @@ export const GET = getHandler(async ({ query, token }) => {
     p_chat_id: chatId,
   });
 
-  console.log(data,error);
-
   const { chat, messages } = data;
 
   if (error) {

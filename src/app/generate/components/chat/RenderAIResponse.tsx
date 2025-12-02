@@ -9,40 +9,33 @@ import { Card } from "@/components/ui/card";
 export default function RenderAIResponse({ data }: { data: string }) {
   let displayMessage: string = data;
 
-  // Try to parse JSON from agent
   try {
-    console.log(data)
-    let cleaned = data.trim();
+    // Detect if response contains both conversational text + JSON
+    const ind = data.indexOf("{");
 
-    // remove ```json ... ``` or ``` ... ```
-    cleaned = cleaned
-      .replace(/```json/gi, "")
-      .replace(/```/g, "")
-      .trim();
+    if (ind !== -1) {
+      // Everything BEFORE the first `{` is the conversational part
+      const conversational = data.slice(0, ind).trim();
 
-    const firstBraceIndex = cleaned.indexOf("{");
+      // JSON part (machine state)
+      const jsonPart = data.slice(ind);
 
-    if (firstBraceIndex !== -1) {
-      cleaned = cleaned.slice(firstBraceIndex);
-    }
+      console.log("jsonPart", jsonPart);
 
-    console.log(cleaned);
-
-    const parsed = JSON.parse(cleaned);
-    console.log(parsed);
-
-    // If structured agent output → render nextQuestion or completion message
-    if (parsed?.status === "COLLECTING" && parsed?.nextQuestion) {
-      displayMessage = parsed.nextQuestion;
-    }
-
-    if (parsed?.status === "COMPLETE") {
-      displayMessage =
-        "Great! I have everything. Generating your website now...";
+      // If conversational text exists, render only that
+      if (conversational.length > 0) {
+        displayMessage = conversational;
+      } else {
+        // Pure JSON → do not show anything to the user
+        displayMessage = "";
+      }
     }
   } catch (e) {
-    console.error(e);
-    // Not JSON → just render as markdown (normal LLM message)
+    console.warn("RenderAIResponse parsing error:", e);
+  }
+
+  if (!displayMessage.trim()) {
+    return null; // nothing to render
   }
 
   return (

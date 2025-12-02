@@ -19,8 +19,9 @@ type Props = { params: Promise<{ id: string }> };
 export default function Generate({ params }: Props) {
   const { id } = React.use(params);
   const router = useRouter();
-  const { prompt, setPrompt } = useChat();
   const {
+    prompt,
+    setPrompt,
     submitResponse,
     messages,
     hasSubmittedRef,
@@ -33,7 +34,7 @@ export default function Generate({ params }: Props) {
 
   useEffect(() => {
     const run = async () => {
-      console.log(prompt);
+      // console.log(prompt);
       if (!id || hasSubmittedRef.current) return;
       if (prompt && !hasSubmittedRef.current) {
         hasSubmittedRef.current = true;
@@ -64,7 +65,10 @@ export default function Generate({ params }: Props) {
           />
           <ChatBox
             prompt={prompt}
-            submitPrompt={() => submitResponse(id)}
+            submitPrompt={(e?: React.FormEvent) => {
+              if (e) e.preventDefault();
+              submitResponse(id);
+            }}
             setPrompt={setPrompt}
             isResponseLoading={isResponseLoading}
           />

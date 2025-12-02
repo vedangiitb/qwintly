@@ -101,7 +101,7 @@ export function streamHandler(
 
       if (!auth.success) {
         return ApiResponse.error(
-          "Failed to authenticate user! Please Log In Before you continue",
+          "Failed to authenticate user! Please log in before you continue",
           auth.status
         );
       }
@@ -113,15 +113,20 @@ export function streamHandler(
         return ApiResponse.error("Invalid JSON body", 400);
       }
 
-      const result = await handler({
-        token: auth.token!,
-        body,
-      });
+      const result = await handler({ token: auth.token!, body });
 
+      // If handler returns an SSE Response, DO NOT WRAP IT
+      if (result && result._sse === true && result.response instanceof Response) {
+        return result.response; // direct passthrough
+      }
+
+      // Otherwise → normal JSON response
       return ApiResponse.stream(result);
+
     } catch (err: any) {
       console.error("POST route error:", err);
       return ApiResponse.error(err.message || "Internal server error", 500);
     }
   };
 }
+

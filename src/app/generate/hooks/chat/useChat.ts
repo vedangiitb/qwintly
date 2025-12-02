@@ -20,13 +20,11 @@ export const useChat = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [recentChats, setRecentChats] = useState<recentChatInterface[]>([]);
   const dispatch = useDispatch<AppDispatch>();
-  const [isStreaming, setIsStreaming] = useState(false);
   const [generatingsite, setSiteGenerating] = useState(false);
   const prompt = useSelector((state: RootState) => state.prompt.prompt);
   const [changes, setChanges] = useState(false);
 
   const setPrompt: (p: string) => any = (p: string) => {
-    // console.log(prompt)
     dispatch(setChatPrompt(p));
   };
 
@@ -50,105 +48,120 @@ export const useChat = () => {
 
   const startStream = useCallback(
     async (chatId: string, prompt: string) => {
-      if (!chatId || !prompt) throw new Error("chatId or prompt missing");
-
-      // Cancel any existing stream
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-        abortControllerRef.current = null;
+      console.log(chatId, prompt);
+      if (!chatId || !prompt) {
+        throw new Error("chatId or prompt missing");
       }
 
+      // Abort any existing stream
+      abortControllerRef.current?.abort();
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      setMessages((prev) => {
-        const newUserMsg: Message = { role: "user", content: prompt };
-        return [...prev, newUserMsg];
-      });
+      // Push user message locally
+      setMessages((prev) => [...prev, { role: "user", content: prompt }]);
 
-      // Best-effort persist user message — do not block streaming
-      addToDB({ role: "user", content: prompt }, chatId).catch((e) =>
-        console.warn("Failed to persist user message", e)
-      );
-      setIsStreaming(true);
+      // Persist user message (non-blocking)
+      addToDB({ role: "user", content: prompt }, chatId);
+
+      setResponseLoading(true);
       hasSubmittedRef.current = true;
 
-      let responseText = "";
+      let assistantText = ""; // streaming visible text
+      let finalSchema: any = null;
 
       try {
-        // Use the latest snapshot of messages by reading state inside stream handler
-        // We'll pass a shallow copy of messages for the server to have context — it's okay if slightly stale
-        const snapshotForServer = await (async () => {
-          return messages;
-        })();
+        const snapshotForServer = [
+          ...messages,
+          { role: "user", content: prompt },
+        ];
 
-        await streamChatResponse(
-          snapshotForServer.concat([{ role: "user", content: prompt }]),
+        await streamChatResponse({
+          messages: snapshotForServer,
           chatId,
-          (chunk) => {
-            if (!responseText.trim()) setResponseLoading(false);
-            responseText += chunk + " ";
+          signal: controller.signal,
+
+          onToken: (token) => {
+            console.log("onToken", token);
+            assistantText += token;
+
             setMessages((prev) => {
               const last = prev[prev.length - 1];
               if (last?.role === "assistant") {
                 return [
                   ...prev.slice(0, -1),
-                  { role: "assistant", content: responseText },
+                  { role: "assistant", content: assistantText },
                 ];
               }
-              return [...prev, { role: "assistant", content: responseText }];
+              return [...prev, { role: "assistant", content: assistantText }];
             });
           },
-          { signal: controller.signal }
-        );
 
-        addToDB({ role: "assistant", content: responseText }, chatId).catch(
-          (e) => console.warn("Failed to persist assistant message", e)
-        );
-      } catch (e: any) {
-        if (e?.name === "AbortError") {
-          // user cancelled — don't treat as error
-          console.info("Streaming aborted");
-        } else {
-          console.error("Streaming failed", e);
-          setMessages((prev) => [
-            ...prev,
-            { role: "assistant", content: `Error: ${e?.message || String(e)}` },
-          ]);
-        }
+          onMetadata: (meta) => {
+            finalSchema = meta.schema; // machine use
+            addToDB({ role: "assistant", content: assistantText }, chatId);
+          },
+
+          onComplete: (meta) => {
+            finalSchema = meta.schema;
+
+            // Final assistant message if needed
+            setMessages((prev) => {
+              const last = prev[prev.length - 1];
+              // If assistant already streaming text, keep it
+              if (last?.role === "assistant") return prev;
+
+              return [...prev, { role: "assistant", content: assistantText }];
+            });
+
+            // Persist assistant final message
+            addToDB({ role: "assistant", content: assistantText }, chatId);
+
+            // e.g., setCollectorDone(true)
+            console.log("Collector COMPLETE:", meta.schema);
+          },
+
+          onError: (err) => {
+            setMessages((prev) => [
+              ...prev,
+              { role: "assistant", content: `Error: ${err}` },
+            ]);
+          },
+        });
       } finally {
-        setIsStreaming(false);
+        setResponseLoading(false);
         abortControllerRef.current = null;
       }
     },
-    [prompt, messages]
+    [messages]
   );
+
   const cancelStream = useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
-      setIsStreaming(false);
+      setResponseLoading(false);
     }
   }, []);
 
   const submitResponse = useCallback(
     (id?: string) => {
+      console.log("prompt", prompt);
       setResponseLoading(true);
       const chatId = id ?? currentChatId;
       if (!chatId) throw new Error("No chatId provided for submitResponse");
       startStream(chatId, prompt).catch((e) => console.error(e));
       setPrompt("");
     },
-    [currentChatId, startStream]
+    [currentChatId, startStream, prompt]
   );
 
   useEffect(() => {
     const fetchUserChats = async () => {
       const { chats, error } = await userChats();
-      console.log(chats);
       if (!error && chats) setRecentChats(chats as recentChatInterface[]);
     };
-    fetchUserChats();
+    // fetchUserChats();
   }, []);
 
   return {
@@ -163,12 +176,11 @@ export const useChat = () => {
     cancelStream,
     isResponseLoading,
     recentChats,
-    isStreaming,
     showPreview,
     setShowPreview,
     generatingsite,
     setSiteGenerating,
     changes,
-    setChanges
+    setChanges,
   } as const;
 };

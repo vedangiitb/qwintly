@@ -67,5 +67,7 @@ export async function fetchStreamUtil(
     throw new Error("Streaming response body missing (response.body is null).");
   }
 
+  console.log("response", response);
+
   return response.body.getReader();
 }
