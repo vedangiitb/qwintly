@@ -81,7 +81,7 @@ export const POST = streamHandler(async ({ body }) => {
     contents: geminiMessages,
     tools: [
       {
-        functionDeclarations, // <-- OFFICIAL GOOGLE FORMAT
+        functionDeclarations,
       },
     ],
     generationConfig: {

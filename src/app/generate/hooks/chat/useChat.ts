@@ -16,6 +16,7 @@ export const useChat = () => {
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const hasSubmittedRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const assistantPersistedRef = useRef(false);
   const [isResponseLoading, setResponseLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [recentChats, setRecentChats] = useState<recentChatInterface[]>([]);
@@ -66,14 +67,15 @@ export const useChat = () => {
 
       setResponseLoading(true);
       hasSubmittedRef.current = true;
+      assistantPersistedRef.current = false;
 
       let assistantText = ""; // streaming visible text
       let finalSchema: any = null;
 
       try {
-        const snapshotForServer = [
+        const snapshotForServer: Message[] = [
           ...messages,
-          { role: "user", content: prompt },
+          { role: "user", content: prompt } as Message,
         ];
 
         await streamChatResponse({
@@ -99,7 +101,17 @@ export const useChat = () => {
 
           onMetadata: (meta) => {
             finalSchema = meta.schema; // machine use
-            addToDB({ role: "assistant", content: assistantText }, chatId);
+            // Persist mid-stream metadata message (if desired), but avoid duplicate insertions.
+            if (!assistantPersistedRef.current && assistantText?.length) {
+              console.log(
+                "onMetadata: persisting assistant message (partial)",
+                assistantText
+              );
+              assistantPersistedRef.current = true;
+              addToDB({ role: "assistant", content: assistantText }, chatId)
+                .then((ok) => console.log("addToDB(metadata) success", ok))
+                .catch((e) => console.error("addToDB metadata failed", e));
+            }
           },
 
           onComplete: (meta) => {
@@ -114,8 +126,17 @@ export const useChat = () => {
               return [...prev, { role: "assistant", content: assistantText }];
             });
 
-            // Persist assistant final message
-            addToDB({ role: "assistant", content: assistantText }, chatId);
+            // Persist assistant final message (avoid duplicates)
+            if (!assistantPersistedRef.current && assistantText?.length) {
+              console.log(
+                "onComplete: persisting assistant message (final)",
+                assistantText
+              );
+              assistantPersistedRef.current = true;
+              addToDB({ role: "assistant", content: assistantText }, chatId)
+                .then((ok) => console.log("addToDB(onComplete) success", ok))
+                .catch((e) => console.error("addToDB onComplete failed", e));
+            }
 
             // e.g., setCollectorDone(true)
             console.log("Collector COMPLETE:", meta.schema);
@@ -126,6 +147,29 @@ export const useChat = () => {
               ...prev,
               { role: "assistant", content: `Error: ${err}` },
             ]);
+          },
+
+          onDone: (data) => {
+            console.log(data)
+            setMessages((prev) => {
+              const last = prev[prev.length - 1];
+              // If assistant already streaming text, keep it
+              if (last?.role === "assistant") return prev;
+
+              return [...prev, { role: "assistant", content: assistantText }];
+            });
+
+            // Persist assistant final message (avoid duplicates)
+            if (!assistantPersistedRef.current && assistantText?.length) {
+              console.log(
+                "onComplete: persisting assistant message (final)",
+                assistantText
+              );
+              assistantPersistedRef.current = true;
+              addToDB({ role: "assistant", content: assistantText }, chatId)
+                .then((ok) => console.log("addToDB(onComplete) success", ok))
+                .catch((e) => console.error("addToDB onComplete failed", e));
+            }
           },
         });
       } finally {

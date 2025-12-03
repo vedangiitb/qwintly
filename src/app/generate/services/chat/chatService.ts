@@ -11,6 +11,7 @@ export async function streamChatResponse({
   onMetadata,
   onComplete,
   onError,
+  onDone,
   signal,
 }: {
   messages: Message[];
@@ -19,6 +20,7 @@ export async function streamChatResponse({
   onMetadata: (meta: any) => void;
   onComplete: (meta: any) => void;
   onError: (err: any) => void;
+  onDone: (message: any) => void;
   signal?: AbortSignal;
 }) {
   if (!chatId) throw new Error("Missing chatId");
@@ -64,7 +66,7 @@ export async function streamChatResponse({
           continue;
         }
 
-        console.log("envelope",envelope);
+        console.log("envelope", envelope);
 
         // ---- Handle envelope types ----
         switch (envelope.type) {
@@ -85,6 +87,8 @@ export async function streamChatResponse({
             break;
 
           case "done":
+            onDone(envelope.payload);
+
             return;
 
           default:

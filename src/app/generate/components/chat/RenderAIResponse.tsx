@@ -7,36 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 
 export default function RenderAIResponse({ data }: { data: string }) {
-  let displayMessage: string = data;
-
-  try {
-    // Detect if response contains both conversational text + JSON
-    const ind = data.indexOf("{");
-
-    if (ind !== -1) {
-      // Everything BEFORE the first `{` is the conversational part
-      const conversational = data.slice(0, ind).trim();
-
-      // JSON part (machine state)
-      const jsonPart = data.slice(ind);
-
-      console.log("jsonPart", jsonPart);
-
-      // If conversational text exists, render only that
-      if (conversational.length > 0) {
-        displayMessage = conversational;
-      } else {
-        // Pure JSON → do not show anything to the user
-        displayMessage = "";
-      }
-    }
-  } catch (e) {
-    console.warn("RenderAIResponse parsing error:", e);
-  }
-
-  if (!displayMessage.trim()) {
-    return null; // nothing to render
-  }
+  let displayMessage: string = data || "Something went wrong";
 
   return (
     <div className="flex items-start gap-3 my-4">
