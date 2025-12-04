@@ -101,6 +101,7 @@ export const useChat = () => {
 
           onMetadata: (meta) => {
             finalSchema = meta.schema; // machine use
+            console.log(finalSchema);
             // Persist mid-stream metadata message (if desired), but avoid duplicate insertions.
             if (!assistantPersistedRef.current && assistantText?.length) {
               console.log(
@@ -116,6 +117,7 @@ export const useChat = () => {
 
           onComplete: (meta) => {
             finalSchema = meta.schema;
+            console.log(finalSchema);
 
             // Final assistant message if needed
             setMessages((prev) => {
@@ -150,7 +152,7 @@ export const useChat = () => {
           },
 
           onDone: (data) => {
-            console.log(data)
+            console.log(data);
             setMessages((prev) => {
               const last = prev[prev.length - 1];
               // If assistant already streaming text, keep it

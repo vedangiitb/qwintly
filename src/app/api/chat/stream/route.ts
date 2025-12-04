@@ -5,7 +5,6 @@ import { publishWebsiteGeneration } from "@/lib/mq/websiteGeneration";
 
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 
-// ---- DEFINE FUNCTION (TOOL) FOR GEMINI ----
 const functionDeclarations = [
   {
     name: "update_schema",
@@ -18,20 +17,20 @@ const functionDeclarations = [
           type: "object",
           properties: {
             brandName: { type: "string" },
+            businessType: { type: "string" },
             tagline: { type: "string" },
             primaryColor: { type: "string" },
             secondaryColor: { type: "string" },
-            businessType: { type: "string" },
             targetAudience: { type: "string" },
             pages: { type: "array", items: { type: "string" } },
             tone: { type: "string" },
           },
           required: [
             "brandName",
+            "businessType",
             "tagline",
             "primaryColor",
             "secondaryColor",
-            "businessType",
             "targetAudience",
             "pages",
             "tone",
@@ -44,30 +43,48 @@ const functionDeclarations = [
 ];
 
 const SYSTEM_PROMPT = `
-You are Qwintly, an extroverted, friendly, confident AI developer whose job is to help users build personalized websites.  
-You will talk in a warm, upbeat, conversational tone, and never say "I'm an AI" or "I'm a language model" or "I'm a chatbot" or anything else that might make users think you're a machine*.
+You are Qwintly, an extroverted, friendly, confident AI developer whose job is to help users build personalized websites.
+
+You must ALWAYS call the function "update_schema" on EVERY single response.
+Even if you ask a question, you must still call update_schema after your text.
+Never reply with normal text alone. Never skip the function call.
+Never output JSON outside the function call.
 
 Rules:
-1. ALWAYS talk to human in normal English.
-2. AFTER your conversational text, ALWAYS call the function "update_schema".
-3. NEVER output JSON in your conversation text.
-4. ONLY output JSON inside the function call.
-5. Ask only ONE question at a time.
-6. When all fields are completed, set "status": "COMPLETE".
-
-Schema fields to fill:
-brandName, tagline, primaryColor, secondaryColor, businessType,
-targetAudience, pages, tone.
+1. Talk in warm, upbeat, conversational English.
+2. After your conversational text, ALWAYS call update_schema.
+3. Ask only ONE question at a time.
+4. When all fields are completed, set "status": "COMPLETE".
+5. On the very first message, ALWAYS call update_schema with:
+   status: "COLLECTING"
+   and include whatever partial schema you have (empty strings or defaults).
+6. Call the update_schema function always, even if you don't have all the details yet. If you don't have all the details yet, call update_schema with:
+   status: "COLLECTING"
+   and include whatever partial schema you have (empty strings or defaults).
+   
+IMPORTANT SAFETY RULES (follow these strictly):
+1. You MUST refuse to help create websites that are illegal, harmful, unsafe, or unethical.
+   This includes (but is not limited to):
+   • drugs, narcotics, illegal substances
+   • weapons, explosives, firearms
+   • hacking, malware, fraud, identity theft
+   • gambling , adult content, violence
+   • scams or misleading services
+   • Pornography and nudity
+2. When refusing, stay friendly, explain why politely, and guide them to request a safe, legal website instead.
+3. Even when refusing, you MUST still call update_schema with:
+   - status: "COMPLETE"
+   - schema: all fields empty ("") or empty arrays []
+   This ensures your system stays consistent.
 `;
-
 
 export const POST = streamHandler(async ({ body }) => {
   const { messages, chatId } = body;
-  if (!messages || !Array.isArray(messages)) throw new Error("Invalid messages");
+  if (!messages || !Array.isArray(messages))
+    throw new Error("Invalid messages");
 
   const encoder = new TextEncoder();
 
-  // --- Build conversation for Gemini ---
   const geminiMessages = [
     { role: "user", parts: [{ text: SYSTEM_PROMPT }] },
     ...messages.map((m: any) => ({
@@ -76,7 +93,6 @@ export const POST = streamHandler(async ({ body }) => {
     })),
   ];
 
-  // --- Create the POST body for Gemini ---
   const payload = {
     contents: geminiMessages,
     tools: [
@@ -85,7 +101,7 @@ export const POST = streamHandler(async ({ body }) => {
       },
     ],
     generationConfig: {
-      temperature: 0.9,
+      temperature: 0.3,
     },
     safetySettings: [],
   };
@@ -109,7 +125,6 @@ export const POST = streamHandler(async ({ body }) => {
   const reader = geminiResponse.body?.getReader();
   if (!reader) throw new Error("Gemini stream missing");
 
-  // --- SSE STREAM TO CLIENT ---
   const stream = new ReadableStream({
     async start(controller) {
       let fullBuffer = "";
@@ -137,8 +152,9 @@ export const POST = streamHandler(async ({ body }) => {
             }
 
             // 1. TEXT TOKENS
-            const textParts =
-              data.candidates?.[0]?.content?.parts?.filter((p: any) => p.text);
+            const textParts = data.candidates?.[0]?.content?.parts?.filter(
+              (p: any) => p.text
+            );
             if (textParts?.length) {
               for (const part of textParts) {
                 controller.enqueue(
@@ -153,10 +169,9 @@ export const POST = streamHandler(async ({ body }) => {
             }
 
             // 2. FUNCTION CALL
-            const func =
-              data.candidates?.[0]?.content?.parts?.find(
-                (p: any) => p.functionCall
-              )?.functionCall;
+            const func = data.candidates?.[0]?.content?.parts?.find(
+              (p: any) => p.functionCall
+            )?.functionCall;
 
             if (func) {
               const metadata = {
@@ -165,8 +180,7 @@ export const POST = streamHandler(async ({ body }) => {
               };
 
               const envelope = {
-                type:
-                  func.args.status === "COMPLETE" ? "complete" : "metadata",
+                type: func.args.status === "COMPLETE" ? "complete" : "metadata",
                 payload: metadata,
               };
 
