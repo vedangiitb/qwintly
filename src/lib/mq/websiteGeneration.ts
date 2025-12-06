@@ -1,4 +1,18 @@
 // lib/mq.ts
+import { PubSub } from "@google-cloud/pubsub";
+
+const projectId = process.env.GCP_PROJECT_ID!;
+const credentials = JSON.parse(
+  Buffer.from(process.env.GCP_SERVICE_ACCOUNT_KEY_BASE64!, "base64").toString()
+);
+
+const pubsub = new PubSub({
+  projectId,
+  credentials,
+});
+
+const TOPIC_NAME = process.env.GCP_PUBSUB_TOPIC || "website-generation";
+
 export async function publishWebsiteGeneration({
   chatId,
   schema,
@@ -6,19 +20,21 @@ export async function publishWebsiteGeneration({
   chatId?: string;
   schema: any;
 }) {
-  // Replace this with your MQ client code:
-  // e.g., RabbitMQ publish, MCP client, SQS sendMessage, etc.
-  //
-  // Example (pseudo HTTP fallback; implement robust MQ in prod):
-  //
-  // await fetch(process.env.MQ_PUBLISH_URL, {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify({ event: "website_generation_requested", chatId, payload: schema })
-  // });
+  const payload = {
+    chatId,
+    schema,
+    timestamp: Date.now(),
+  };
 
-  console.log("Publishing website generation job", { chatId, schema });
+  try {
+    const messageId = await pubsub.topic(TOPIC_NAME).publishMessage({
+      data: Buffer.from(JSON.stringify(payload)),
+    });
 
-  // Simulate success
-  return true;
+    console.log("Sent message to Pub/Sub:", messageId);
+    return { success: true, messageId };
+  } catch (err) {
+    console.error("Pub/Sub publish failed:", err);
+    return { success: false, error: err };
+  }
 }
