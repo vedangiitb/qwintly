@@ -8,12 +8,15 @@ export default function ChatBox({
   submitPrompt,
   setPrompt,
   isResponseLoading,
+  generatingsite,
 }: {
   prompt: string;
   submitPrompt: any;
   setPrompt: (p: string) => void;
   isResponseLoading: boolean;
+  generatingsite: boolean;
 }) {
+  const isLoading = isResponseLoading || generatingsite;
   return (
     <form
       className="sticky bottom-2 right-0.5 left-0.5 md:mx-auto flex md:w-full md:max-w-3xl rounded-3xl glassmorphic shadow-2xl border p-3 md:p-4 backdrop-blur-2xl transition-all duration-200"
@@ -29,7 +32,7 @@ export default function ChatBox({
         wrap="off"
         className={cn(
           "rounded-2xl border-none outline-none focus:outline-none resize-none flex-1 text-accent-foreground shadow-none bg-accent p-3 md:p-4 min-h-[48px] max-h-48 transition-all duration-200 focus:ring-2 focus:ring-teal-200/50 focus:bg-white/10 backdrop-blur-sm",
-          isResponseLoading ? "opacity-60 pointer-events-none" : "opacity-100"
+          isLoading ? "opacity-60 pointer-events-none" : "opacity-100"
         )}
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
@@ -42,7 +45,7 @@ export default function ChatBox({
         // TODO: Make this changing
         placeholder="An AI tutor for learning Data Structures…"
         aria-label="Prompt"
-        disabled={isResponseLoading}
+        disabled={isLoading}
         style={{
           backgroundColor: "var(--accent)",
           fontSize: "14px",
@@ -51,17 +54,17 @@ export default function ChatBox({
       />
       <Button
         type="submit"
-        disabled={isResponseLoading || !prompt}
+        disabled={isLoading || !prompt}
         aria-label="Submit prompt"
         className={cn(
           "ml-2 rounded-full bg-gradient-to-br dark:from-teal-400/90 dark:via-purple-500/90 dark:to-cyan-400/70 from-teal-600 via-purple-600 to-cyan-600 shadow-xl w-12 h-12 flex items-center justify-center p-0 transition-all duration-150 relative group disabled:opacity-80",
-          isResponseLoading
+          isLoading
             ? "cursor-not-allowed animate-pulse"
             : "hover:scale-105 hover:shadow-2xl hover:bg-gradient-to-br dark:from-cyan-300/60 dark:via-fuchsia-400/80 dark:to-purple-500/80"
         )}
         tabIndex={0}
       >
-        {isResponseLoading ? (
+        {isLoading ? (
           <Loader2 className="animate-spin text-white" size={22} />
         ) : (
           <ArrowUp

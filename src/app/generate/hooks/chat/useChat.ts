@@ -10,23 +10,34 @@ import {
   streamChatResponse,
   userChats,
 } from "../../services/chat/chatService";
+import { setIsGenerating, setGenerateStatus } from "@/lib/features/genUiSlice";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const hasSubmittedRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
   const assistantPersistedRef = useRef(false);
   const [isResponseLoading, setResponseLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [recentChats, setRecentChats] = useState<recentChatInterface[]>([]);
   const dispatch = useDispatch<AppDispatch>();
-  const [generatingsite, setSiteGenerating] = useState(false);
+  const generatingsite = useSelector(
+    (state: RootState) => state.genUi.isGenerating
+  );
+  const generateStatus = useSelector(
+    (state: RootState) => state.genUi.generateStatus
+  );
   const prompt = useSelector((state: RootState) => state.prompt.prompt);
   const [changes, setChanges] = useState(false);
 
   const setPrompt: (p: string) => any = (p: string) => {
     dispatch(setChatPrompt(p));
+  };
+
+  const setSiteGenerating = (generating: boolean) => {
+    dispatch(setIsGenerating(generating));
   };
 
   // fetch existing chat messages and set currentChatId
@@ -140,6 +151,59 @@ export const useChat = () => {
                 .catch((e) => console.error("addToDB onComplete failed", e));
             }
 
+            setSiteGenerating(true);
+
+            // Start a websocket to receive generation status updates from the worker
+            try {
+              // close any existing ws
+              if (wsRef.current) {
+                try {
+                  wsRef.current.close();
+                } catch (e) {
+                  console.error("ws close failed", e);
+                }
+                wsRef.current = null;
+              }
+
+              const sessionId = chatId;
+
+              // Prefer a NEXT_PUBLIC env first for client usage
+              const workerUrl =
+                "wss://qwintly-wg-worker-296200543960.asia-south1.run.app";
+              const wsUrl = `${workerUrl}/ws/${sessionId}`;
+              const ws = new WebSocket(wsUrl);
+              wsRef.current = ws;
+
+              console.log("wsUrl", wsUrl);
+
+              ws.addEventListener("open", () =>
+                console.log("WS open for session", sessionId, wsUrl)
+              );
+
+              ws.addEventListener("message", (e) => {
+                try {
+                  console.log(e);
+                  dispatch(setGenerateStatus(e.data));
+                } catch (err) {
+                  console.error("WS parse message failed", err);
+                }
+              });
+
+              ws.addEventListener("close", () => {
+                // Reset generation UI state on socket close
+                dispatch(setIsGenerating(false));
+                dispatch(setGenerateStatus(null));
+                wsRef.current = null;
+              });
+
+              ws.addEventListener("error", (err) =>
+                console.error("WS error", err)
+              );
+            } catch (err) {
+              console.error("Failed to start generation WS", err);
+              dispatch(setIsGenerating(false));
+              dispatch(setGenerateStatus(null));
+            }
             // e.g., setCollectorDone(true)
             console.log("Collector COMPLETE:", meta.schema);
           },
@@ -210,6 +274,22 @@ export const useChat = () => {
     // fetchUserChats();
   }, []);
 
+  // Cleanup websocket on unmount
+  useEffect(() => {
+    return () => {
+      if (wsRef.current) {
+        try {
+          wsRef.current.close();
+        } catch (e) {
+          console.error("cleanup ws close failed", e);
+        }
+        wsRef.current = null;
+      }
+      dispatch(setIsGenerating(false));
+      dispatch(setGenerateStatus(null));
+    };
+  }, []);
+
   return {
     prompt,
     setPrompt,
@@ -228,5 +308,6 @@ export const useChat = () => {
     setSiteGenerating,
     changes,
     setChanges,
+    generateStatus,
   } as const;
 };

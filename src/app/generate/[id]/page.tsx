@@ -13,6 +13,7 @@ import ChatHistory from "../components/chat/ChatHistory";
 import PreviewPanel from "../components/preview/previewPanel/PreviewPanel";
 import { useChat } from "../hooks/chat/useChat";
 import { useChatUi } from "../hooks/chat/useChatUi";
+import GeneratingStatus from "../components/chat/GeneratingStatus";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -63,6 +64,7 @@ export default function Generate({ params }: Props) {
             isResponseLoading={isResponseLoading}
             generatingsite={generatingsite}
           />
+          <GeneratingStatus />
           <ChatBox
             prompt={prompt}
             submitPrompt={(e?: React.FormEvent) => {
@@ -71,6 +73,7 @@ export default function Generate({ params }: Props) {
             }}
             setPrompt={setPrompt}
             isResponseLoading={isResponseLoading}
+            generatingsite={generatingsite}
           />
         </ResizablePanel>
 
