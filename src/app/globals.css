@@ -149,6 +149,43 @@
   background: var(--accent);
 }
 
-.grecaptcha-badge{
+.grecaptcha-badge {
   visibility: hidden;
+}
+
+@keyframes text-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.animate-text-shimmer {
+  animation: text-shimmer 2.2s linear infinite;
+}
+
+/* Typing dots */
+@keyframes typingDots {
+  0% {
+    content: "";
+  }
+  20% {
+    content: ".";
+  }
+  40% {
+    content: "..";
+  }
+  60% {
+    content: "...";
+  }
+  80% {
+    content: "....";
+  }
+}
+
+.animate-typing-dots::after {
+  content: "";
+  animation: typingDots 1.4s steps(1, end) infinite;
 }

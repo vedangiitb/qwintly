@@ -13,11 +13,24 @@ export default function GeneratingStatus() {
 
       {/* Text */}
       <div className="flex flex-col">
-        <p className="text-sm font-medium">
-          Generating your site
-        </p>
-        <p className="text-xs text-muted-foreground">
-          {generateStatus || "Setting things up..."}
+        <p className="text-sm font-medium">Generating your site</p>
+        <p
+          className="
+    text-xs
+    font-medium
+    bg-gradient-to-r
+    from-muted-foreground
+    via-primary
+    to-muted-foreground
+    bg-[length:200%_100%]
+    bg-clip-text
+    text-transparent
+    animate-text-shimmer
+    transition-opacity duration-300
+  "
+        >
+          {generateStatus || "Setting things up"}
+          <span className="animate-typing-dots"></span>
         </p>
       </div>
     </div>
