@@ -183,7 +183,36 @@ export const useChat = () => {
               ws.addEventListener("message", (e) => {
                 try {
                   console.log(e);
-                  dispatch(setGenerateStatus(e.data));
+
+                  // Normalize data to string for UI/state updates
+                  const dataStr =
+                    typeof e.data === "string"
+                      ? e.data
+                      : JSON.stringify(e.data);
+
+                  dispatch(setGenerateStatus(dataStr));
+
+                  // Detect SUCCESS (support both plain string and JSON payloads)
+                  let isSuccess = false;
+
+                  if (typeof dataStr === "string" && dataStr === "SUCCESS") {
+                    isSuccess = true;
+                  }
+
+                  if (isSuccess) {
+                    // Update UI immediately so it doesn't wait for the close event
+                    dispatch(setIsGenerating(false));
+
+                    // Close the specific socket after 1s; let the 'close' handler perform cleanup
+                    setTimeout(() => {
+                      try {
+                        ws.close();
+                      } catch (err) {
+                        console.error("ws close after SUCCESS failed", err);
+                      }
+                      // intentionally do NOT set wsRef.current = null here
+                    }, 1000);
+                  }
                 } catch (err) {
                   console.error("WS parse message failed", err);
                 }
