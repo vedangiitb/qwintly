@@ -1,4 +1,9 @@
 "use client";
+import {
+  generationFinished,
+  generationStarted,
+  generationStatusUpdated,
+} from "@/lib/features/genUiSlice";
 import { setChatPrompt } from "@/lib/features/promptSlice";
 import { AppDispatch, RootState } from "@/lib/store";
 import { Message, recentChatInterface } from "@/types/chat";
@@ -10,7 +15,6 @@ import {
   streamChatResponse,
   userChats,
 } from "../../services/chat/chatService";
-import { setIsGenerating, setGenerateStatus } from "@/lib/features/genUiSlice";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -26,9 +30,7 @@ export const useChat = () => {
   const generatingsite = useSelector(
     (state: RootState) => state.genUi.isGenerating
   );
-  const generateStatus = useSelector(
-    (state: RootState) => state.genUi.generateStatus
-  );
+  const generateStatus = useSelector((state: RootState) => state.genUi.status);
   const prompt = useSelector((state: RootState) => state.prompt.prompt);
   const [changes, setChanges] = useState(false);
 
@@ -37,10 +39,9 @@ export const useChat = () => {
   };
 
   const setSiteGenerating = (generating: boolean) => {
-    dispatch(setIsGenerating(generating));
+    dispatch(generationStarted());
   };
 
-  // fetch existing chat messages and set currentChatId
   const fetchChat = useCallback(async (chatId: string) => {
     if (!chatId) return;
     setCurrentChatId(chatId);
@@ -182,35 +183,24 @@ export const useChat = () => {
 
               ws.addEventListener("message", (e) => {
                 try {
-                  console.log(e);
-
-                  // Normalize data to string for UI/state updates
-                  const dataStr =
-                    typeof e.data === "string"
-                      ? e.data
-                      : JSON.stringify(e.data);
-
-                  dispatch(setGenerateStatus(dataStr));
+                  const msg = String(e.data);
+                  dispatch(generationStatusUpdated(msg));
 
                   // Detect SUCCESS (support both plain string and JSON payloads)
                   let isSuccess = false;
 
-                  if (typeof dataStr === "string" && dataStr === "SUCCESS") {
+                  if (typeof msg === "string" && msg === "SUCCESS") {
                     isSuccess = true;
                   }
 
                   if (isSuccess) {
-                    // Update UI immediately so it doesn't wait for the close event
-                    dispatch(setIsGenerating(false));
-
-                    // Close the specific socket after 1s; let the 'close' handler perform cleanup
+                    dispatch(generationStatusUpdated(msg));
                     setTimeout(() => {
                       try {
                         ws.close();
                       } catch (err) {
                         console.error("ws close after SUCCESS failed", err);
                       }
-                      // intentionally do NOT set wsRef.current = null here
                     }, 1000);
                   }
                 } catch (err) {
@@ -219,9 +209,7 @@ export const useChat = () => {
               });
 
               ws.addEventListener("close", () => {
-                // Reset generation UI state on socket close
-                dispatch(setIsGenerating(false));
-                dispatch(setGenerateStatus(null));
+                dispatch(generationFinished());
                 wsRef.current = null;
               });
 
@@ -230,10 +218,8 @@ export const useChat = () => {
               );
             } catch (err) {
               console.error("Failed to start generation WS", err);
-              dispatch(setIsGenerating(false));
-              dispatch(setGenerateStatus(null));
+              dispatch(generationFinished());
             }
-            // e.g., setCollectorDone(true)
             console.log("Collector COMPLETE:", meta.schema);
           },
 
@@ -314,8 +300,7 @@ export const useChat = () => {
         }
         wsRef.current = null;
       }
-      dispatch(setIsGenerating(false));
-      dispatch(setGenerateStatus(null));
+      dispatch(generationFinished());
     };
   }, []);
 

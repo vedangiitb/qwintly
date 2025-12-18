@@ -1,34 +1,33 @@
 "use client";
-import { setUiChatvisible, setUiWidth } from "@/lib/features/genUiSlice";
-import { AppDispatch, RootState } from "@/lib/store";
-import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useCallback, useMemo } from "react";
+import { useUi } from "../gen/uiContext";
+
+type DeviceMode = "phone" | "tab" | "pc";
 
 export const useChatUi = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const [editMode, setEditMode] = useState(false);
-  const chatVisible = useSelector(
-    (state: RootState) => state.genUi.chatVisible
+  const { state, dispatch } = useUi();
+  const { chatVisible, editMode, layout } = state;
+
+  const width = useMemo(() => {
+    return layout == "pc" ? "100%" : layout == "tab" ? "600px" : "375px";
+  }, [layout]);
+
+  const toggleChatVisible = useCallback(() => {
+    dispatch({ type: "TOGGLE_CHAT" });
+  }, [dispatch]);
+
+  const setDeviceMode = useCallback(
+    (mode: DeviceMode) => {
+      dispatch({ type: "SET_LAYOUT", payload: mode });
+    },
+    [dispatch]
   );
-  const width = useSelector((state: RootState) => state.genUi.width);
 
-  const setChatVisible = () => {
-    dispatch(setUiChatvisible(!chatVisible));
-  };
-
-  const setWidth = (mode: "phone" | "tablet" | "pc") => {
-    if (mode == "phone") {
-      dispatch(setUiWidth("375px"));
-    } else if (mode == "tablet") {
-      dispatch(setUiWidth("600px"));
-    } else dispatch(setUiWidth("100%"));
-  };
-
-  const toggleEditMode = () => {
-    if (!setEditMode) return;
+  const toggleEditMode = useCallback(() => {
     const iframe = document.getElementById(
       "preview-frame"
-    ) as HTMLIFrameElement;
+    ) as HTMLIFrameElement | null;
+
     iframe?.contentWindow?.postMessage(
       {
         type: "editMode",
@@ -36,14 +35,15 @@ export const useChatUi = () => {
       },
       window.location.origin
     );
-    setEditMode(!editMode);
-  };
+
+    dispatch({ type: "SET_EDIT_MODE", payload: !editMode });
+  }, [dispatch, editMode]);
 
   return {
     chatVisible,
-    setChatVisible,
+    toggleChatVisible,
     width,
-    setWidth,
+    setDeviceMode,
     editMode,
     toggleEditMode,
   } as const;

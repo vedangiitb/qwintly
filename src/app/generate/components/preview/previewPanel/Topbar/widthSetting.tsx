@@ -10,7 +10,7 @@ export default function WidthSetting({
   setWidth,
 }: {
   width: string;
-  setWidth: (mode: "phone" | "tablet" | "pc") => void;
+  setWidth: (mode: "phone" | "tab" | "pc") => void;
 }) {
   const isPhone = width === "600px";
   const isTablet = width === "100%";
@@ -22,7 +22,7 @@ export default function WidthSetting({
           <TooltipTrigger asChild>
             <Tablet
               className="cursor-pointer w-5 h-5 text-chart-2 hover:text-chart-2/70 transition-colors"
-              onClick={() => setWidth("tablet")}
+              onClick={() => setWidth("tab")}
               aria-label="Switch to Tablet View"
               role="button"
               tabIndex={0}

@@ -16,9 +16,9 @@ import { useChat } from "@/app/generate/hooks/chat/useChat";
 export default function PreviewTopbar({}: {}) {
   const {
     chatVisible,
-    setChatVisible,
+    toggleChatVisible,
     width,
-    setWidth,
+    setDeviceMode,
     editMode,
     toggleEditMode,
   } = useChatUi();
@@ -52,7 +52,7 @@ export default function PreviewTopbar({}: {}) {
     <div className="glass-topbar flex items-center justify-between px-2 py-1 rounded-xl shadow-md border border-white/20 mb-3 select-none">
       <button
         aria-label={chatVisible ? "Close Chat Panel" : "Open Chat Panel"}
-        onClick={() => setChatVisible()}
+        onClick={() => toggleChatVisible()}
         className="p-1 rounded-md transition-colors duration-200 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-teal-400"
       >
         {chatVisible ? (
@@ -68,7 +68,7 @@ export default function PreviewTopbar({}: {}) {
       {showPreview && setChanges ? (
         <div className="flex items-center gap-4">
           <EditMode editMode={editMode} toggleEditMode={toggleEditMode} />
-          <WidthSetting width={width} setWidth={setWidth} />
+          <WidthSetting width={width} setWidth={setDeviceMode} />
           <button
             aria-label="Save changes"
             role="button"
