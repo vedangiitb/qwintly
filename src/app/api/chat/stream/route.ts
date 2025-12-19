@@ -1,82 +1,8 @@
-// app/api/chat/stream/route.ts
-
 import { streamHandler } from "@/lib/apiHandler";
 import { publishWebsiteGeneration } from "@/lib/mq/websiteGeneration";
-
+import { SYSTEM_PROMPT } from "@/ai/prompts/conversation.prompt";
+import { conversationTools } from "@/ai/tools/toolsets/conversation.tools";
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
-
-const functionDeclarations = [
-  {
-    name: "update_schema",
-    description: "Update website schema for collector agent",
-    parameters: {
-      type: "object",
-      properties: {
-        status: { type: "string", enum: ["COLLECTING", "COMPLETE"] },
-        schema: {
-          type: "object",
-          properties: {
-            brandName: { type: "string" },
-            businessType: { type: "string" },
-            tagline: { type: "string" },
-            primaryColor: { type: "string" },
-            secondaryColor: { type: "string" },
-            targetAudience: { type: "string" },
-            pages: { type: "array", items: { type: "string" } },
-            tone: { type: "string" },
-          },
-          required: [
-            "brandName",
-            "businessType",
-            "tagline",
-            "primaryColor",
-            "secondaryColor",
-            "targetAudience",
-            "pages",
-            "tone",
-          ],
-        },
-      },
-      required: ["status", "schema"],
-    },
-  },
-];
-
-const SYSTEM_PROMPT = `
-You are Qwintly, an extroverted, friendly, confident AI developer whose job is to help users build personalized websites.
-
-You must ALWAYS call the function "update_schema" on EVERY single response.
-Even if you ask a question, you must still call update_schema after your text.
-Never reply with normal text alone. Never skip the function call.
-Never output JSON outside the function call.
-
-Rules:
-1. Talk in warm, upbeat, conversational English.
-2. After your conversational text, ALWAYS call update_schema.
-3. Ask only ONE question at a time.
-4. When all fields are completed, set "status": "COMPLETE".
-5. On the very first message, ALWAYS call update_schema with:
-   status: "COLLECTING"
-   and include whatever partial schema you have (empty strings or defaults).
-6. Call the update_schema function always, even if you don't have all the details yet. If you don't have all the details yet, call update_schema with:
-   status: "COLLECTING"
-   and include whatever partial schema you have (empty strings or defaults).
-   
-IMPORTANT SAFETY RULES (follow these strictly):
-1. You MUST refuse to help create websites that are illegal, harmful, unsafe, or unethical.
-   This includes (but is not limited to):
-   • drugs, narcotics, illegal substances
-   • weapons, explosives, firearms
-   • hacking, malware, fraud, identity theft
-   • gambling , adult content, violence
-   • scams or misleading services
-   • Pornography and nudity
-2. When refusing, stay friendly, explain why politely, and guide them to request a safe, legal website instead.
-3. Even when refusing, you MUST still call update_schema with:
-   - status: "COMPLETE"
-   - schema: all fields empty ("") or empty arrays []
-   This ensures your system stays consistent.
-`;
 
 export const POST = streamHandler(async ({ body }) => {
   const { messages, chatId } = body;
@@ -95,19 +21,11 @@ export const POST = streamHandler(async ({ body }) => {
 
   const payload = {
     contents: geminiMessages,
-    tools: [
-      {
-        functionDeclarations,
-      },
-    ],
-    generationConfig: {
-      temperature: 0.3,
-    },
-    safetySettings: [],
+    tools: conversationTools,
   };
 
   const url =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=" +
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&key=" +
     GOOGLE_API_KEY;
 
   const geminiResponse = await fetch(url, {

@@ -101,13 +101,13 @@ export const useChat = () => {
 
             setMessages((prev) => {
               const last = prev[prev.length - 1];
-              if (last?.role === "assistant") {
+              if (last?.role === "model") {
                 return [
                   ...prev.slice(0, -1),
-                  { role: "assistant", content: assistantText },
+                  { role: "model", content: assistantText },
                 ];
               }
-              return [...prev, { role: "assistant", content: assistantText }];
+              return [...prev, { role: "model", content: assistantText }];
             });
           },
 
@@ -117,11 +117,11 @@ export const useChat = () => {
             // Persist mid-stream metadata message (if desired), but avoid duplicate insertions.
             if (!assistantPersistedRef.current && assistantText?.length) {
               console.log(
-                "onMetadata: persisting assistant message (partial)",
+                "onMetadata: persisting model message (partial)",
                 assistantText
               );
               assistantPersistedRef.current = true;
-              addToDB({ role: "assistant", content: assistantText }, chatId)
+              addToDB({ role: "model", content: assistantText }, chatId)
                 .then((ok) => console.log("addToDB(metadata) success", ok))
                 .catch((e) => console.error("addToDB metadata failed", e));
             }
@@ -135,9 +135,9 @@ export const useChat = () => {
             setMessages((prev) => {
               const last = prev[prev.length - 1];
               // If assistant already streaming text, keep it
-              if (last?.role === "assistant") return prev;
+              if (last?.role === "model") return prev;
 
-              return [...prev, { role: "assistant", content: assistantText }];
+              return [...prev, { role: "model", content: assistantText }];
             });
 
             // Persist assistant final message (avoid duplicates)
@@ -147,7 +147,7 @@ export const useChat = () => {
                 assistantText
               );
               assistantPersistedRef.current = true;
-              addToDB({ role: "assistant", content: assistantText }, chatId)
+              addToDB({ role: "model", content: assistantText }, chatId)
                 .then((ok) => console.log("addToDB(onComplete) success", ok))
                 .catch((e) => console.error("addToDB onComplete failed", e));
             }
@@ -186,22 +186,13 @@ export const useChat = () => {
                   const msg = String(e.data);
                   dispatch(generationStatusUpdated(msg));
 
-                  // Detect SUCCESS (support both plain string and JSON payloads)
-                  let isSuccess = false;
-
                   if (typeof msg === "string" && msg === "SUCCESS") {
-                    isSuccess = true;
-                  }
-
-                  if (isSuccess) {
                     dispatch(generationStatusUpdated(msg));
-                    setTimeout(() => {
-                      try {
-                        ws.close();
-                      } catch (err) {
-                        console.error("ws close after SUCCESS failed", err);
-                      }
-                    }, 1000);
+                    try {
+                      ws.close();
+                    } catch (err) {
+                      console.error("ws close after SUCCESS failed", err);
+                    }
                   }
                 } catch (err) {
                   console.error("WS parse message failed", err);
@@ -226,7 +217,7 @@ export const useChat = () => {
           onError: (err) => {
             setMessages((prev) => [
               ...prev,
-              { role: "assistant", content: `Error: ${err}` },
+              { role: "model", content: `Error: ${err}` },
             ]);
           },
 
@@ -235,9 +226,9 @@ export const useChat = () => {
             setMessages((prev) => {
               const last = prev[prev.length - 1];
               // If assistant already streaming text, keep it
-              if (last?.role === "assistant") return prev;
+              if (last?.role === "model") return prev;
 
-              return [...prev, { role: "assistant", content: assistantText }];
+              return [...prev, { role: "model", content: assistantText }];
             });
 
             // Persist assistant final message (avoid duplicates)
@@ -247,7 +238,7 @@ export const useChat = () => {
                 assistantText
               );
               assistantPersistedRef.current = true;
-              addToDB({ role: "assistant", content: assistantText }, chatId)
+              addToDB({ role: "model", content: assistantText }, chatId)
                 .then((ok) => console.log("addToDB(onComplete) success", ok))
                 .catch((e) => console.error("addToDB onComplete failed", e));
             }
