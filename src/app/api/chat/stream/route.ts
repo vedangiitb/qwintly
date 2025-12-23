@@ -25,7 +25,7 @@ export const POST = streamHandler(async ({ body }) => {
   };
 
   const url =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&key=" +
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=" +
     GOOGLE_API_KEY;
 
   const geminiResponse = await fetch(url, {

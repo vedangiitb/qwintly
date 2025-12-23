@@ -103,6 +103,8 @@ B) Ask the user for confirmation to proceed, OR
 C) Proceed with generation by setting status to "COMPLETE"
 
 Do not give responses without a follow-up question or confirmation.
+
+In Every response you should include both the function call and response to user(the response to user must be in plain text)
 =====================
 END OF INSTRUCTIONS
 =====================

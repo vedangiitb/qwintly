@@ -1,7 +1,7 @@
 // import { colorMap } from "@/components/generator/colorMap";
 import { colorMap } from "@/utils/colorMap";
 
-export const getRelColList = (initialStyles: GenStyles) => {
+export const getRelColList = (initialStyles: any) => {
   const allPairs = [
     {
       color: colorMap[initialStyles?.color].button,

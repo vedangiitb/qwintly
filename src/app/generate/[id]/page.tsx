@@ -35,7 +35,6 @@ export default function Generate({ params }: Props) {
 
   useEffect(() => {
     const run = async () => {
-      // console.log(prompt);
       if (!id || hasSubmittedRef.current) return;
       if (prompt && !hasSubmittedRef.current) {
         hasSubmittedRef.current = true;
@@ -54,7 +53,6 @@ export default function Generate({ params }: Props) {
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      {/* <div className="flex"> */}
       <ResizablePanelGroup direction="horizontal" className="h-full flex">
         <ResizablePanel
           className={`flex flex-col flex-1 overflow-y-auto px-2 py-4 h-full ${!chatVisible ? "hidden" : ""}`}

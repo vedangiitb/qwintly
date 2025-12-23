@@ -22,7 +22,7 @@ export default function PreviewTopbar({}: {}) {
     editMode,
     toggleEditMode,
   } = useChatUi();
-  const { showPreview, changes, setChanges } = useChat();
+  const { generateStatus, changes, setChanges, genUrl } = useChat();
   const initialStyles = {};
   const [detailsFromLLM, setDetailsFromLLM] = useState({});
   const [stylesFromLLM, setStylesFromLLM] = useState(initialStyles);
@@ -45,7 +45,7 @@ export default function PreviewTopbar({}: {}) {
       heroImg: heroImg,
     };
     localStorage.setItem("previewData", JSON.stringify(previewData));
-    window.open("/preview", "_blank");
+    if (genUrl) window.open(genUrl, "_blank");
   };
 
   return (
@@ -65,7 +65,7 @@ export default function PreviewTopbar({}: {}) {
       <h3 className="font-light tracking-wider select-text">Preview</h3>
 
       {/* Controls Panel */}
-      {showPreview && setChanges ? (
+      {generateStatus && setChanges ? (
         <div className="flex items-center gap-4">
           <EditMode editMode={editMode} toggleEditMode={toggleEditMode} />
           <WidthSetting width={width} setWidth={setDeviceMode} />
@@ -94,12 +94,12 @@ export default function PreviewTopbar({}: {}) {
             />
           </button>
 
-          <StyleSettings
+          {/* <StyleSettings
             stylesFromLLM={stylesFromLLM}
             setStylesFromLLM={setStylesFromLLM}
             initialStyles={initialStyles}
             setChanges={setChanges}
-          />
+          /> */}
 
           <button
             aria-label="Open in new window"

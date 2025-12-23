@@ -19,7 +19,7 @@ export default function ChatBox({
   const isLoading = isResponseLoading || generatingsite;
   return (
     <form
-      className="sticky bottom-2 right-0.5 left-0.5 md:mx-auto flex md:w-full md:max-w-3xl rounded-3xl glassmorphic shadow-2xl border p-3 md:p-4 backdrop-blur-2xl transition-all duration-200"
+      className="sticky bottom-2 right-0.5 left-0.5 md:mx-auto flex md:w-full md:max-w-3xl rounded-3xl gap-2 glassmorphic shadow-2xl border p-3 md:p-4 backdrop-blur-2xl transition-all duration-200 align-bottom"
       onSubmit={() => submitPrompt()}
       style={{
         background:
@@ -29,7 +29,6 @@ export default function ChatBox({
       }}
     >
       <Textarea
-        wrap="off"
         className={cn(
           "rounded-2xl border-none outline-none focus:outline-none resize-none flex-1 text-accent-foreground shadow-none bg-accent p-3 md:p-4 min-h-[48px] max-h-48 transition-all duration-200 focus:ring-2 focus:ring-teal-200/50 focus:bg-white/10 backdrop-blur-sm",
           isLoading ? "opacity-60 pointer-events-none" : "opacity-100"
@@ -57,7 +56,7 @@ export default function ChatBox({
         disabled={isLoading || !prompt}
         aria-label="Submit prompt"
         className={cn(
-          "ml-2 rounded-full bg-gradient-to-br dark:from-teal-400/90 dark:via-purple-500/90 dark:to-cyan-400/70 from-teal-600 via-purple-600 to-cyan-600 shadow-xl w-12 h-12 flex items-center justify-center p-0 transition-all duration-150 relative group disabled:opacity-80",
+          "mt-auto rounded-full bg-gradient-to-br dark:from-teal-400/90 dark:via-purple-500/90 dark:to-cyan-400/70 from-teal-600 via-purple-600 to-cyan-600 shadow-xl w-12 h-12 flex items-center justify-center p-0 transition-all duration-150 relative group disabled:opacity-80",
           isLoading
             ? "cursor-not-allowed animate-pulse"
             : "hover:scale-105 hover:shadow-2xl hover:bg-gradient-to-br dark:from-cyan-300/60 dark:via-fuchsia-400/80 dark:to-purple-500/80"

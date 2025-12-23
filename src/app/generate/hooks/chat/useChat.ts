@@ -3,6 +3,8 @@ import {
   generationFinished,
   generationStarted,
   generationStatusUpdated,
+  generationUrl,
+  resetStatus,
 } from "@/lib/features/genUiSlice";
 import { setChatPrompt } from "@/lib/features/promptSlice";
 import { AppDispatch, RootState } from "@/lib/store";
@@ -15,8 +17,10 @@ import {
   streamChatResponse,
   userChats,
 } from "../../services/chat/chatService";
+import { fetchUrl } from "../../services/gen/fetchUrl";
 
 export const useChat = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const hasSubmittedRef = useRef(false);
@@ -24,13 +28,14 @@ export const useChat = () => {
   const wsRef = useRef<WebSocket | null>(null);
   const assistantPersistedRef = useRef(false);
   const [isResponseLoading, setResponseLoading] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
   const [recentChats, setRecentChats] = useState<recentChatInterface[]>([]);
-  const dispatch = useDispatch<AppDispatch>();
   const generatingsite = useSelector(
     (state: RootState) => state.genUi.isGenerating
   );
-  const generateStatus = useSelector((state: RootState) => state.genUi.status);
+  const genUrl = useSelector((state: RootState) => state.genUi.url);
+  const generateStatus = useSelector(
+    (state: RootState) => state.genUi.generated
+  );
   const prompt = useSelector((state: RootState) => state.prompt.prompt);
   const [changes, setChanges] = useState(false);
 
@@ -38,17 +43,27 @@ export const useChat = () => {
     dispatch(setChatPrompt(p));
   };
 
-  const setSiteGenerating = (generating: boolean) => {
+  const startGeneration = () => {
     dispatch(generationStarted());
   };
 
+  const setGenUrl = (url: string) => dispatch(generationUrl(url));
+
+  const resetGenStatus = () => dispatch(resetStatus());
+
   const fetchChat = useCallback(async (chatId: string) => {
+    resetGenStatus()
     if (!chatId) return;
     setCurrentChatId(chatId);
-
     const { messages: fetched, error } = await fetchChatMessages(chatId);
     if (!error && fetched && fetched.length > 0) {
       setMessages(fetched);
+      await fetchUrl(chatId).then((url) => {
+        if (url) {
+          setGenUrl(url);
+        } else {
+        }
+      });
       return true;
     } else if (error) {
       console.error("fetchChat error", error);
@@ -66,15 +81,12 @@ export const useChat = () => {
         throw new Error("chatId or prompt missing");
       }
 
-      // Abort any existing stream
       abortControllerRef.current?.abort();
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      // Push user message locally
       setMessages((prev) => [...prev, { role: "user", content: prompt }]);
 
-      // Persist user message (non-blocking)
       addToDB({ role: "user", content: prompt }, chatId);
 
       setResponseLoading(true);
@@ -101,27 +113,26 @@ export const useChat = () => {
 
             setMessages((prev) => {
               const last = prev[prev.length - 1];
-              if (last?.role === "model") {
+              if (last?.role === "assistant") {
                 return [
                   ...prev.slice(0, -1),
-                  { role: "model", content: assistantText },
+                  { role: "assistant", content: assistantText },
                 ];
               }
-              return [...prev, { role: "model", content: assistantText }];
+              return [...prev, { role: "assistant", content: assistantText }];
             });
           },
 
           onMetadata: (meta) => {
-            finalSchema = meta.schema; // machine use
+            finalSchema = meta.schema;
             console.log(finalSchema);
-            // Persist mid-stream metadata message (if desired), but avoid duplicate insertions.
             if (!assistantPersistedRef.current && assistantText?.length) {
               console.log(
                 "onMetadata: persisting model message (partial)",
                 assistantText
               );
               assistantPersistedRef.current = true;
-              addToDB({ role: "model", content: assistantText }, chatId)
+              addToDB({ role: "assistant", content: assistantText }, chatId)
                 .then((ok) => console.log("addToDB(metadata) success", ok))
                 .catch((e) => console.error("addToDB metadata failed", e));
             }
@@ -131,32 +142,27 @@ export const useChat = () => {
             finalSchema = meta.schema;
             console.log(finalSchema);
 
-            // Final assistant message if needed
             setMessages((prev) => {
               const last = prev[prev.length - 1];
-              // If assistant already streaming text, keep it
-              if (last?.role === "model") return prev;
+              if (last?.role === "assistant") return prev;
 
-              return [...prev, { role: "model", content: assistantText }];
+              return [...prev, { role: "assistant", content: assistantText }];
             });
 
-            // Persist assistant final message (avoid duplicates)
             if (!assistantPersistedRef.current && assistantText?.length) {
               console.log(
                 "onComplete: persisting assistant message (final)",
                 assistantText
               );
               assistantPersistedRef.current = true;
-              addToDB({ role: "model", content: assistantText }, chatId)
+              addToDB({ role: "assistant", content: assistantText }, chatId)
                 .then((ok) => console.log("addToDB(onComplete) success", ok))
                 .catch((e) => console.error("addToDB onComplete failed", e));
             }
 
-            setSiteGenerating(true);
+            startGeneration();
 
-            // Start a websocket to receive generation status updates from the worker
             try {
-              // close any existing ws
               if (wsRef.current) {
                 try {
                   wsRef.current.close();
@@ -168,7 +174,6 @@ export const useChat = () => {
 
               const sessionId = chatId;
 
-              // Prefer a NEXT_PUBLIC env first for client usage
               const workerUrl =
                 "wss://qwintly-wg-worker-296200543960.asia-south1.run.app";
               const wsUrl = `${workerUrl}/ws/${sessionId}`;
@@ -188,6 +193,7 @@ export const useChat = () => {
 
                   if (typeof msg === "string" && msg === "SUCCESS") {
                     dispatch(generationStatusUpdated(msg));
+                    fetchUrl(chatId).then((url) => setGenUrl(url));
                     try {
                       ws.close();
                     } catch (err) {
@@ -217,7 +223,7 @@ export const useChat = () => {
           onError: (err) => {
             setMessages((prev) => [
               ...prev,
-              { role: "model", content: `Error: ${err}` },
+              { role: "assistant", content: `Error: ${err}` },
             ]);
           },
 
@@ -226,9 +232,9 @@ export const useChat = () => {
             setMessages((prev) => {
               const last = prev[prev.length - 1];
               // If assistant already streaming text, keep it
-              if (last?.role === "model") return prev;
+              if (last?.role === "assistant") return prev;
 
-              return [...prev, { role: "model", content: assistantText }];
+              return [...prev, { role: "assistant", content: assistantText }];
             });
 
             // Persist assistant final message (avoid duplicates)
@@ -238,7 +244,7 @@ export const useChat = () => {
                 assistantText
               );
               assistantPersistedRef.current = true;
-              addToDB({ role: "model", content: assistantText }, chatId)
+              addToDB({ role: "assistant", content: assistantText }, chatId)
                 .then((ok) => console.log("addToDB(onComplete) success", ok))
                 .catch((e) => console.error("addToDB onComplete failed", e));
             }
@@ -307,12 +313,11 @@ export const useChat = () => {
     cancelStream,
     isResponseLoading,
     recentChats,
-    showPreview,
-    setShowPreview,
     generatingsite,
-    setSiteGenerating,
+    startGeneration,
     changes,
     setChanges,
     generateStatus,
+    genUrl,
   } as const;
 };
