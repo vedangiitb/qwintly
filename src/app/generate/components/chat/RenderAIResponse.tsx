@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 
 export default function RenderAIResponse({ data }: { data: string }) {
-  let displayMessage: string = data || "Something went wrong";
+  const displayMessage: string = data || "Something went wrong";
 
   return (
     <div className="flex items-start gap-3 my-4">

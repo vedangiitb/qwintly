@@ -51,7 +51,7 @@ export default function StyleSettings({
                     key={idx}
                     role="button"
                     tabIndex={0}
-                    aria-selected={isSelected}
+                    // aria-selected={isSelected}
                     onClick={() => {
                       setStylesFromLLM((prev: any) => ({
                         color: item.col1,
@@ -107,7 +107,7 @@ export default function StyleSettings({
                     key={idx}
                     role="button"
                     tabIndex={0}
-                    aria-selected={isSelected}
+                    // aria-selected={isSelected}
                     onClick={() => {
                       setStylesFromLLM((prev: any) => ({
                         ...prev,

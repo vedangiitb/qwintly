@@ -32,6 +32,9 @@ export const useChat = () => {
   const generatingsite = useSelector(
     (state: RootState) => state.genUi.isGenerating
   );
+  const generatingStatus = useSelector(
+    (state: RootState) => state.genUi.status
+  );
   const genUrl = useSelector((state: RootState) => state.genUi.url);
   const generateStatus = useSelector(
     (state: RootState) => state.genUi.generated
@@ -52,7 +55,7 @@ export const useChat = () => {
   const resetGenStatus = () => dispatch(resetStatus());
 
   const fetchChat = useCallback(async (chatId: string) => {
-    resetGenStatus()
+    resetGenStatus();
     if (!chatId) return;
     setCurrentChatId(chatId);
     const { messages: fetched, error } = await fetchChatMessages(chatId);
@@ -192,7 +195,6 @@ export const useChat = () => {
                   dispatch(generationStatusUpdated(msg));
 
                   if (typeof msg === "string" && msg === "SUCCESS") {
-                    dispatch(generationStatusUpdated(msg));
                     fetchUrl(chatId).then((url) => setGenUrl(url));
                     try {
                       ws.close();
@@ -319,5 +321,6 @@ export const useChat = () => {
     setChanges,
     generateStatus,
     genUrl,
+    generatingStatus
   } as const;
 };

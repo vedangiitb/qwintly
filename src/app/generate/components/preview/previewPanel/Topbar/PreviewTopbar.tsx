@@ -8,12 +8,12 @@ import { toast } from "sonner";
 // import { updatedb } from "../../../services/updateDb";
 import { useChatUi } from "@/app/generate/hooks/chat/useChatUi";
 import EditMode from "./EditMode";
-import StyleSettings from "./StyleSettings";
+// import StyleSettings from "./StyleSettings";
 import WidthSetting from "./widthSetting";
 import { useState } from "react";
 import { useChat } from "@/app/generate/hooks/chat/useChat";
 
-export default function PreviewTopbar({}: {}) {
+export default function PreviewTopbar() {
   const {
     chatVisible,
     toggleChatVisible,

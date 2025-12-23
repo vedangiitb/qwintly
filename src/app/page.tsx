@@ -10,7 +10,7 @@ export default function Home() {
   const { user } = useAuth();
   const [showSidebar, setShowSidebar] = useState(false);
 
-  const { prompt, setPrompt } = useChat();
+  const { prompt, setPrompt, generatingsite } = useChat();
 
   const { initiateConversation, loading } = useInitConv();
 
@@ -59,6 +59,7 @@ export default function Home() {
                 submitPrompt={initiateConversation}
                 setPrompt={setPrompt}
                 isResponseLoading={loading}
+                generatingsite={generatingsite}
               />
               {!user?.id ? (
                 <p className="mt-4 text-slate-400 text-xs opacity-90 select-none">

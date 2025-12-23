@@ -45,7 +45,7 @@ export const POST = streamHandler(async ({ body }) => {
 
   const stream = new ReadableStream({
     async start(controller) {
-      let fullBuffer = "";
+      // let fullBuffer = "";
 
       try {
         while (true) {

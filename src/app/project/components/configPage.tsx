@@ -23,7 +23,7 @@ export default function ConfigureProject() {
 
   const [config, updateConfig] = useState<projectConfig>(
     details.config! || {
-      db: true,
+      db: "",
       auth: true,
       storage: true,
       ai: false,

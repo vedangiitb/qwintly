@@ -4,7 +4,7 @@ import { useChat } from "./hooks/chat/useChat";
 import { useInitConv } from "./hooks/useInitConv";
 
 export default function Generate() {
-  const { prompt, setPrompt } = useChat();
+  const { prompt, setPrompt, generatingsite } = useChat();
 
   const { initiateConversation, loading } = useInitConv();
   return (
@@ -24,6 +24,7 @@ export default function Generate() {
         submitPrompt={initiateConversation}
         setPrompt={setPrompt}
         isResponseLoading={loading}
+        generatingsite={generatingsite}
       />
     </div>
   );

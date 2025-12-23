@@ -2,7 +2,7 @@ import { useChat } from "@/app/generate/hooks/chat/useChat";
 import { useChatUi } from "@/app/generate/hooks/chat/useChatUi";
 import PreviewFrame from "./PreviewFrame";
 import PreviewTopbar from "./Topbar/PreviewTopbar";
-export default function PreviewPanel({}: {}) {
+export default function PreviewPanel() {
   const { generateStatus, genUrl } = useChat();
   const { width } = useChatUi();
   return (

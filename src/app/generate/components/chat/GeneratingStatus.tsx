@@ -2,7 +2,7 @@
 import { useChat } from "../../hooks/chat/useChat";
 
 export default function GeneratingStatus() {
-  const { generateStatus, generatingsite } = useChat();
+  const { generatingStatus, generatingsite } = useChat();
 
   if (!generatingsite) return null;
 
@@ -29,7 +29,7 @@ export default function GeneratingStatus() {
     transition-opacity duration-300
   "
         >
-          {generateStatus || "Setting things up"}
+          {generatingStatus || "Setting things up"}
           <span className="animate-typing-dots"></span>
         </p>
       </div>
