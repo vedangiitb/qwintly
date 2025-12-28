@@ -1,4 +1,10 @@
 export const pmContext = {
+  projectDetails: {
+    name: "",
+    description: "",
+    category: "",
+    targetUsers: "",
+  },
   capabilities: {
     supported_task_types: ["ui_task", "be_task", "db_task"],
 
@@ -26,50 +32,25 @@ export const pmContext = {
     ],
     unsupported_capabilities: ["payments"],
   },
-
-  project_info: {
-    product: {
-      name: "Template",
-      description:
-        "The project currently hasn't started and has only template with landing page",
-      role: "Not yet decided",
-      target_users: "Not yet decided",
-    },
-    current_project_summary: {
-      project_type: "Not yet decided",
-      framework: "Next.js",
-      styling: "Tailwind CSS",
-      pages: [
-        {
-          route: "/",
-          name: "landing",
-          description: "Landing page",
-          features: [],
-        },
-      ],
-      ui_features: {},
-      be_features: {},
-      db_features: {},
-    },
-
-    config_summary: {
-      db_connected: false,
-      ai_connected: false,
-      auth_connected: false,
-    },
-  },
-
-  guidelines: {
-    design_guidelines: {
-      tone: "friendly",
-      layout_style: "simple",
-      mobile_first: true,
-    },
-
-    known_constraints: [
-      "Do not remove existing features unless user explicitly asks",
-      "Prefer adding over replacing",
-      "Keep sections vertically stacked",
+  existingPages: {
+    pages: [
+      {
+        name: "page.tsx",
+        path: "app/page.tsx",
+        description: "The page component is used to render the home page.",
+      },
+      {
+        name: "layout.tsx",
+        path: "app/layout.tsx",
+        description:
+          "export default function Page() {\n  return <div>Hello</div>;\n}\n",
+      },
     ],
+    components: [],
+    hooks: [],
+    infra: [],
+    lib: [],
+    services: [],
+    utils: [],
   },
 };
