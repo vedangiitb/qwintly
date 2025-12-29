@@ -62,6 +62,16 @@ export const updateSchema = {
               ],
             },
           },
+          newInfo: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              description: { type: "string" },
+              category: { type: "string" },
+              targetUsers: { type: "string" },
+            },
+            required: ["name", "description", "category", "targetUsers"],
+          },
         },
         required: ["tasks"],
       },

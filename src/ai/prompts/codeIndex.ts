@@ -1,4 +1,6 @@
-export const pmContext = {
+import { PmIndex } from "@/types/pmIndex";
+
+export const pmContext: PmIndex = {
   projectDetails: {
     name: "",
     description: "",
@@ -30,7 +32,6 @@ export const pmContext = {
       "add_new_column",
       "modify_column",
     ],
-    unsupported_capabilities: ["payments"],
   },
   existingPages: {
     pages: [
