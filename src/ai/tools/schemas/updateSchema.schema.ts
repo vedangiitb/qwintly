@@ -73,7 +73,7 @@ export const updateSchema = {
             required: ["name", "description", "category", "targetUsers"],
           },
         },
-        required: ["tasks"],
+        required: ["tasks","newinfo"],
       },
     },
     required: ["status", "schema"],

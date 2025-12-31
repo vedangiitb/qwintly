@@ -1,0 +1,71 @@
+export const commitProductChanges = {
+  name: "commit_product_changes",
+  description: "Commit confirmed product changes and send them to the backend",
+  parameters: {
+    type: "object",
+    properties: {
+      tasks: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            task_id: { type: "string" },
+            task_type: {
+              type: "string",
+              enum: ["ui_task", "be_task", "db_task"],
+            },
+            intent: {
+              type: "string",
+              enum: [
+                "add_page",
+                "add_section",
+                "modify_section",
+                "modify_text_content",
+                "modify_styling",
+                "add_new_service",
+                "modify_service",
+                "connect_ai",
+                "db_connection",
+                "add_new_table",
+                "modify_schema",
+                "modify_table",
+                "add_new_column",
+                "modify_column",
+              ],
+            },
+            description: { type: "string" },
+            content: { type: "object" },
+            page: { type: "string" },
+            new_feature_name: { type: "string" },
+            feature: { type: "string" },
+            service: { type: "string" },
+            component_id: { type: "string" },
+          },
+          required: [
+            "task_id",
+            "task_type",
+            "intent",
+            "description",
+            "content",
+            "page",
+            "new_feature_name",
+            "feature",
+            "service",
+            "component_id",
+          ],
+        },
+      },
+      newInfo: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+          description: { type: "string" },
+          category: { type: "string" },
+          targetUsers: { type: "string" },
+        },
+        required: ["name", "description", "category", "targetUsers"],
+      },
+    },
+    required: ["tasks", "newInfo"],
+  },
+};

@@ -15,14 +15,17 @@ const TOPIC_NAME = process.env.GCP_PUBSUB_TOPIC || "website-generation";
 
 export async function publishWebsiteGeneration({
   chatId,
-  schema,
+  tasks,
+  newInfo,
 }: {
   chatId?: string;
-  schema: any;
+  tasks: any;
+  newInfo: any;
 }) {
   const payload = {
     chatId,
-    schema,
+    tasks,
+    newInfo,
     timestamp: Date.now(),
   };
 

@@ -24,8 +24,19 @@ export async function streamChatResponse({
   signal?: AbortSignal;
 }) {
   if (!chatId) throw new Error("Missing chatId");
+  const relMessages = messages.slice(-10);
+  const messageHistory = relMessages.slice(0, -1);
+  const lastUserMessage = relMessages.at(-1);
 
-  const bodyPayload = JSON.stringify({ chatId, messages });
+  if (lastUserMessage.role !== "user")
+    throw new Error("Last message is not user");
+
+  const bodyPayload = JSON.stringify({
+    chatId,
+    messages,
+    messageHistory,
+    lastUserMessage,
+  });
 
   // Get SSE reader from server
   const reader = await fetchStreamUtil("/api/chat/stream", {

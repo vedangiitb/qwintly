@@ -2,21 +2,36 @@ import { streamHandler } from "@/lib/apiHandler";
 import { publishWebsiteGeneration } from "@/lib/mq/websiteGeneration";
 import { SYSTEM_PROMPT } from "@/ai/prompts/conversation.prompt";
 import { conversationTools } from "@/ai/tools/toolsets/conversation.tools";
+import { commitProductChanges } from "@/ai/tools/schemas/commitChanges.schema";
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 
 export const POST = streamHandler(async ({ body }) => {
-  const { messages, chatId } = body;
+  const { messageHistory, chatId, lastUserMessage, messages } = body;
   if (!messages || !Array.isArray(messages))
     throw new Error("Invalid messages");
 
   const encoder = new TextEncoder();
 
   const geminiMessages = [
-    { role: "user", parts: [{ text: SYSTEM_PROMPT }] },
-    ...messages.map((m: any) => ({
+    {
+      role: "user",
+      parts: [
+        {
+          text: `
+[SYSTEM INSTRUCTIONS]
+${SYSTEM_PROMPT}
+`,
+        },
+      ],
+    },
+    ...messageHistory.map((m: any) => ({
       role: m.role,
       parts: [{ text: m.content }],
     })),
+    {
+      role: "user",
+      parts: [{ text: lastUserMessage.content }],
+    },
   ];
 
   const payload = {
@@ -62,7 +77,7 @@ export const POST = streamHandler(async ({ body }) => {
             const jsonStr = line.substring(5).trim();
             if (jsonStr === "[DONE]") continue;
 
-            let data;
+            let data: any;
             try {
               data = JSON.parse(jsonStr);
             } catch {
@@ -91,30 +106,15 @@ export const POST = streamHandler(async ({ body }) => {
               (p: any) => p.functionCall
             )?.functionCall;
 
-            if (func) {
-              const metadata = {
-                status: func.args.status,
-                schema: func.args.schema,
-              };
-
-              const envelope = {
-                type: func.args.status === "COMPLETE" ? "complete" : "metadata",
-                payload: metadata,
-              };
-
-              controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify(envelope)}\n\n`)
-              );
-
-              if (func.args.status === "COMPLETE") {
-                try {
-                  await publishWebsiteGeneration({
-                    chatId,
-                    schema: func.args.schema,
-                  });
-                } catch (e) {
-                  console.error("MQ publish failed:", e);
-                }
+            if (func && func.name === commitProductChanges.name) {
+              try {
+                await publishWebsiteGeneration({
+                  chatId,
+                  tasks: func.args.tasks,
+                  newInfo: func.args.newInfo,
+                });
+              } catch (e) {
+                console.error("MQ publish failed:", e);
               }
             }
           }
