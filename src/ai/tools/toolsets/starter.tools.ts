@@ -1,5 +1,8 @@
+import { Tool } from "@google/genai";
 import { askQuestions } from "../schemas/askQuestion.schema";
 
-export const conversationTools = {
-  functionDeclarations: [askQuestions],
-};
+export const starterTools: Tool[] = [
+  {
+    functionDeclarations: [askQuestions],
+  },
+];

@@ -1,151 +1,48 @@
-import { streamHandler } from "@/lib/apiHandler";
-import { publishWebsiteGeneration } from "@/lib/mq/websiteGeneration";
-import { SYSTEM_PROMPT } from "@/ai/prompts/conversation.prompt";
-import { conversationTools } from "@/ai/tools/toolsets/conversation.tools";
-import { commitProductChanges } from "@/ai/tools/schemas/commitChanges.schema";
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+import { functionCall } from "@/ai/helpers/functionCall";
+import { getGeminiPrompt } from "@/ai/helpers/getPrompt";
+import { getTools } from "@/ai/helpers/getTools";
+import { postHandler } from "@/lib/apiHandler";
+import { verifyToken } from "@/lib/verifyToken";
+import { Content } from "@google/genai";
+import { aiResponse } from "../../../../../infra/gemini/gemini.client";
 
-export const POST = streamHandler(async ({ body }) => {
-  const { messageHistory, chatId, lastUserMessage, messages } = body;
+export const POST = postHandler(async ({ body, token }) => {
+  const { chatId, messages, stage, collectedInfo, questions } = body;
+
+  if (!stage || !messages)
+    throw new Error(`Missing ${!stage ? "stage" : "messages"}`);
+
+  const userId = await verifyToken(token);
+
   if (!messages || !Array.isArray(messages))
     throw new Error("Invalid messages");
 
-  const encoder = new TextEncoder();
+  const tool = getTools[stage];
 
-  const geminiMessages = [
-    {
-      role: "user",
-      parts: [
-        {
-          text: `
-[SYSTEM INSTRUCTIONS]
-${SYSTEM_PROMPT}
-`,
-        },
-      ],
-    },
-    ...messageHistory.map((m: any) => ({
-      role: m.role,
-      parts: [{ text: m.content }],
-    })),
-    {
-      role: "user",
-      parts: [{ text: lastUserMessage.content }],
-    },
-  ];
+  const geminiPrompt: Content[] = getGeminiPrompt(
+    stage,
+    messages,
+    collectedInfo,
+    questions
+  );
 
-  const payload = {
-    contents: geminiMessages,
-    tools: conversationTools,
+  const result = await aiResponse(geminiPrompt, tool);
+
+  const parts = result.candidates?.[0]?.content?.parts[0];
+
+  const response = {
+    text: "",
+    functionCallData: null,
   };
 
-  const url =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=" +
-    GOOGLE_API_KEY;
-
-  const geminiResponse = await fetch(url, {
-    method: "POST",
-    body: JSON.stringify(payload),
-    headers: { "Content-Type": "application/json" },
-  });
-
-  if (!geminiResponse.ok) {
-    const err = await geminiResponse.text();
-    console.error("Gemini Error:", err);
-    throw new Error("Failed to call Gemini: " + err);
+  if (parts.text) {
+    response.text = parts.text;
   }
 
-  const reader = geminiResponse.body?.getReader();
-  if (!reader) throw new Error("Gemini stream missing");
+  if (parts.functionCall) {
+    const data = await functionCall(parts.functionCall, token, userId, chatId);
+    response.functionCallData = data;
+  }
 
-  const stream = new ReadableStream({
-    async start(controller) {
-      // let fullBuffer = "";
-
-      try {
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-
-          const chunk = new TextDecoder().decode(value);
-
-          // Gemini sends "data: {...}" SSE messages
-          const lines = chunk.split("\n");
-          for (const line of lines) {
-            if (!line.startsWith("data:")) continue;
-
-            const jsonStr = line.substring(5).trim();
-            if (jsonStr === "[DONE]") continue;
-
-            let data: any;
-            try {
-              data = JSON.parse(jsonStr);
-            } catch {
-              continue;
-            }
-
-            // 1. TEXT TOKENS
-            const textParts = data.candidates?.[0]?.content?.parts?.filter(
-              (p: any) => p.text
-            );
-            if (textParts?.length) {
-              for (const part of textParts) {
-                controller.enqueue(
-                  encoder.encode(
-                    `data: ${JSON.stringify({
-                      type: "token",
-                      value: part.text,
-                    })}\n\n`
-                  )
-                );
-              }
-            }
-
-            // 2. FUNCTION CALL
-            const func = data.candidates?.[0]?.content?.parts?.find(
-              (p: any) => p.functionCall
-            )?.functionCall;
-
-            if (func && func.name === commitProductChanges.name) {
-              try {
-                await publishWebsiteGeneration({
-                  chatId,
-                  tasks: func.args.tasks,
-                  newInfo: func.args.newInfo,
-                });
-              } catch (e) {
-                console.error("MQ publish failed:", e);
-              }
-            }
-          }
-        }
-
-        controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify({ type: "done" })}\n\n`)
-        );
-        controller.close();
-      } catch (e: any) {
-        controller.enqueue(
-          encoder.encode(
-            `data: ${JSON.stringify({
-              type: "error",
-              message: e.message,
-            })}\n\n`
-          )
-        );
-        controller.close();
-      }
-    },
-  });
-
-  return {
-    _sse: true,
-    response: new Response(stream, {
-      headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache, no-transform",
-        Connection: "keep-alive",
-      },
-    }),
-  };
+  return response;
 });

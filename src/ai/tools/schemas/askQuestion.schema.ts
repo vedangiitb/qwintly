@@ -1,40 +1,42 @@
+import { Type } from "@google/genai";
+
 export const askQuestions = {
   name: "ask_questions",
   description:
     "Collects known project information and asks required questions to define the project clearly",
   parameters: {
-    type: "object",
+    type: Type.OBJECT,
     properties: {
       collected_info: {
-        type: "object",
+        type: Type.OBJECT,
         properties: {
-          name: { type: "string" },
-          description: { type: "string" },
-          category: { type: "string" },
-          targetUsers: { type: "string" },
+          name: { type: Type.STRING },
+          description: { type: Type.STRING },
+          category: { type: Type.STRING },
+          targetUsers: { type: Type.STRING },
           otherInfo: {
-            type: "array",
-            items: { type: "string" },
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
           },
         },
         required: ["name", "description", "category", "targetUsers"],
       },
       questions: {
-        type: "array",
+        type: Type.ARRAY,
         items: {
-          type: "object",
+          type: Type.OBJECT,
           properties: {
-            id: { type: "string" },
-            question: { type: "string" },
+            id: { type: Type.STRING },
+            question: { type: Type.STRING },
             type: {
-              type: "string",
+              type: Type.STRING,
               enum: ["text", "single_select", "multi_select"],
             },
             options: {
-              type: "array",
-              items: { type: "string" },
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
             },
-            answer_default: { type: "string" },
+            answer_default: { type: Type.STRING },
           },
           required: ["id", "question", "type"],
         },

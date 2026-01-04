@@ -6,6 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
+    "dev:nodemon": "nodemon",
     "lint": "eslint"
   },
   "dependencies": {

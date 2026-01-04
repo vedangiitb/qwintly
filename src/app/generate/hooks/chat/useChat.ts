@@ -1,14 +1,15 @@
 "use client";
+import { functionCallClient } from "@/ai/helpers/functionCallClient";
+import { stages } from "@/ai/helpers/getPrompt";
 import {
   generationFinished,
   generationStarted,
-  generationStatusUpdated,
   generationUrl,
   resetStatus,
 } from "@/lib/features/genUiSlice";
 import { setChatPrompt } from "@/lib/features/promptSlice";
 import { AppDispatch, RootState } from "@/lib/store";
-import { Message, recentChatInterface } from "@/types/chat";
+import { Message, recentChatInterface, Stage } from "@/types/chat";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -96,162 +97,36 @@ export const useChat = () => {
       hasSubmittedRef.current = true;
       assistantPersistedRef.current = false;
 
-      let assistantText = ""; // streaming visible text
-      let finalSchema: any = null;
-
       try {
         const snapshotForServer: Message[] = [
           ...messages,
           { role: "user", content: prompt } as Message,
         ];
 
-        await streamChatResponse({
+        const response = await streamChatResponse({
+          stage: stages.INIT as Stage,
           messages: snapshotForServer,
           chatId,
           signal: controller.signal,
-
-          onToken: (token) => {
-            console.log("onToken", token);
-            assistantText += token;
-
-            setMessages((prev) => {
-              const last = prev[prev.length - 1];
-              if (last?.role === "assistant") {
-                return [
-                  ...prev.slice(0, -1),
-                  { role: "assistant", content: assistantText },
-                ];
-              }
-              return [...prev, { role: "assistant", content: assistantText }];
-            });
-          },
-
-          onMetadata: (meta) => {
-            finalSchema = meta.schema;
-            console.log(finalSchema);
-            if (!assistantPersistedRef.current && assistantText?.length) {
-              console.log(
-                "onMetadata: persisting model message (partial)",
-                assistantText
-              );
-              assistantPersistedRef.current = true;
-              addToDB({ role: "assistant", content: assistantText }, chatId)
-                .then((ok) => console.log("addToDB(metadata) success", ok))
-                .catch((e) => console.error("addToDB metadata failed", e));
-            }
-          },
-
-          onComplete: (meta) => {
-            finalSchema = meta.schema;
-            console.log(finalSchema);
-
-            setMessages((prev) => {
-              const last = prev[prev.length - 1];
-              if (last?.role === "assistant") return prev;
-
-              return [...prev, { role: "assistant", content: assistantText }];
-            });
-
-            if (!assistantPersistedRef.current && assistantText?.length) {
-              console.log(
-                "onComplete: persisting assistant message (final)",
-                assistantText
-              );
-              assistantPersistedRef.current = true;
-              addToDB({ role: "assistant", content: assistantText }, chatId)
-                .then((ok) => console.log("addToDB(onComplete) success", ok))
-                .catch((e) => console.error("addToDB onComplete failed", e));
-            }
-
-            startGeneration();
-
-            try {
-              if (wsRef.current) {
-                try {
-                  wsRef.current.close();
-                } catch (e) {
-                  console.error("ws close failed", e);
-                }
-                wsRef.current = null;
-              }
-
-              const sessionId = chatId;
-
-              const workerUrl =
-                "wss://qwintly-wg-worker-296200543960.asia-south1.run.app";
-              const wsUrl = `${workerUrl}/ws/${sessionId}`;
-              const ws = new WebSocket(wsUrl);
-              wsRef.current = ws;
-
-              console.log("wsUrl", wsUrl);
-
-              ws.addEventListener("open", () =>
-                console.log("WS open for session", sessionId, wsUrl)
-              );
-
-              ws.addEventListener("message", (e) => {
-                try {
-                  const msg = String(e.data);
-                  dispatch(generationStatusUpdated(msg));
-
-                  if (typeof msg === "string" && msg === "SUCCESS") {
-                    fetchUrl(chatId).then((url) => setGenUrl(url));
-                    try {
-                      ws.close();
-                    } catch (err) {
-                      console.error("ws close after SUCCESS failed", err);
-                    }
-                  }
-                } catch (err) {
-                  console.error("WS parse message failed", err);
-                }
-              });
-
-              ws.addEventListener("close", () => {
-                dispatch(generationFinished());
-                wsRef.current = null;
-              });
-
-              ws.addEventListener("error", (err) =>
-                console.error("WS error", err)
-              );
-            } catch (err) {
-              console.error("Failed to start generation WS", err);
-              dispatch(generationFinished());
-            }
-            console.log("Collector COMPLETE:", meta.schema);
-          },
-
-          onError: (err) => {
-            setMessages((prev) => [
-              ...prev,
-              { role: "assistant", content: `Error: ${err}` },
-            ]);
-          },
-
-          onDone: (data) => {
-            console.log(data);
-            setMessages((prev) => {
-              const last = prev[prev.length - 1];
-              // If assistant already streaming text, keep it
-              if (last?.role === "assistant") return prev;
-
-              return [...prev, { role: "assistant", content: assistantText }];
-            });
-
-            // Persist assistant final message (avoid duplicates)
-            if (!assistantPersistedRef.current && assistantText?.length) {
-              console.log(
-                "onComplete: persisting assistant message (final)",
-                assistantText
-              );
-              assistantPersistedRef.current = true;
-              addToDB({ role: "assistant", content: assistantText }, chatId)
-                .then((ok) => console.log("addToDB(onComplete) success", ok))
-                .catch((e) => console.error("addToDB onComplete failed", e));
-            }
-          },
         });
+
+        const assistantText = response.text;
+
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: assistantText },
+        ]);
+
+        addToDB({ role: "assistant", content: assistantText }, chatId)
+          .then((ok) => console.log("addToDB(onComplete) success", ok))
+          .catch((e) => console.error("addToDB onComplete failed", e));
+
+        const { name, data } = response.functionCallData;
+
+        if (response.functionCallData) {
+          console.log("onFunction", data);
+          functionCallClient(name, data);
+        }
       } finally {
         setResponseLoading(false);
         abortControllerRef.current = null;
@@ -288,7 +163,6 @@ export const useChat = () => {
     // fetchUserChats();
   }, []);
 
-  // Cleanup websocket on unmount
   useEffect(() => {
     return () => {
       if (wsRef.current) {
@@ -321,6 +195,87 @@ export const useChat = () => {
     setChanges,
     generateStatus,
     genUrl,
-    generatingStatus
+    generatingStatus,
   } as const;
 };
+
+// onComplete: (meta) => {
+//   finalSchema = meta.schema;
+//   console.log(finalSchema);
+
+//   setMessages((prev) => {
+//     const last = prev[prev.length - 1];
+//     if (last?.role === "assistant") return prev;
+
+//     return [...prev, { role: "assistant", content: assistantText }];
+//   });
+
+//   if (!assistantPersistedRef.current && assistantText?.length) {
+//     console.log(
+//       "onComplete: persisting assistant message (final)",
+//       assistantText
+//     );
+//     assistantPersistedRef.current = true;
+//     addToDB({ role: "assistant", content: assistantText }, chatId)
+//       .then((ok) => console.log("addToDB(onComplete) success", ok))
+//       .catch((e) => console.error("addToDB onComplete failed", e));
+//   }
+
+//   startGeneration();
+
+//   try {
+//     if (wsRef.current) {
+//       try {
+//         wsRef.current.close();
+//       } catch (e) {
+//         console.error("ws close failed", e);
+//       }
+//       wsRef.current = null;
+//     }
+
+//     const sessionId = chatId;
+
+//     const workerUrl =
+//       "wss://qwintly-wg-worker-296200543960.asia-south1.run.app";
+//     const wsUrl = `${workerUrl}/ws/${sessionId}`;
+//     const ws = new WebSocket(wsUrl);
+//     wsRef.current = ws;
+
+//     console.log("wsUrl", wsUrl);
+
+//     ws.addEventListener("open", () =>
+//       console.log("WS open for session", sessionId, wsUrl)
+//     );
+
+//     ws.addEventListener("message", (e) => {
+//       try {
+//         const msg = String(e.data);
+//         dispatch(generationStatusUpdated(msg));
+
+//         if (typeof msg === "string" && msg === "SUCCESS") {
+//           fetchUrl(chatId).then((url) => setGenUrl(url));
+//           try {
+//             ws.close();
+//           } catch (err) {
+//             console.error("ws close after SUCCESS failed", err);
+//           }
+//         }
+//       } catch (err) {
+//         console.error("WS parse message failed", err);
+//       }
+//     });
+
+//     ws.addEventListener("close", () => {
+//       dispatch(generationFinished());
+//       wsRef.current = null;
+//     });
+
+//     ws.addEventListener("error", (err) =>
+//       console.error("WS error", err)
+//     );
+//   } catch (err) {
+//     console.error("Failed to start generation WS", err);
+//     dispatch(generationFinished());
+//   }
+//   console.log("Collector COMPLETE:", meta.schema);
+// },

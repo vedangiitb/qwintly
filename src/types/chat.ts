@@ -2,6 +2,7 @@ export interface Message {
   id?: string;
   role: "user" | "assistant";
   content: string;
+  stage?: Stage;
   createdAt?: string;
 }
 
@@ -17,3 +18,5 @@ export interface recentChatInterface {
   title: string;
   updated_at: string;
 }
+
+export type Stage = "init" | "questioner" | "planner";

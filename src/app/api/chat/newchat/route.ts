@@ -1,5 +1,6 @@
 import { postHandler } from "@/lib/apiHandler";
 import { supabaseServer } from "@/lib/supabase-server";
+import { verifyToken } from "@/lib/verifyToken";
 
 interface NewChatRequestBody {
   convId?: string;
@@ -14,6 +15,8 @@ export const POST = postHandler(
       throw new Error("Missing or invalid 'prompt'");
     }
 
+    await verifyToken(token);
+
     const supabase = supabaseServer(token);
 
     const { data, error } = await supabase.rpc("create_new_chat", {
@@ -25,7 +28,6 @@ export const POST = postHandler(
       console.error("Supabase insert error:", error);
       throw new Error(error.message || "Failed to create chat");
     }
-    // console.log(data, error);
 
     // Return structured response
     return { id: data[0]?.id ?? null, ...data[0] };

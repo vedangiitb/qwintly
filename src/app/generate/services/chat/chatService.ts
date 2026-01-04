@@ -1,5 +1,5 @@
-import { FetchChatResult, Message } from "@/types/chat";
-import { fetchStreamUtil, fetchUtil } from "@/utils/fetchUtil";
+import { FetchChatResult, Message, Stage } from "@/types/chat";
+import { fetchUtil } from "@/utils/fetchUtil";
 
 // ------------------------ STREAM RESPONSE ------------------------
 
@@ -7,111 +7,34 @@ import { fetchStreamUtil, fetchUtil } from "@/utils/fetchUtil";
 export async function streamChatResponse({
   messages,
   chatId,
-  onToken,
-  onMetadata,
-  onComplete,
-  onError,
-  onDone,
   signal,
+  stage,
 }: {
   messages: Message[];
   chatId: string;
-  onToken: (text: string) => void;
-  onMetadata: (meta: any) => void;
-  onComplete: (meta: any) => void;
-  onError: (err: any) => void;
-  onDone: (message: any) => void;
   signal?: AbortSignal;
+  stage: Stage;
 }) {
   if (!chatId) throw new Error("Missing chatId");
-  const relMessages = messages.slice(-10);
-  const messageHistory = relMessages.slice(0, -1);
-  const lastUserMessage = relMessages.at(-1);
 
-  if (lastUserMessage.role !== "user")
-    throw new Error("Last message is not user");
+  if (!stage) throw new Error("Missing stage");
 
+  // TODO: Implement signal to abort
   const bodyPayload = JSON.stringify({
     chatId,
     messages,
-    messageHistory,
-    lastUserMessage,
+    stage,
   });
 
-  // Get SSE reader from server
-  const reader = await fetchStreamUtil("/api/chat/stream", {
+  const json = (await fetchUtil("/api/chat/stream", {
     method: "POST",
     body: bodyPayload,
-    signal,
-  });
+  })) as { data?: { text?: string; functionCallData: any } };
 
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  try {
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      if (!value) continue;
-
-      // Append new chunk
-      buffer += decoder.decode(value, { stream: true });
-
-      // Split into SSE message groups
-      const parts = buffer.split("\n\n");
-
-      // Keep last chunk incomplete
-      buffer = parts.pop() ?? "";
-
-      for (const raw of parts) {
-        if (!raw.startsWith("data:")) continue;
-
-        const payloadStr = raw.replace(/^data:\s*/, "").trim();
-        if (!payloadStr || payloadStr === "[DONE]") continue;
-
-        let envelope: any = null;
-        try {
-          envelope = JSON.parse(payloadStr);
-        } catch (err) {
-          console.warn("Malformed SSE JSON, skipping:", err, payloadStr);
-          continue;
-        }
-
-        console.log("envelope", envelope);
-
-        // ---- Handle envelope types ----
-        switch (envelope.type) {
-          case "token":
-            if (envelope.value) onToken(envelope.value);
-            break;
-
-          case "metadata":
-            if (envelope.payload) onMetadata(envelope.payload);
-            break;
-
-          case "complete":
-            if (envelope.payload) onComplete(envelope.payload);
-            break;
-
-          case "error":
-            onError(envelope.message ?? "Unknown error");
-            break;
-
-          case "done":
-            onDone(envelope.payload);
-
-            return;
-
-          default:
-            console.warn("Unknown envelope type:", envelope);
-        }
-      }
-    }
-  } finally {
-    try {
-      reader.cancel();
-    } catch {}
-  }
+  return {
+    text: json.data.text,
+    functionCallData: json.data.functionCallData,
+  };
 }
 
 // ------------------------ ADD MESSAGE TO DB ------------------------

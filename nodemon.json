@@ -1,0 +1,6 @@
+{
+  "watch": ["app", "pages", "components", "lib", "src"],
+  "ext": "js,ts,jsx,tsx,json,css",
+  "ignore": [".next", "node_modules"],
+  "exec": "npm run build && npm run start"
+}

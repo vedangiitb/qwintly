@@ -113,20 +113,22 @@ export function streamHandler(
         return ApiResponse.error("Invalid JSON body", 400);
       }
 
-      const result = await handler({ token: auth.token!, body });
+      const result = await handler({ body, token: auth.token! });
 
       // If handler returns an SSE Response, DO NOT WRAP IT
-      if (result && result._sse === true && result.response instanceof Response) {
+      if (
+        result &&
+        result._sse === true &&
+        result.response instanceof Response
+      ) {
         return result.response; // direct passthrough
       }
 
       // Otherwise → normal JSON response
       return ApiResponse.stream(result);
-
     } catch (err: any) {
       console.error("POST route error:", err);
       return ApiResponse.error(err.message || "Internal server error", 500);
     }
   };
 }
-
