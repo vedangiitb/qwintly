@@ -71,6 +71,8 @@ export async function fetchChatMessages(
     const normalized: Message[] = messagesRaw.map((m: any) => ({
       role: m.role,
       content: m.content,
+      stage: m.stage,
+      msgType: m.msgType || "message",
     }));
 
     return { messages: normalized, error: null };

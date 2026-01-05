@@ -22,9 +22,10 @@ export const getGeminiPrompt = (
   if (stage == stages.INIT) {
     // INIT stage => Push all messages
     geminiPrompt.push(
-      ...convHistory.map((msg) => ({ 
+      ...convHistory.map((msg) => ({
         role: msg.role,
-        parts: [{ text: msg.content }],
+        parts: [{ text: msg.content as string }],
+        msgType: "message",
       }))
     );
   } else if (stage == stages.QUESTIONER) {
@@ -42,9 +43,10 @@ export const getGeminiPrompt = (
     geminiPrompt.push(
       ...convHistory.map(
         (msg) =>
-          msg.stage == stages.QUESTIONER && {
+          msg.stage == stages.QUESTIONER &&
+          msg.msgType == "message" && {
             role: msg.role,
-            parts: [{ text: msg.content }],
+            parts: [{ text: msg.content as string }],
           }
       )
     );

@@ -1,4 +1,4 @@
-import { functionCall, getFunctionText } from "@/ai/helpers/functionCall";
+import { functionCall } from "@/ai/helpers/functionCall";
 import { getGeminiPrompt } from "@/ai/helpers/getPrompt";
 import { getTools } from "@/ai/helpers/getTools";
 import { postHandler } from "@/lib/apiHandler";
@@ -38,16 +38,11 @@ export const POST = postHandler(async ({ body, token }) => {
     functionCallData: null,
   };
 
-  if (parts.text) {
-    response.text = parts.text;
-  }
-
   if (parts.functionCall) {
     const data = await functionCall(parts.functionCall, token, userId, chatId);
     response.functionCallData = { data: data, name: parts.functionCall.name };
-    if (!response.text) {
-      response.text = getFunctionText(parts.functionCall.name);
-    }
+  } else if (parts.text) {
+    response.text = parts.text;
   }
 
   return response;

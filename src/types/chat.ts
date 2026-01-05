@@ -1,9 +1,10 @@
 export interface Message {
   id?: string;
   role: "user" | "assistant";
-  content: string;
+  content: string | Questions;
   stage?: Stage;
   createdAt?: string;
+  msgType: string;
 }
 
 export interface FetchChatResult {

@@ -37,4 +37,14 @@ export const askQuestions = async ({
   return { questions, collectedInfo };
 };
 
-export const askQuestionClient = () => {};
+export const askQuestionClient = async (params: any): Promise<Questions> => {
+  const questions = params.questions;
+  const data = questions.map((q: any) => ({
+    id: q.id,
+    question: q.question,
+    type: q.type,
+    options: q.options,
+    answer_default: q.answer_default,
+  }));
+  return data;
+};

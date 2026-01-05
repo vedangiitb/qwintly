@@ -40,13 +40,3 @@ export const functionCall = async (
 
   return data;
 };
-
-export const getFunctionText = (fnName: string) => {
-  switch (fnName) {
-    case "ask_questions":
-      return "Please answer the following questions!";
-    default:
-      return "Tool Call";
-  }
-};
-

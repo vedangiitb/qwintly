@@ -89,9 +89,12 @@ export const useChat = () => {
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      setMessages((prev) => [...prev, { role: "user", content: prompt }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "user", content: prompt, msgType: "message" },
+      ]);
 
-      addToDB({ role: "user", content: prompt }, chatId);
+      addToDB({ role: "user", content: prompt, msgType: "message" }, chatId);
 
       setResponseLoading(true);
       hasSubmittedRef.current = true;
@@ -107,25 +110,33 @@ export const useChat = () => {
           messages: snapshotForServer,
           chatId,
           signal: controller.signal,
-          stage: 'init',
+          stage: "init",
         });
 
         const assistantText = response.text;
 
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant", content: assistantText },
-        ]);
+        if (assistantText) {
+          setMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: assistantText, msgType: "message" },
+          ]);
 
-        addToDB({ role: "assistant", content: assistantText }, chatId)
-          .then((ok) => console.log("addToDB(onComplete) success", ok))
-          .catch((e) => console.error("addToDB onComplete failed", e));
+          addToDB(
+            { role: "assistant", content: assistantText, msgType: "message" },
+            chatId
+          )
+            .then((ok) => console.log("addToDB(onComplete) success", ok))
+            .catch((e) => console.error("addToDB onComplete failed", e));
+        }
 
-          
-          if (response.functionCallData) {
+        if (response.functionCallData) {
           const { name, data } = response.functionCallData;
           console.log("onFunction", data);
-          functionCallClient(name, data);
+          const fnData: Questions = await functionCallClient(name, data);
+          setMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: fnData, msgType: "message" },
+          ]);
         }
       } finally {
         setResponseLoading(false);

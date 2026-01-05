@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 
 export default function RenderAIResponse({ data }: { data: string }) {
+  
   const displayMessage: string = data || "Something went wrong";
 
   return (
