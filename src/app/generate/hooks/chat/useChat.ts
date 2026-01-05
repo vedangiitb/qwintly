@@ -104,10 +104,10 @@ export const useChat = () => {
         ];
 
         const response = await streamChatResponse({
-          stage: stages.INIT as Stage,
           messages: snapshotForServer,
           chatId,
           signal: controller.signal,
+          stage: 'init',
         });
 
         const assistantText = response.text;
@@ -121,9 +121,9 @@ export const useChat = () => {
           .then((ok) => console.log("addToDB(onComplete) success", ok))
           .catch((e) => console.error("addToDB onComplete failed", e));
 
-        const { name, data } = response.functionCallData;
-
-        if (response.functionCallData) {
+          
+          if (response.functionCallData) {
+          const { name, data } = response.functionCallData;
           console.log("onFunction", data);
           functionCallClient(name, data);
         }

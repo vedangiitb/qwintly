@@ -24,13 +24,16 @@ export async function aiResponse(
   if (tools && tools.length > 0) {
     config.tools = tools;
     if (toolCallNeeded) {
-      config.toolConfig = {
-        functionCallingConfig: {
-          mode: FunctionCallingConfigMode.ANY,
-        },
+    config.toolConfig = {
+      functionCallingConfig: {
+        mode: FunctionCallingConfigMode.ANY,
+      },
       };
-    }
+    };
   }
+
+  console.log(JSON.stringify(request, null, 2));
+  console.log(JSON.stringify(config, null, 2));
 
   try {
     return await ai.models.generateContent({

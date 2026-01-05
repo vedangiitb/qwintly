@@ -1,4 +1,4 @@
-import { functionCall } from "@/ai/helpers/functionCall";
+import { functionCall, getFunctionText } from "@/ai/helpers/functionCall";
 import { getGeminiPrompt } from "@/ai/helpers/getPrompt";
 import { getTools } from "@/ai/helpers/getTools";
 import { postHandler } from "@/lib/apiHandler";
@@ -17,7 +17,7 @@ export const POST = postHandler(async ({ body, token }) => {
   if (!messages || !Array.isArray(messages))
     throw new Error("Invalid messages");
 
-  const tool = getTools[stage];
+  const tool = getTools(stage);
 
   const geminiPrompt: Content[] = getGeminiPrompt(
     stage,
@@ -26,7 +26,10 @@ export const POST = postHandler(async ({ body, token }) => {
     questions
   );
 
-  const result = await aiResponse(geminiPrompt, tool);
+  const result = await aiResponse(geminiPrompt, {
+    tools: tool,
+    toolCallNeeded: false,
+  });
 
   const parts = result.candidates?.[0]?.content?.parts[0];
 
@@ -41,7 +44,10 @@ export const POST = postHandler(async ({ body, token }) => {
 
   if (parts.functionCall) {
     const data = await functionCall(parts.functionCall, token, userId, chatId);
-    response.functionCallData = data;
+    response.functionCallData = { data: data, name: parts.functionCall.name };
+    if (!response.text) {
+      response.text = getFunctionText(parts.functionCall.name);
+    }
   }
 
   return response;
