@@ -27,13 +27,11 @@ export default function ChatHistory({
           <div key={idx}>
             {item.role === "user" ? (
               <RenderUserMessage data={item.content as string} />
-            ) : item.msgType === "questions" ? (
-              <Questionnaire
-                questions={item.content as any}
-                onChange={onChange}
-              />
             ) : (
-              <RenderAIResponse data={item.content as string} />
+              <RenderAIResponse
+                data={item.content as string}
+                msgType={item.msgType || "message"}
+              />
             )}
           </div>
         ))}

@@ -1,13 +1,19 @@
 "use client";
 
-import React from "react";
-import ReactMarkdown from "react-markdown";
-import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
+import { Questionnaire } from "./Questionnaire";
 
-export default function RenderAIResponse({ data }: { data: string }) {
-  
+export default function RenderAIResponse({
+  data,
+  msgType,
+}: {
+  data: string;
+  msgType: string;
+}) {
+  if (msgType == "questions") return <Questionnaire />;
   const displayMessage: string = data || "Something went wrong";
 
   return (

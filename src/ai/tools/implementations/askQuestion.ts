@@ -1,3 +1,4 @@
+import { Stage } from "@/types/chat";
 import { insertDataSupabase } from "../../../../infra/supabase/insertData";
 
 export const askQuestions = async ({
@@ -37,7 +38,10 @@ export const askQuestions = async ({
   return { questions, collectedInfo };
 };
 
-export const askQuestionClient = async (params: any): Promise<Questions> => {
+export const askQuestionClient = async (
+  params: any,
+  updateProjectStage: (stage: Stage) => void
+): Promise<Questions> => {
   const questions = params.questions;
   const data = questions.map((q: any) => ({
     id: q.id,
@@ -46,5 +50,6 @@ export const askQuestionClient = async (params: any): Promise<Questions> => {
     options: q.options,
     answer_default: q.answer_default,
   }));
+  updateProjectStage("questioner");
   return data;
 };

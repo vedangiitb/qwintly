@@ -1,11 +1,12 @@
 "use client";
 import { functionCallClient } from "@/ai/helpers/functionCallClient";
-import { stages } from "@/ai/helpers/getPrompt";
 import {
   generationFinished,
   generationStarted,
   generationUrl,
   resetStatus,
+  updateAnswersList,
+  updateStage,
 } from "@/lib/features/genUiSlice";
 import { setChatPrompt } from "@/lib/features/promptSlice";
 import { AppDispatch, RootState } from "@/lib/store";
@@ -27,7 +28,6 @@ export const useChat = () => {
   const hasSubmittedRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
-  const assistantPersistedRef = useRef(false);
   const [isResponseLoading, setResponseLoading] = useState(false);
   const [recentChats, setRecentChats] = useState<recentChatInterface[]>([]);
   const generatingsite = useSelector(
@@ -37,9 +37,12 @@ export const useChat = () => {
     (state: RootState) => state.genUi.status
   );
   const genUrl = useSelector((state: RootState) => state.genUi.url);
+  const projectStage = useSelector((state: RootState) => state.genUi.stage);
   const generateStatus = useSelector(
     (state: RootState) => state.genUi.generated
   );
+  const [questionsList, setQuestionsList] = useState<Questions>([]);
+  const [answersList, setAnswersList] = useState<string[]>([]);
   const prompt = useSelector((state: RootState) => state.prompt.prompt);
   const [changes, setChanges] = useState(false);
 
@@ -50,6 +53,16 @@ export const useChat = () => {
   const startGeneration = () => {
     dispatch(generationStarted());
   };
+
+  const updateProjectStage = (stage: Stage) => dispatch(updateStage(stage));
+
+  const updateProjectAnswersList = (answers: string[]) =>
+    setAnswersList(answers);
+
+  const updateProjectQuestionsList = (questions: Questions) =>
+    setQuestionsList(questions);
+
+  const submitAnswer = (questionId: string, answer: string) => {};
 
   const setGenUrl = (url: string) => dispatch(generationUrl(url));
 
@@ -98,8 +111,6 @@ export const useChat = () => {
 
       setResponseLoading(true);
       hasSubmittedRef.current = true;
-      assistantPersistedRef.current = false;
-
       try {
         const snapshotForServer: Message[] = [
           ...messages,
@@ -110,7 +121,7 @@ export const useChat = () => {
           messages: snapshotForServer,
           chatId,
           signal: controller.signal,
-          stage: "init",
+          stage: projectStage,
         });
 
         const assistantText = response.text;
@@ -132,10 +143,19 @@ export const useChat = () => {
         if (response.functionCallData) {
           const { name, data } = response.functionCallData;
           console.log("onFunction", data);
-          const fnData: Questions = await functionCallClient(name, data);
+          const fnData: Questions = await functionCallClient(
+            name,
+            data,
+            updateProjectStage
+          );
+          updateProjectQuestionsList(fnData);
           setMessages((prev) => [
             ...prev,
-            { role: "assistant", content: fnData, msgType: "message" },
+            {
+              role: "assistant",
+              content: "Please answer the questions",
+              msgType: "questions",
+            },
           ]);
         }
       } finally {
@@ -171,6 +191,8 @@ export const useChat = () => {
       const { chats, error } = await userChats();
       if (!error && chats) setRecentChats(chats as recentChatInterface[]);
     };
+    const fetchQuestionsAnswers = (projectId: string) => {};
+    fetchQuestionsAnswers(currentChatId);
     // fetchUserChats();
   }, []);
 
@@ -207,6 +229,10 @@ export const useChat = () => {
     generateStatus,
     genUrl,
     generatingStatus,
+    projectStage,
+    questionsList,
+    answersList,
+    submitAnswer,
   } as const;
 };
 
