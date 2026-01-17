@@ -11,7 +11,7 @@ import EditMode from "./EditMode";
 // import StyleSettings from "./StyleSettings";
 import WidthSetting from "./widthSetting";
 import { useState } from "react";
-import { useChat } from "@/app/generate/hooks/chat/useChat";
+import { useChat } from "@/app/generate/hooks/useChat";
 
 export default function PreviewTopbar() {
   const {

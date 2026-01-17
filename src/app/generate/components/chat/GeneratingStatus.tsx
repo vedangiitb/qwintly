@@ -1,5 +1,5 @@
 "use client";
-import { useChat } from "../../hooks/chat/useChat";
+import { useChat } from "../../hooks/useChat";
 
 export default function GeneratingStatus() {
   const { generatingStatus, generatingsite } = useChat();

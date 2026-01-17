@@ -1,5 +1,5 @@
 "use client";
-import { useChat } from "@/app/generate/hooks/chat/useChat";
+import { useChat } from "@/app/generate/hooks/useChat";
 import { useRouter } from "next/navigation";
 
 export default function RecentChats({

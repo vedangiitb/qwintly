@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { initConvService } from "../services/chat/initConvService";
-import { useChat } from "./chat/useChat";
+import { useChat } from "./useChat";
 
 export const useInitConv = () => {
   const router = useRouter();

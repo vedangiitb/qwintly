@@ -1,4 +1,4 @@
-import { useChat } from "@/app/generate/hooks/chat/useChat";
+import { useChat } from "@/app/generate/hooks/useChat";
 import { useChatUi } from "@/app/generate/hooks/chat/useChatUi";
 import PreviewFrame from "./PreviewFrame";
 import PreviewTopbar from "./Topbar/PreviewTopbar";

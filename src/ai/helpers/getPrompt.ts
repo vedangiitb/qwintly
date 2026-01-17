@@ -1,11 +1,16 @@
-import { Message } from "@/types/chat";
+import { Message, Stage } from "@/types/chat";
 import { Content } from "@google/genai";
 import { STARTER_PROMPT } from "../prompts/starter.prompt";
 
-export const stages = { INIT: "init", QUESTIONER: "ques" };
+export const stages = {
+  INIT: "init",
+  QUESTIONER: "questioner",
+  PLANNER: "planner",
+  EXECUTER: "executer",
+};
 
 export const getGeminiPrompt = (
-  stage: string,
+  stage: Stage,
   convHistory: Message[],
   collectedInfo: CollectedInfo,
   questions: Questions
@@ -50,6 +55,12 @@ export const getGeminiPrompt = (
           }
       )
     );
+  } else if (stage == stages.PLANNER) {
+    // PLANNER stage => Push only collected info, questioner messages & Questions & Answers list
+  } else if (stage == stages.EXECUTER) {
+    // EXECUTER stage => Push only collected info, Complete plan Current Plan
+  } else {
+    throw new Error("Invalid stage");
   }
 
   return geminiPrompt;

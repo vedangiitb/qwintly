@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useMemo } from "react";
-import { useUi } from "../gen/uiContext";
+import { useUi } from "../uiContext";
 
 type DeviceMode = "phone" | "tab" | "pc";
 

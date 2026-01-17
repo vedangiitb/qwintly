@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import ChatBox from "../components/chat/ChatBox";
 import ChatHistory from "../components/chat/ChatHistory";
 import PreviewPanel from "../components/preview/previewPanel/PreviewPanel";
-import { useChat } from "../hooks/chat/useChat";
+import { useChat } from "../hooks/useChat";
 import { useChatUi } from "../hooks/chat/useChatUi";
 import GeneratingStatus from "../components/chat/GeneratingStatus";
 

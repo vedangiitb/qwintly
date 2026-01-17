@@ -1,6 +1,6 @@
 "use client";
 import ChatBox from "./components/chat/ChatBox";
-import { useChat } from "./hooks/chat/useChat";
+import { useChat } from "./hooks/useChat";
 import { useInitConv } from "./hooks/useInitConv";
 
 export default function Generate() {

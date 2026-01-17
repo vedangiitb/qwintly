@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import ChatBox from "./generate/components/chat/ChatBox";
 import SideBar from "./generate/components/sidebar/sidebar";
-import { useChat } from "./generate/hooks/chat/useChat";
+import { useChat } from "./generate/hooks/useChat";
 import { useInitConv } from "./generate/hooks/useInitConv";
 import { useAuth } from "./login/hooks/useAuth";
 
