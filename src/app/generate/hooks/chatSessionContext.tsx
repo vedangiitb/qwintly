@@ -1,30 +1,33 @@
 "use client";
 
 import { createContext, useContext, useState } from "react";
-import { recentChatInterface } from "@/types/chat";
+import { Message, recentChatInterface } from "@/types/chat";
 
 /* ---------- TYPES ---------- */
 
 export type ChatSessionState = {
-  messages: string[];
+  messages: Message[];
   chatId: string | null;
   recentChatList: recentChatInterface[];
+  prompt: string;
 
   questions: Questions;
   answers: string[];
   collectedInfo: CollectedInfo;
 
-  setMessages: React.Dispatch<React.SetStateAction<string[]>>;
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   setChatId: (id: string | null) => void;
   setRecentChatList: React.Dispatch<
     React.SetStateAction<recentChatInterface[]>
   >;
+  setPrompt: (prompt: string) => void;
 
   setQuestions: React.Dispatch<React.SetStateAction<Questions>>;
   setAnswers: React.Dispatch<React.SetStateAction<string[]>>;
   setCollectedInfo: React.Dispatch<React.SetStateAction<CollectedInfo>>;
 
-  addMessage: (msg: string) => void;
+  addMessage: (msg: Message) => void;
+  clearPrompt: () => void;
   clearSession: () => void;
 };
 
@@ -39,11 +42,11 @@ export const ChatSessionProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [chatId, setChatId] = useState<string | null>(null);
 
   const [recentChatList, setRecentChatList] = useState<recentChatInterface[]>(
-    []
+    [],
   );
 
   const [questions, setQuestions] = useState<Questions>([]);
@@ -57,9 +60,11 @@ export const ChatSessionProvider = ({
     otherInfo: [],
   });
 
+  const [prompt, setPrompt] = useState("");
+
   /* ---------- HELPERS ---------- */
 
-  const addMessage = (msg: string) => {
+  const addMessage = (msg: Message) => {
     setMessages((prev) => [...prev, msg]);
   };
 
@@ -77,24 +82,31 @@ export const ChatSessionProvider = ({
     });
   };
 
+  const clearPrompt = () => {
+    setPrompt("");
+  };
+
   return (
     <ChatSessionContext.Provider
       value={{
         messages,
         chatId,
         recentChatList,
+        prompt,
         questions,
         answers,
         collectedInfo,
 
         setMessages,
         setChatId,
+        setPrompt,
         setRecentChatList,
         setQuestions,
         setAnswers,
         setCollectedInfo,
 
         addMessage,
+        clearPrompt,
         clearSession,
       }}
     >

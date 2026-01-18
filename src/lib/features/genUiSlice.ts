@@ -2,23 +2,17 @@ import { Stage } from "@/types/chat";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface GenerationState {
+  // If site is being generated
   isGenerating: boolean;
+  // The status of the site being generated (sent from backend via ws)
   status: string | null;
+  // Boolean value describing if the site has been generated
   generated: boolean;
+  // Site url
   url: string | null;
+  // Project stage
   stage: Stage;
-  questionsList: Questions;
-  answersList: string[] | null;
-  collectedInfo: CollectedInfo;
 }
-
-const collectInfoInitialState: CollectedInfo = {
-  name: "",
-  description: "",
-  category: "",
-  targetUsers: "",
-  otherInfo: [],
-};
 
 const initialState: GenerationState = {
   isGenerating: false,
@@ -26,9 +20,6 @@ const initialState: GenerationState = {
   generated: false,
   url: null,
   stage: "init",
-  questionsList: [],
-  collectedInfo: collectInfoInitialState,
-  answersList: [],
 };
 
 const generationSlice = createSlice({
@@ -61,15 +52,6 @@ const generationSlice = createSlice({
     updateStage(state, action: PayloadAction<Stage>) {
       state.stage = action.payload;
     },
-    updateQuestionsList(state, action: PayloadAction<Questions>) {
-      state.questionsList = action.payload;
-    },
-    updateCollectedInfo(state, action: PayloadAction<CollectedInfo>) {
-      state.collectedInfo = action.payload;
-    },
-    updateAnswersList(state, action: PayloadAction<string[]>) {
-      state.answersList = action.payload;
-    },
   },
 });
 
@@ -80,8 +62,6 @@ export const {
   generationUrl,
   resetStatus,
   updateStage,
-  updateQuestionsList,
-  updateAnswersList,
 } = generationSlice.actions;
 
 export default generationSlice.reducer;

@@ -4,6 +4,7 @@ import { Providers } from "@/lib/Providers";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ChatSessionProvider } from "./generate/hooks/chatSessionContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,12 +32,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen overflow-hidden custom-scrollbar`}
       >
         {" "}
-        <Providers>
-          <div className="flex flex-col h-screen">
-            <NavBar />
-            {children}
-          </div>
-        </Providers>
+        <ChatSessionProvider>
+          <Providers>
+            <div className="flex flex-col h-screen">
+              <NavBar />
+              {children}
+            </div>
+          </Providers>
+        </ChatSessionProvider>
         <Toaster position="top-center" />
       </body>
     </html>

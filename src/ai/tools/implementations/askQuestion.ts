@@ -1,5 +1,6 @@
 import { Stage } from "@/types/chat";
 import { insertDataSupabase } from "../../../../infra/supabase/insertData";
+import { updateFieldSupabase } from "../../../../infra/supabase/updateField";
 
 export const askQuestions = async ({
   questions,
@@ -35,12 +36,15 @@ export const askQuestions = async ({
 
   await insertDataSupabase(collectedInfoData, "collected_info", token);
 
+  // Update DB State - status
+  await updateFieldSupabase(convId, "stage", "questioner", "chats", token);
+
   return { questions, collectedInfo };
 };
 
 export const askQuestionClient = async (
   params: any,
-  updateProjectStage: (stage: Stage) => void
+  updateProjectStage: (stage: Stage) => void,
 ): Promise<Questions> => {
   const questions = params.questions;
   const data = questions.map((q: any) => ({

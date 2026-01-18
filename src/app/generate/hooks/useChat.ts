@@ -5,10 +5,8 @@ import {
   generationStarted,
   generationUrl,
   resetStatus,
-  updateAnswersList,
   updateStage,
 } from "@/lib/features/genUiSlice";
-import { setChatPrompt } from "@/lib/features/promptSlice";
 import { AppDispatch, RootState } from "@/lib/store";
 import { Message, recentChatInterface, Stage } from "@/types/chat";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -20,53 +18,56 @@ import {
   userChats,
 } from "../services/chat/chatService";
 import { fetchUrl } from "../services/gen/fetchUrl";
+import { useChatSession } from "./chatSessionContext";
 
 export const useChat = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const hasSubmittedRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const [isResponseLoading, setResponseLoading] = useState(false);
-  const [recentChats, setRecentChats] = useState<recentChatInterface[]>([]);
-  const generatingsite = useSelector(
-    (state: RootState) => state.genUi.isGenerating
-  );
-  const generatingStatus = useSelector(
-    (state: RootState) => state.genUi.status
-  );
-  const genUrl = useSelector((state: RootState) => state.genUi.url);
-  const projectStage = useSelector((state: RootState) => state.genUi.stage);
-  const generateStatus = useSelector(
-    (state: RootState) => state.genUi.generated
-  );
-  const [questionsList, setQuestionsList] = useState<Questions>([]);
-  const [answersList, setAnswersList] = useState<string[]>([]);
-  const prompt = useSelector((state: RootState) => state.prompt.prompt);
   const [changes, setChanges] = useState(false);
 
-  const setPrompt: (p: string) => any = (p: string) => {
-    dispatch(setChatPrompt(p));
-  };
+  const generatingsite = useSelector(
+    (state: RootState) => state.genUi.isGenerating,
+  );
+  const generationStatus = useSelector(
+    (state: RootState) => state.genUi.status,
+  );
+  const generated = useSelector((state: RootState) => state.genUi.generated);
+  const genUrl = useSelector((state: RootState) => state.genUi.url);
+  const projectStage = useSelector((state: RootState) => state.genUi.stage);
+
+  const {
+    chatId: currentChatId,
+    setChatId: setCurrentChatId,
+    messages,
+    setMessages,
+    setQuestions,
+    prompt,
+    setPrompt,
+    recentChatList,
+    setRecentChatList,
+    questions,
+    answers,
+  } = useChatSession();
 
   const startGeneration = () => {
     dispatch(generationStarted());
   };
 
-  const updateProjectStage = (stage: Stage) => dispatch(updateStage(stage));
-
-  const updateProjectAnswersList = (answers: string[]) =>
-    setAnswersList(answers);
-
-  const updateProjectQuestionsList = (questions: Questions) =>
-    setQuestionsList(questions);
-
-  const submitAnswer = (questionId: string, answer: string) => {};
+  const updateProjectStage = (stage: Stage) => {
+    // Dispatch and update ui state
+    dispatch(updateStage(stage));
+  };
 
   const setGenUrl = (url: string) => dispatch(generationUrl(url));
 
   const resetGenStatus = () => dispatch(resetStatus());
+
+  const updateQuestionsList = (questions: Questions) => setQuestions(questions);
+
+  const submitAnswer = () => {};
 
   const fetchChat = useCallback(async (chatId: string) => {
     resetGenStatus();
@@ -134,7 +135,7 @@ export const useChat = () => {
 
           addToDB(
             { role: "assistant", content: assistantText, msgType: "message" },
-            chatId
+            chatId,
           )
             .then((ok) => console.log("addToDB(onComplete) success", ok))
             .catch((e) => console.error("addToDB onComplete failed", e));
@@ -146,9 +147,9 @@ export const useChat = () => {
           const fnData: Questions = await functionCallClient(
             name,
             data,
-            updateProjectStage
+            updateProjectStage,
           );
-          updateProjectQuestionsList(fnData);
+          updateQuestionsList(fnData);
           setMessages((prev) => [
             ...prev,
             {
@@ -163,7 +164,7 @@ export const useChat = () => {
         abortControllerRef.current = null;
       }
     },
-    [messages]
+    [messages],
   );
 
   const cancelStream = useCallback(() => {
@@ -183,13 +184,13 @@ export const useChat = () => {
       startStream(chatId, prompt).catch((e) => console.error(e));
       setPrompt("");
     },
-    [currentChatId, startStream, prompt]
+    [currentChatId, startStream, prompt],
   );
 
   useEffect(() => {
     const fetchUserChats = async () => {
       const { chats, error } = await userChats();
-      if (!error && chats) setRecentChats(chats as recentChatInterface[]);
+      if (!error && chats) setRecentChatList(chats as recentChatInterface[]);
     };
     const fetchQuestionsAnswers = (projectId: string) => {};
     fetchQuestionsAnswers(currentChatId);
@@ -221,17 +222,17 @@ export const useChat = () => {
     setCurrentChatId,
     cancelStream,
     isResponseLoading,
-    recentChats,
+    recentChats: recentChatList,
     generatingsite,
     startGeneration,
     changes,
     setChanges,
-    generateStatus,
+    generated,
     genUrl,
-    generatingStatus,
+    generationStatus,
     projectStage,
-    questionsList,
-    answersList,
+    questionsList: questions,
+    answersList: answers,
     submitAnswer,
   } as const;
 };

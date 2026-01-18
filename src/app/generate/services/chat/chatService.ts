@@ -56,14 +56,14 @@ export async function addToDB(message: Message, chatId: string) {
 // ------------------------ FETCH CHAT MESSAGES ------------------------
 
 export async function fetchChatMessages(
-  chatId: string
+  chatId: string,
 ): Promise<FetchChatResult> {
   try {
     const json = (await fetchUtil(
       `/api/chat/fetchChat?chatId=${encodeURIComponent(chatId)}`,
       {
         method: "GET",
-      }
+      },
     )) as { data?: { messages?: any[] } };
 
     const messagesRaw = json.data?.messages ?? [];
@@ -103,3 +103,7 @@ export async function userChats() {
     return { chats: null, error: e?.message };
   }
 }
+
+export async function fetchQuestionAnswers(chatId: string) {}
+
+export async function fetchCollectedInfo(chatId: string) {}

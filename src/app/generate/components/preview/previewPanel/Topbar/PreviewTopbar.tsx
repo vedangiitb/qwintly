@@ -6,12 +6,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 // import { updatedb } from "../../../services/updateDb";
-import { useChatUi } from "@/app/generate/hooks/chat/useChatUi";
+import { useChatUi } from "@/app/generate/hooks/useChatUi";
 import EditMode from "./EditMode";
 // import StyleSettings from "./StyleSettings";
-import WidthSetting from "./widthSetting";
-import { useState } from "react";
 import { useChat } from "@/app/generate/hooks/useChat";
+import { useState } from "react";
+import WidthSetting from "./widthSetting";
 
 export default function PreviewTopbar() {
   const {
@@ -22,7 +22,7 @@ export default function PreviewTopbar() {
     editMode,
     toggleEditMode,
   } = useChatUi();
-  const { generateStatus, changes, setChanges, genUrl } = useChat();
+  const { generated, changes, setChanges, genUrl } = useChat();
   const initialStyles = {};
   const [detailsFromLLM, setDetailsFromLLM] = useState({});
   const [stylesFromLLM, setStylesFromLLM] = useState(initialStyles);
@@ -65,7 +65,7 @@ export default function PreviewTopbar() {
       <h3 className="font-light tracking-wider select-text">Preview</h3>
 
       {/* Controls Panel */}
-      {generateStatus && setChanges ? (
+      {generated && setChanges ? (
         <div className="flex items-center gap-4">
           <EditMode editMode={editMode} toggleEditMode={toggleEditMode} />
           <WidthSetting width={width} setWidth={setDeviceMode} />

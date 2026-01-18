@@ -1,7 +1,6 @@
 "use client";
 import { useCallback, useMemo } from "react";
-import { useUi } from "../uiContext";
-
+import { useUi } from "./uiContext";
 type DeviceMode = "phone" | "tab" | "pc";
 
 export const useChatUi = () => {

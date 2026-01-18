@@ -20,4 +20,4 @@ export interface recentChatInterface {
   updated_at: string;
 }
 
-export type Stage = "init" | "questioner" | "planner";
+export type Stage = "init" | "questioner" | "planner" | "executer";
