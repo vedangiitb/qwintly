@@ -104,6 +104,48 @@ export async function userChats() {
   }
 }
 
-export async function fetchQuestionAnswers(chatId: string) {}
+export async function fetchQuestionAnswers(chatId: string) {
+  try {
+    const json = (await fetchUtil(
+      `/api/chat/fetchQuestionAnswers?chatId=${encodeURIComponent(chatId)}`,
+      {
+        method: "GET",
+      },
+    )) as { data?: { questions?: any[]; answers?: any[] } };
 
-export async function fetchCollectedInfo(chatId: string) {}
+    return {
+      questions: json.data?.questions ?? null,
+      answers: json.data?.answers ?? null,
+      error: null,
+    };
+  } catch (e: any) {
+    console.error("fetchQuestionAnswers error", e);
+    return {
+      questions: null,
+      answers: null,
+      error: e?.message || "Unknown Error occured while fetching questions",
+    };
+  }
+}
+
+export async function fetchCollectedInfo(chatId: string) {
+  try {
+    const json = (await fetchUtil(
+      `/api/chat/fetchCollectedInfo?chatId=${encodeURIComponent(chatId)}`,
+      {
+        method: "GET",
+      },
+    )) as { data?: { collectedInfo?: any } };
+
+    return {
+      collectedInfo: json.data?.collectedInfo ?? null,
+      error: null,
+    };
+  } catch (e: any) {
+    console.error("fetchCollectedInfo error", e);
+    return {
+      collectedInfo: null,
+      error: e?.message || "Unknown Error occured while fetching questions",
+    };
+  }
+}

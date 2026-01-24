@@ -1,36 +1,22 @@
-import { useState } from "react";
-import { useChat } from "../../hooks/useChat";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { useChatSession } from "../../hooks/chatSessionContext";
+import { useChat } from "../../hooks/useChat";
 
-type Props = {
-  onChange?: (answers: Record<string, string | string[]>) => void;
-};
+export function Questionnaire() {
+  const { answers, setAnswers, questions } = useChatSession();
+  const { submitAnswer } = useChat();
 
-export function Questionnaire({ onChange }: Props) {
-  const { questionsList: questions } = useChat();
   const [index, setIndex] = useState(0);
-
-  const [answers, setAnswers] = useState<Record<string, any>>(() => {
-    const initial: Record<string, any> = {};
-    questions.forEach((q) => {
-      if (q.answer_default) {
-        initial[q.id] =
-          q.type === "multi_select" ? [q.answer_default] : q.answer_default;
-      }
-    });
-    return initial;
-  });
-
   const current = questions[index];
   const progress = ((index + 1) / questions.length) * 100;
 
   function updateAnswer(id: string, value: any) {
     const updated = { ...answers, [id]: value };
     setAnswers(updated);
-    onChange?.(updated);
   }
 
   const canGoNext =
@@ -38,8 +24,14 @@ export function Questionnaire({ onChange }: Props) {
     answers[current.id] !== undefined &&
     answers[current.id]?.length !== 0;
 
+  const navigate = () => setIndex((i) => Math.min(i + 1, questions.length - 1));
+
   return (
     <div className="mx-auto w-full max-w-xl space-y-6">
+      <p>
+        Please answer the following questions to help me get better
+        understanding of your project
+      </p>
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -88,7 +80,7 @@ export function Questionnaire({ onChange }: Props) {
                             variant={selected ? "default" : "outline"}
                             className={cn(
                               "rounded-full",
-                              selected && "shadow-sm"
+                              selected && "shadow-sm",
                             )}
                             onClick={() => updateAnswer(q.id, opt)}
                           >
@@ -116,7 +108,7 @@ export function Questionnaire({ onChange }: Props) {
                                 q.id,
                                 selected
                                   ? prev.filter((v: string) => v !== opt)
-                                  : [...prev, opt]
+                                  : [...prev, opt],
                               );
                             }}
                           >
@@ -145,7 +137,7 @@ export function Questionnaire({ onChange }: Props) {
 
         <Button
           disabled={!canGoNext}
-          onClick={() => setIndex((i) => Math.min(i + 1, questions.length - 1))}
+          onClick={() => submitAnswer(index, navigate)}
         >
           {index === questions.length - 1 ? "Finish" : "Next"}
         </Button>

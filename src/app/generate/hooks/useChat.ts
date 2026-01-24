@@ -14,6 +14,8 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   addToDB,
   fetchChatMessages,
+  fetchCollectedInfo,
+  fetchQuestionAnswers,
   streamChatResponse,
   userChats,
 } from "../services/chat/chatService";
@@ -57,7 +59,6 @@ export const useChat = () => {
   };
 
   const updateProjectStage = (stage: Stage) => {
-    // Dispatch and update ui state
     dispatch(updateStage(stage));
   };
 
@@ -67,8 +68,13 @@ export const useChat = () => {
 
   const updateQuestionsList = (questions: Questions) => setQuestions(questions);
 
-  const submitAnswer = () => {};
-
+  const submitAnswer = (index: number, navigate: () => void) => {
+    if (index === questions.length - 1) {
+      console.log(answers);
+    } else {
+      navigate();
+    }
+  };
   const fetchChat = useCallback(async (chatId: string) => {
     resetGenStatus();
     if (!chatId) return;
@@ -76,12 +82,25 @@ export const useChat = () => {
     const { messages: fetched, error } = await fetchChatMessages(chatId);
     if (!error && fetched && fetched.length > 0) {
       setMessages(fetched);
-      await fetchUrl(chatId).then((url) => {
-        if (url) {
-          setGenUrl(url);
-        } else {
-        }
-      });
+      if (projectStage === "executer") {
+        await fetchUrl(chatId).then((url) => {
+          if (url) {
+            setGenUrl(url);
+          }
+        });
+      }
+
+      if (projectStage !== "init") {
+        console.log("Fetching data");
+        const fetchData = async (projectId: string) => {
+          const qa = await fetchQuestionAnswers(projectId);
+          const collected_info = await fetchCollectedInfo(projectId);
+          console.log(qa);
+          console.log(collected_info);
+        };
+        await fetchData(chatId);
+      }
+
       return true;
     } else if (error) {
       console.error("fetchChat error", error);
@@ -150,14 +169,22 @@ export const useChat = () => {
             updateProjectStage,
           );
           updateQuestionsList(fnData);
+          const txt = "Please answer the questions";
           setMessages((prev) => [
             ...prev,
             {
               role: "assistant",
-              content: "Please answer the questions",
+              content: txt,
               msgType: "questions",
             },
           ]);
+
+          addToDB(
+            { role: "assistant", content: txt, msgType: "message" },
+            chatId,
+          )
+            .then((ok) => console.log("addToDB(onComplete) success", ok))
+            .catch((e) => console.error("addToDB onComplete failed", e));
         }
       } finally {
         setResponseLoading(false);
@@ -192,9 +219,7 @@ export const useChat = () => {
       const { chats, error } = await userChats();
       if (!error && chats) setRecentChatList(chats as recentChatInterface[]);
     };
-    const fetchQuestionsAnswers = (projectId: string) => {};
-    fetchQuestionsAnswers(currentChatId);
-    // fetchUserChats();
+    fetchUserChats();
   }, []);
 
   useEffect(() => {

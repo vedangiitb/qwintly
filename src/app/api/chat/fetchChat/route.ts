@@ -1,9 +1,12 @@
 import { getHandler } from "@/lib/apiHandler";
 import { supabaseServer } from "@/lib/supabase-server";
+import { verifyToken } from "@/lib/verifyToken";
 
 export const GET = getHandler(async ({ query, token }) => {
   const chatId = query.get("chatId");
   if (!chatId) throw new Error("Missing chatId");
+
+  await verifyToken(token);
 
   const supabase = supabaseServer(token);
 
