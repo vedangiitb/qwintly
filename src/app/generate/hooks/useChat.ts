@@ -52,6 +52,9 @@ export const useChat = () => {
     setRecentChatList,
     questions,
     answers,
+    setAnswers,
+    collectedInfo,
+    setCollectedInfo,
   } = useChatSession();
 
   const startGeneration = () => {
@@ -67,6 +70,9 @@ export const useChat = () => {
   const resetGenStatus = () => dispatch(resetStatus());
 
   const updateQuestionsList = (questions: Questions) => setQuestions(questions);
+  const updateAnswers = (answers: Record<string, any>) => setAnswers(answers);
+  const updateCollectedInfo = (collectedInfo: CollectedInfo) =>
+    setCollectedInfo(collectedInfo);
 
   const submitAnswer = (index: number, navigate: () => void) => {
     if (index === questions.length - 1) {
@@ -79,10 +85,13 @@ export const useChat = () => {
     resetGenStatus();
     if (!chatId) return;
     setCurrentChatId(chatId);
-    const { messages: fetched, error } = await fetchChatMessages(chatId);
+    const { messages: fetched, stage, error } = await fetchChatMessages(chatId);
     if (!error && fetched && fetched.length > 0) {
+      console.log("fetchChat", fetched);
+      console.log("stage", stage);
+      updateProjectStage(stage);
       setMessages(fetched);
-      if (projectStage === "executer") {
+      if (stage === "executer") {
         await fetchUrl(chatId).then((url) => {
           if (url) {
             setGenUrl(url);
@@ -90,13 +99,17 @@ export const useChat = () => {
         });
       }
 
-      if (projectStage !== "init") {
+      if (stage !== "init") {
         console.log("Fetching data");
         const fetchData = async (projectId: string) => {
           const qa = await fetchQuestionAnswers(projectId);
+          if (qa.error) throw new Error(qa.error);
+          if (qa.questions && qa.answers) updateQuestionsList(qa.questions);
+          updateAnswers(qa.answers);
           const collected_info = await fetchCollectedInfo(projectId);
-          console.log(qa);
-          console.log(collected_info);
+          if (collected_info.error) throw new Error(collected_info.error);
+          if (collected_info.collectedInfo)
+            updateCollectedInfo(collected_info.collectedInfo);
         };
         await fetchData(chatId);
       }
@@ -180,7 +193,7 @@ export const useChat = () => {
           ]);
 
           addToDB(
-            { role: "assistant", content: txt, msgType: "message" },
+            { role: "assistant", content: txt, msgType: "questions" },
             chatId,
           )
             .then((ok) => console.log("addToDB(onComplete) success", ok))

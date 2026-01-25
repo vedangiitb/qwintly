@@ -17,7 +17,13 @@ export const askQuestions = async ({
 }) => {
   // Save questions in DB
   const questionsData = {
-    contents: { questionsList: questions },
+    contents: {
+      questionsList: questions,
+      answersList: questions.map((question: Question) => ({
+        id: question.id,
+        answer: "",
+      })),
+    },
     user_id: userId,
     conv_id: convId,
   };
@@ -29,7 +35,7 @@ export const askQuestions = async ({
     description: collectedInfo.description,
     category: collectedInfo.category,
     target_users: collectedInfo.targetUsers,
-    otherInfo: collectedInfo.otherInfo,
+    other_info: collectedInfo.otherInfo,
     user_id: userId,
     conv_id: convId,
   };

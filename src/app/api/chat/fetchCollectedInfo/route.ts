@@ -15,7 +15,7 @@ export const GET = getHandler(async ({ query, token }) => {
     { col: "conv_id", value: chatId },
   );
 
-  const collectedInfo = data;
+  const collectedInfo = data[0];
 
   if (error) {
     console.error(error);

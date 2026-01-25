@@ -9,6 +9,7 @@ export interface Message {
 
 export interface FetchChatResult {
   messages: Message[] | null;
+  stage: Stage | null;
   error: string | null;
 }
 

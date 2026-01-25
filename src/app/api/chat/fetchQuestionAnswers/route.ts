@@ -15,15 +15,17 @@ export const GET = getHandler(async ({ query, token }) => {
     { col: "conv_id", value: chatId },
   );
 
-  const collectedInfo = data;
-
   if (error) {
     console.error(error);
     throw new Error(error.message);
   }
 
+  const questions = (data[0] as any).contents.questionsList;
+  const answers = (data[0] as any).contents.answersList || [];
+
   // --- Return structured response ---
   return {
-    collectedInfo: collectedInfo,
+    questions: questions,
+    answers: answers,
   };
 });

@@ -64,9 +64,10 @@ export async function fetchChatMessages(
       {
         method: "GET",
       },
-    )) as { data?: { messages?: any[] } };
+    )) as { data?: { messages?: any[]; chat: { stage?: Stage } } };
 
     const messagesRaw = json.data?.messages ?? [];
+    const stage = json.data?.chat.stage ?? null;
 
     const normalized: Message[] = messagesRaw.map((m: any) => ({
       role: m.role,
@@ -75,10 +76,10 @@ export async function fetchChatMessages(
       msgType: m.msgType || "message",
     }));
 
-    return { messages: normalized, error: null };
+    return { messages: normalized, stage: stage, error: null };
   } catch (e: any) {
     console.error("fetchChatMessages error", e);
-    return { messages: null, error: e?.message };
+    return { messages: null, stage: null, error: e?.message };
   }
 }
 
