@@ -150,3 +150,17 @@ export async function fetchCollectedInfo(chatId: string) {
     };
   }
 }
+
+export async function submitAnswers(chatId: string, answers: any[]) {
+  try {
+    const json = await fetchUtil("/api/chat/submitAnswers", {
+      method: "POST",
+      body: JSON.stringify({ chatId, answers }),
+    });
+
+    return json.success;
+  } catch (e: any) {
+    console.error("submitAnswers error", e);
+    return false;
+  }
+}

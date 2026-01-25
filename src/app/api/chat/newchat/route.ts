@@ -31,5 +31,5 @@ export const POST = postHandler(
 
     // Return structured response
     return { id: data[0]?.id ?? null, ...data[0] };
-  }
+  },
 );

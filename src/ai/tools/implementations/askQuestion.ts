@@ -17,13 +17,11 @@ export const askQuestions = async ({
 }) => {
   // Save questions in DB
   const questionsData = {
-    contents: {
-      questionsList: questions,
-      answersList: questions.map((question: Question) => ({
-        id: question.id,
-        answer: "",
-      })),
-    },
+    questions: questions,
+    answers: questions.map((question: Question) => ({
+      id: question.id,
+      answer: "",
+    })),
     user_id: userId,
     conv_id: convId,
   };

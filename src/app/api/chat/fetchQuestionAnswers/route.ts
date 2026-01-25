@@ -11,7 +11,7 @@ export const GET = getHandler(async ({ query, token }) => {
   const { data, error } = await getDataSupabase(
     token,
     "questions",
-    ["contents"],
+    ["questions", "answers"],
     { col: "conv_id", value: chatId },
   );
 
@@ -20,8 +20,8 @@ export const GET = getHandler(async ({ query, token }) => {
     throw new Error(error.message);
   }
 
-  const questions = (data[0] as any).contents.questionsList;
-  const answers = (data[0] as any).contents.answersList || [];
+  const questions = (data[0] as any).questions || [];
+  const answers = (data[0] as any).answers || [];
 
   // --- Return structured response ---
   return {

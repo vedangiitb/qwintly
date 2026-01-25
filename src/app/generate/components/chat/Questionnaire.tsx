@@ -11,18 +11,19 @@ export function Questionnaire() {
   const { submitAnswer } = useChat();
 
   const [index, setIndex] = useState(0);
-  const current = questions[index];
   const progress = ((index + 1) / questions.length) * 100;
 
-  function updateAnswer(id: string, value: any) {
-    const updated = { ...answers, [id]: value };
+  function updateAnswer(id: number, value: any) {
+    const updated = { ...answers };
+    updated[id].answer = value;
+    console.log(updated);
     setAnswers(updated);
   }
 
   const canGoNext =
-    current &&
-    answers[current.id] !== undefined &&
-    answers[current.id]?.length !== 0;
+    index &&
+    answers[index]?.answer !== undefined &&
+    answers[index]?.answer.length !== 0;
 
   const navigate = () => setIndex((i) => Math.min(i + 1, questions.length - 1));
 
@@ -49,8 +50,8 @@ export function Questionnaire() {
           className="flex transition-transform duration-500 ease-out"
           style={{ transform: `translateX(-${index * 100}%)` }}
         >
-          {questions.map((q) => (
-            <div key={q.id} className="w-full shrink-0 px-1">
+          {questions.map((q, index) => (
+            <div key={index} className="w-full shrink-0 px-1">
               <Card className="rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-base">{q.question}</CardTitle>
@@ -62,7 +63,7 @@ export function Questionnaire() {
                     <input
                       type="text"
                       defaultValue={q.answer_default}
-                      onChange={(e) => updateAnswer(q.id, e.target.value)}
+                      onChange={(e) => updateAnswer(index, e.target.value)}
                       className="w-full rounded-md border border-input px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                       placeholder="Type your answer..."
                     />
@@ -72,7 +73,7 @@ export function Questionnaire() {
                   {q.type === "single_select" && q.options && (
                     <div className="flex flex-wrap gap-2">
                       {q.options.map((opt) => {
-                        const selected = answers[q.id] === opt;
+                        const selected = answers[index].answer === opt;
                         return (
                           <Button
                             key={opt}
@@ -82,7 +83,7 @@ export function Questionnaire() {
                               "rounded-full",
                               selected && "shadow-sm",
                             )}
-                            onClick={() => updateAnswer(q.id, opt)}
+                            onClick={() => updateAnswer(index, opt)}
                           >
                             {opt}
                           </Button>
@@ -95,7 +96,9 @@ export function Questionnaire() {
                   {q.type === "multi_select" && q.options && (
                     <div className="flex flex-wrap gap-2">
                       {q.options.map((opt) => {
-                        const selected = (answers[q.id] || []).includes(opt);
+                        const selected = (answers[index].answer || []).includes(
+                          opt,
+                        );
                         return (
                           <Button
                             key={opt}
@@ -103,9 +106,9 @@ export function Questionnaire() {
                             variant={selected ? "default" : "outline"}
                             className="rounded-full"
                             onClick={() => {
-                              const prev = answers[q.id] || [];
+                              const prev = answers[index].answer || [];
                               updateAnswer(
-                                q.id,
+                                index,
                                 selected
                                   ? prev.filter((v: string) => v !== opt)
                                   : [...prev, opt],

@@ -76,7 +76,7 @@ export const useChat = () => {
 
   const submitAnswer = (index: number, navigate: () => void) => {
     if (index === questions.length - 1) {
-      console.log(answers);
+      updateAnswers(answers);
     } else {
       navigate();
     }
