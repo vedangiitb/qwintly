@@ -40,7 +40,7 @@ export const askQuestions = async ({
 
   await insertDataSupabase(collectedInfoData, "collected_info", token);
 
-  // Update DB State - status
+  // Update DB State - status 
   await updateFieldSupabase(convId, "stage", "questioner", "chats", token);
 
   return { questions, collectedInfo };

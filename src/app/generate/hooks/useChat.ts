@@ -17,6 +17,7 @@ import {
   fetchCollectedInfo,
   fetchQuestionAnswers,
   streamChatResponse,
+  submitAnswers,
   userChats,
 } from "../services/chat/chatService";
 import { fetchUrl } from "../services/gen/fetchUrl";
@@ -70,13 +71,15 @@ export const useChat = () => {
   const resetGenStatus = () => dispatch(resetStatus());
 
   const updateQuestionsList = (questions: Questions) => setQuestions(questions);
-  const updateAnswers = (answers: Record<string, any>) => setAnswers(answers);
+  const updateAnswers = (answers: UserAnswers[]) => setAnswers(answers);
   const updateCollectedInfo = (collectedInfo: CollectedInfo) =>
     setCollectedInfo(collectedInfo);
 
   const submitAnswer = (index: number, navigate: () => void) => {
     if (index === questions.length - 1) {
       updateAnswers(answers);
+      console.log(answers);
+      submitAnswers(currentChatId, Object.values(answers));
     } else {
       navigate();
     }

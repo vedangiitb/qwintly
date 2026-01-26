@@ -20,10 +20,21 @@ export function Questionnaire() {
     setAnswers(updated);
   }
 
-  const canGoNext =
-    index &&
-    answers[index]?.answer !== undefined &&
-    answers[index]?.answer.length !== 0;
+  const canGoNext = () => {
+    console.log(
+      index,
+      answers[index],
+      answers[index]?.answer,
+      answers[index]?.answer.length,
+    );
+    return (
+      index !== undefined &&
+      answers !== undefined &&
+      answers[index] !== undefined &&
+      answers[index]?.answer !== undefined &&
+      answers[index]?.answer.length !== 0
+    );
+  };
 
   const navigate = () => setIndex((i) => Math.min(i + 1, questions.length - 1));
 
@@ -96,9 +107,11 @@ export function Questionnaire() {
                   {q.type === "multi_select" && q.options && (
                     <div className="flex flex-wrap gap-2">
                       {q.options.map((opt) => {
-                        const selected = (answers[index].answer || []).includes(
-                          opt,
-                        );
+                        const current = Array.isArray(answers[index].answer)
+                          ? answers[index].answer
+                          : [];
+                        const selected = current.includes(opt);
+
                         return (
                           <Button
                             key={opt}
@@ -106,13 +119,11 @@ export function Questionnaire() {
                             variant={selected ? "default" : "outline"}
                             className="rounded-full"
                             onClick={() => {
-                              const prev = answers[index].answer || [];
-                              updateAnswer(
-                                index,
-                                selected
-                                  ? prev.filter((v: string) => v !== opt)
-                                  : [...prev, opt],
-                              );
+                              const updated = selected
+                                ? current.filter((v) => v !== opt)
+                                : [...current, opt];
+
+                              updateAnswer(index, updated);
                             }}
                           >
                             {opt}
@@ -139,7 +150,7 @@ export function Questionnaire() {
         </Button>
 
         <Button
-          disabled={!canGoNext}
+          disabled={!canGoNext()}
           onClick={() => submitAnswer(index, navigate)}
         >
           {index === questions.length - 1 ? "Finish" : "Next"}

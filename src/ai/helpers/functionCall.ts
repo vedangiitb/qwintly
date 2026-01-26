@@ -2,7 +2,7 @@ import { FunctionCall } from "@google/genai";
 import { askQuestions } from "../tools/implementations/askQuestion";
 
 export const implementations = {
-  ask_questions: askQuestions,
+  ask_questions: askQuestions, 
 };
 
 export const getFunctionArgs = (

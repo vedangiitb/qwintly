@@ -151,7 +151,7 @@ export async function fetchCollectedInfo(chatId: string) {
   }
 }
 
-export async function submitAnswers(chatId: string, answers: any[]) {
+export async function submitAnswers(chatId: string, answers: UserAnswers[]) {
   try {
     const json = await fetchUtil("/api/chat/submitAnswers", {
       method: "POST",

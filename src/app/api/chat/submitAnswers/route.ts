@@ -3,14 +3,21 @@ import { verifyToken } from "@/lib/verifyToken";
 import { updateFieldSupabase } from "../../../../../infra/supabase/updateField";
 
 export const POST = postHandler(async ({ token, body }) => {
-  const { id, answers } = body;
+  const { chatId, answers } = body;
   await verifyToken(token);
 
   try {
-    updateFieldSupabase(id, "answers", answers, "questions", token);
+    updateFieldSupabase(
+      chatId,
+      "answers",
+      answers,
+      "questions",
+      token,
+      "conv_id",
+    );
   } catch (err) {
     console.error(err);
-    return { success: false };
+    throw new Error("Failed to update answers", err);
   }
 
   return { success: true };

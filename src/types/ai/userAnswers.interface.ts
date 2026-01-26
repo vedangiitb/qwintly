@@ -1,4 +1,4 @@
 interface UserAnswers {
-  question_id: string;
+  id: string;
   answer: string;
 }

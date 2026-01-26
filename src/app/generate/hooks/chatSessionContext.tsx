@@ -12,7 +12,7 @@ export type ChatSessionState = {
   prompt: string;
 
   questions: Questions;
-  answers: Record<string, any>;
+  answers: UserAnswers[];
   collectedInfo: CollectedInfo;
 
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
@@ -51,16 +51,12 @@ export const ChatSessionProvider = ({
 
   const [questions, setQuestions] = useState<Questions>([]);
 
-  const [answers, setAnswers] = useState<Record<string, any>>(() => {
-    const initial: Record<string, any> = {};
-    questions.forEach((q) => {
-      if (q.answer_default) {
-        initial[q.id] =
-          q.type === "multi_select" ? [q.answer_default] : q.answer_default;
-      }
-    });
-    return initial;
-  });
+  const [answers, setAnswers] = useState<UserAnswers[]>(
+    questions.map((question: Question) => ({
+      id: question.id,
+      answer: "",
+    })),
+  );
 
   const [collectedInfo, setCollectedInfo] = useState<CollectedInfo>({
     name: "",
