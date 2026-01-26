@@ -1,3 +1,4 @@
+import { PlanOutput } from "@/app/generate/components/chat/planPreview";
 import { Stage } from "@/types/chat";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
@@ -12,6 +13,8 @@ interface GenerationState {
   url: string | null;
   // Project stage
   stage: Stage;
+  // Generated plan
+  plan: PlanOutput | null;
 }
 
 const initialState: GenerationState = {
@@ -20,6 +23,7 @@ const initialState: GenerationState = {
   generated: false,
   url: null,
   stage: "init",
+  plan: null,
 };
 
 const generationSlice = createSlice({
@@ -52,6 +56,9 @@ const generationSlice = createSlice({
     updateStage(state, action: PayloadAction<Stage>) {
       state.stage = action.payload;
     },
+    updatePlan(state, action: PayloadAction<PlanOutput>) {
+      state.plan = action.payload;
+    },
   },
 });
 
@@ -62,6 +69,7 @@ export const {
   generationUrl,
   resetStatus,
   updateStage,
+  updatePlan,
 } = generationSlice.actions;
 
 export default generationSlice.reducer;

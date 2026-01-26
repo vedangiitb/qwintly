@@ -2,7 +2,7 @@ export interface Message {
   id?: string;
   role: "user" | "assistant";
   content: string | Questions;
-  stage?: Stage;
+  stage: Stage;
   createdAt?: string;
   msgType: string;
 }

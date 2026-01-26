@@ -1,21 +1,24 @@
-export const commitProductChanges = {
-  name: "commit_product_changes",
-  description: "Commit confirmed product changes and send them to the backend",
+import { Type } from "@google/genai";
+
+export const updatePlanSchema = {
+  name: "update_plan",
+  description:
+    "Create/Update Plan for the product changes and send them to the backend",
   parameters: {
-    type: "object",
+    type: Type.OBJECT,
     properties: {
       tasks: {
-        type: "array",
+        type: Type.ARRAY,
         items: {
-          type: "object",
+          type: Type.OBJECT,
           properties: {
-            task_id: { type: "string" },
+            task_id: { type: Type.STRING },
             task_type: {
-              type: "string",
+              type: Type.STRING,
               enum: ["ui_task", "be_task", "db_task"],
             },
             intent: {
-              type: "string",
+              type: Type.STRING,
               enum: [
                 "add_page",
                 "add_section",
@@ -33,13 +36,13 @@ export const commitProductChanges = {
                 "modify_column",
               ],
             },
-            description: { type: "string" },
-            content: { type: "object" },
-            page: { type: "string" },
-            new_feature_name: { type: "string" },
-            feature: { type: "string" },
-            service: { type: "string" },
-            component_id: { type: "string" },
+            description: { type: Type.STRING },
+            content: { type: Type.OBJECT },
+            page: { type: Type.STRING },
+            new_feature_name: { type: Type.STRING },
+            feature: { type: Type.STRING },
+            service: { type: Type.STRING },
+            component_id: { type: Type.STRING },
           },
           required: [
             "task_id",
@@ -56,12 +59,12 @@ export const commitProductChanges = {
         },
       },
       newInfo: {
-        type: "object",
+        type: Type.OBJECT,
         properties: {
-          name: { type: "string" },
-          description: { type: "string" },
-          category: { type: "string" },
-          targetUsers: { type: "string" },
+          name: { type: Type.STRING },
+          description: { type: Type.STRING },
+          category: { type: Type.STRING },
+          targetUsers: { type: Type.STRING },
         },
         required: ["name", "description", "category", "targetUsers"],
       },

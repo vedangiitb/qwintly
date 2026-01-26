@@ -164,3 +164,29 @@ export async function submitAnswers(chatId: string, answers: UserAnswers[]) {
     return false;
   }
 }
+
+export async function generatePlan(
+  chatId: string,
+  stage: Stage,
+  messages: Message[],
+  collectedInfo: CollectedInfo,
+  questionAnswers: QuestionAnswers[],
+) {
+  try {
+    const json = await fetchUtil("/api/chat/stream", {
+      method: "POST",
+      body: JSON.stringify({
+        chatId,
+        stage,
+        messages: messages.filter((msg) => msg.stage == stage),
+        collectedInfo,
+        questionAnswers,
+      }),
+    });
+
+    return json.success;
+  } catch (e: any) {
+    console.error("generatePlan error", e);
+    return false;
+  }
+}

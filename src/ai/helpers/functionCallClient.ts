@@ -1,15 +1,17 @@
 import { Stage } from "@/types/chat";
 import { askQuestionClient } from "../tools/implementations/askQuestion";
+import { updatePlanClient } from "../tools/implementations/updatePlan";
 
 export const implementations = {
   ask_questions: askQuestionClient,
+  update_plan: updatePlanClient,
 };
 
 export const functionCallClient = async (
   name: string,
   data: any,
-  updateProjectStage: (stage: Stage) => void
-): Promise<Questions> => {
+  updateProjectStage: (stage: Stage) => void,
+): Promise<any> => {
   console.log(name, data);
   const fn = implementations[name];
   if (!fn) throw new Error(`Function ${name} not found`);

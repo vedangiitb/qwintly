@@ -5,6 +5,7 @@ import {
   generationStarted,
   generationUrl,
   resetStatus,
+  updatePlan,
   updateStage,
 } from "@/lib/features/genUiSlice";
 import { AppDispatch, RootState } from "@/lib/store";
@@ -16,12 +17,14 @@ import {
   fetchChatMessages,
   fetchCollectedInfo,
   fetchQuestionAnswers,
+  generatePlan,
   streamChatResponse,
   submitAnswers,
   userChats,
 } from "../services/chat/chatService";
 import { fetchUrl } from "../services/gen/fetchUrl";
 import { useChatSession } from "./chatSessionContext";
+import { PlanOutput } from "../components/chat/planPreview";
 
 export const useChat = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -40,6 +43,7 @@ export const useChat = () => {
   const generated = useSelector((state: RootState) => state.genUi.generated);
   const genUrl = useSelector((state: RootState) => state.genUi.url);
   const projectStage = useSelector((state: RootState) => state.genUi.stage);
+  const plan = useSelector((state: RootState) => state.genUi.plan);
 
   const {
     chatId: currentChatId,
@@ -75,15 +79,42 @@ export const useChat = () => {
   const updateCollectedInfo = (collectedInfo: CollectedInfo) =>
     setCollectedInfo(collectedInfo);
 
-  const submitAnswer = (index: number, navigate: () => void) => {
+  const updateProjectPlan = (plan: PlanOutput) => {
+    dispatch(updatePlan(plan));
+  };
+
+  const approvePlan = () => {};
+
+  const prepareQARequest = (
+    questions: Question[],
+    answers: UserAnswers[],
+  ): QuestionAnswers[] => {
+    return questions.map((question, index) => ({
+      question: question.question,
+      type: question.type,
+      options: question.options,
+      chosenAnswer: answers[index].answer,
+    }));
+  };
+
+  const submitAnswer = async (index: number, navigate: () => void) => {
     if (index === questions.length - 1) {
       updateAnswers(answers);
-      console.log(answers);
-      submitAnswers(currentChatId, Object.values(answers));
+      await submitAnswers(currentChatId, Object.values(answers));
+      // TODO: See if answers were submitted and only then generate plan
+      // TODO: Add loading status
+      await generatePlan(
+        currentChatId,
+        projectStage,
+        messages,
+        collectedInfo,
+        prepareQARequest(questions, answers),
+      );
     } else {
       navigate();
     }
   };
+
   const fetchChat = useCallback(async (chatId: string) => {
     resetGenStatus();
     if (!chatId) return;
@@ -140,10 +171,23 @@ export const useChat = () => {
 
       setMessages((prev) => [
         ...prev,
-        { role: "user", content: prompt, msgType: "message" },
+        {
+          role: "user",
+          content: prompt,
+          msgType: "message",
+          stage: projectStage,
+        },
       ]);
 
-      addToDB({ role: "user", content: prompt, msgType: "message" }, chatId);
+      addToDB(
+        {
+          role: "user",
+          content: prompt,
+          msgType: "message",
+          stage: projectStage,
+        },
+        chatId,
+      );
 
       setResponseLoading(true);
       hasSubmittedRef.current = true;
@@ -165,11 +209,21 @@ export const useChat = () => {
         if (assistantText) {
           setMessages((prev) => [
             ...prev,
-            { role: "assistant", content: assistantText, msgType: "message" },
+            {
+              role: "assistant",
+              content: assistantText,
+              msgType: "message",
+              stage: projectStage,
+            },
           ]);
 
           addToDB(
-            { role: "assistant", content: assistantText, msgType: "message" },
+            {
+              role: "assistant",
+              content: assistantText,
+              msgType: "message",
+              stage: projectStage,
+            },
             chatId,
           )
             .then((ok) => console.log("addToDB(onComplete) success", ok))
@@ -179,24 +233,41 @@ export const useChat = () => {
         if (response.functionCallData) {
           const { name, data } = response.functionCallData;
           console.log("onFunction", data);
-          const fnData: Questions = await functionCallClient(
+          const fnData: any = await functionCallClient(
             name,
             data,
             updateProjectStage,
           );
-          updateQuestionsList(fnData);
-          const txt = "Please answer the questions";
+          let txt = "";
+          let type = "";
+
+          if (name === "ask_questions") {
+            updateQuestionsList(fnData);
+            txt = "Please answer the questions";
+            type = "questions";
+          }
+          if (name === "update_plan") {
+            updateProjectPlan(fnData);
+            txt = "Project plan";
+            type = "plan";
+          }
           setMessages((prev) => [
             ...prev,
             {
               role: "assistant",
               content: txt,
-              msgType: "questions",
+              msgType: type,
+              stage: projectStage,
             },
           ]);
 
           addToDB(
-            { role: "assistant", content: txt, msgType: "questions" },
+            {
+              role: "assistant",
+              content: txt,
+              msgType: type,
+              stage: projectStage,
+            },
             chatId,
           )
             .then((ok) => console.log("addToDB(onComplete) success", ok))
@@ -275,6 +346,8 @@ export const useChat = () => {
     questionsList: questions,
     answersList: answers,
     submitAnswer,
+    plan,
+    approvePlan,
   } as const;
 };
 

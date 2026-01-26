@@ -7,7 +7,7 @@ import { Content } from "@google/genai";
 import { aiResponse } from "../../../../../infra/gemini/gemini.client";
 
 export const POST = postHandler(async ({ body, token }) => {
-  const { chatId, messages, stage, collectedInfo, questions } = body;
+  const { chatId, messages, stage, collectedInfo, questionAnswers } = body;
 
   if (!stage || !messages)
     throw new Error(`Missing ${!stage ? "stage" : "messages"}`);
@@ -23,26 +23,39 @@ export const POST = postHandler(async ({ body, token }) => {
     stage,
     messages,
     collectedInfo,
-    questions
+    questionAnswers,
   );
 
   const result = await aiResponse(geminiPrompt, {
     tools: tool,
     toolCallNeeded: false,
   });
-
-  const parts = result.candidates?.[0]?.content?.parts[0];
-
   const response = {
     text: "",
     functionCallData: null,
   };
 
-  if (parts.functionCall) {
-    const data = await functionCall(parts.functionCall, token, userId, chatId);
-    response.functionCallData = { data: data, name: parts.functionCall.name };
-  } else if (parts.text) {
-    response.text = parts.text;
+  const parts = result.candidates?.[0]?.content?.parts ?? [];
+
+  const functionCallPart = parts.find((p) => p.functionCall);
+  const textPart = parts.find((p) => p.text);
+
+  if (functionCallPart?.functionCall) {
+    const data = await functionCall(
+      functionCallPart.functionCall,
+      token,
+      userId,
+      chatId,
+    );
+
+    response.functionCallData = {
+      data,
+      name: functionCallPart.functionCall.name,
+    };
+  } else if (textPart?.text) {
+    response.text = textPart.text;
+  } else {
+    throw new Error("AI returned no usable content");
   }
 
   return response;

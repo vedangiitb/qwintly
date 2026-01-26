@@ -18,6 +18,7 @@ export const POST = postHandler(async ({ token, body }) => {
     p_content: message.content,
     p_token_count: 0,
     p_msg_type: message.msgType,
+    p_stage: message.stage,
   });
 
   if (error) {

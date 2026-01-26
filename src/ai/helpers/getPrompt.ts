@@ -1,5 +1,8 @@
 import { Message, Stage } from "@/types/chat";
 import { Content } from "@google/genai";
+import { EXECUTER_PROMPT } from "../prompts/executer.prompt";
+import { PLANNER_PROMPT } from "../prompts/planner.prompt";
+import { QUESTIONER_PROMPT } from "../prompts/questioner.prompt";
 import { STARTER_PROMPT } from "../prompts/starter.prompt";
 
 export const stages = {
@@ -13,55 +16,51 @@ export const getGeminiPrompt = (
   stage: Stage,
   convHistory: Message[],
   collectedInfo: CollectedInfo,
-  questions: Questions
+  questionAnswers: QuestionAnswers[],
 ): Content[] => {
   const systemPrompts = {
     init: STARTER_PROMPT(),
+    questioner: QUESTIONER_PROMPT(questionAnswers, collectedInfo),
+    planner: PLANNER_PROMPT(questionAnswers, collectedInfo),
+    executer: EXECUTER_PROMPT(),
   };
 
   const geminiPrompt: Content[] = [];
 
-  // System prompt (stage specific)
-  geminiPrompt.push({ role: "user", parts: [{ text: systemPrompts[stage] }] });
+  // ✅ System prompt
+  geminiPrompt.push({
+    role: "user",
+    parts: [{ text: systemPrompts[stage] }],
+  });
 
-  if (stage == stages.INIT) {
-    // INIT stage => Push all messages
+  if (stage === stages.INIT) {
+    const messages = convHistory.filter(
+      (msg) => msg.stage === stages.INIT && msg.msgType === "message",
+    );
+
     geminiPrompt.push(
-      ...convHistory.map((msg) => ({
+      ...messages.map((msg) => ({
         role: msg.role,
-        parts: [{ text: msg.content as string }],
-        msgType: "message",
-      }))
+        parts: [{ text: String(msg.content) }],
+      })),
     );
-  } else if (stage == stages.QUESTIONER) {
-    // QUESTIONER stage => Push only collected info, questioner messages & Questions list
-    geminiPrompt.push({
-      role: "assistant",
-      parts: [{ text: `Collected Info: ${JSON.stringify(collectedInfo)}` }],
-    });
+  }
 
-    geminiPrompt.push({
-      role: "assistant",
-      parts: [{ text: `Questions: ${JSON.stringify(questions)}` }],
-    });
+  if (stage === stages.QUESTIONER || stage === stages.PLANNER) {
+    const messages = convHistory.filter(
+      (msg) =>
+        msg.stage === stage && msg.role === "user" && msg.msgType === "message",
+    );
 
     geminiPrompt.push(
-      ...convHistory.map(
-        (msg) =>
-          msg.stage == stages.QUESTIONER &&
-          msg.msgType == "message" && {
-            role: msg.role,
-            parts: [{ text: msg.content as string }],
-          }
-      )
+      ...messages.map((msg) => ({
+        role: "user",
+        parts: [{ text: String(msg.content) }],
+      })),
     );
-  } else if (stage == stages.PLANNER) {
-    // PLANNER stage => Push only collected info, questioner messages & Questions & Answers list
-  } else if (stage == stages.EXECUTER) {
-    // EXECUTER stage => Push only collected info, Complete plan Current Plan
-  } else {
-    throw new Error("Invalid stage");
   }
+
+  // EXECUTER intentionally omitted for now
 
   return geminiPrompt;
 };

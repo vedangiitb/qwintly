@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { Questionnaire } from "./Questionnaire";
+import { PlanReview } from "./planPreview";
 
 export default function RenderAIResponse({
   data,
@@ -14,6 +15,8 @@ export default function RenderAIResponse({
   msgType: string;
 }) {
   if (msgType == "questions") return <Questionnaire />;
+
+  if (msgType == "plan") return <PlanReview />;
   const displayMessage: string = data || "Something went wrong";
 
   return (
@@ -26,7 +29,7 @@ export default function RenderAIResponse({
         className={cn(
           "w-full md:max-w-[75%] px-4 py-2 rounded-2xl",
           "bg-muted/40 text-primary text-sm md:text-base",
-          "border transition-all"
+          "border transition-all",
         )}
       >
         <ReactMarkdown
@@ -36,7 +39,7 @@ export default function RenderAIResponse({
                 <code
                   className={cn(
                     "rounded bg-muted px-1.5 py-0.5 text-xs font-mono text-indigo-300",
-                    className
+                    className,
                   )}
                   {...props}
                 >

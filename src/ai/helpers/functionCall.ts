@@ -1,8 +1,10 @@
 import { FunctionCall } from "@google/genai";
 import { askQuestions } from "../tools/implementations/askQuestion";
+import { updatePlan } from "../tools/implementations/updatePlan";
 
 export const implementations = {
-  ask_questions: askQuestions, 
+  ask_questions: askQuestions,
+  update_plan: updatePlan,
 };
 
 export const getFunctionArgs = (
@@ -10,7 +12,7 @@ export const getFunctionArgs = (
   fnName: string,
   token: string,
   userId: string,
-  convId: string
+  convId: string,
 ) => {
   let functionArgs: any;
   if (fnName === "ask_questions") {
@@ -22,6 +24,8 @@ export const getFunctionArgs = (
       userId: userId,
       convId: convId,
     };
+  } else if (fnName ==="update_plan"){
+    functionArgs = {}
   }
   return functionArgs;
 };
@@ -30,7 +34,7 @@ export const functionCall = async (
   functionCall: FunctionCall,
   token: string,
   userId: string,
-  convId: string
+  convId: string,
 ) => {
   const { name, args } = functionCall;
   const fn = implementations[name];
