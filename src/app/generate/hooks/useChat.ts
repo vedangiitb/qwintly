@@ -194,7 +194,12 @@ export const useChat = () => {
       try {
         const snapshotForServer: Message[] = [
           ...messages,
-          { role: "user", content: prompt } as Message,
+          {
+            role: "user",
+            content: prompt,
+            msgType: "message",
+            stage: projectStage,
+          },
         ];
 
         const response = await streamChatResponse({
@@ -210,7 +215,7 @@ export const useChat = () => {
           setMessages((prev) => [
             ...prev,
             {
-              role: "assistant",
+              role: "model",
               content: assistantText,
               msgType: "message",
               stage: projectStage,
@@ -219,7 +224,7 @@ export const useChat = () => {
 
           addToDB(
             {
-              role: "assistant",
+              role: "model",
               content: assistantText,
               msgType: "message",
               stage: projectStage,
@@ -254,7 +259,7 @@ export const useChat = () => {
           setMessages((prev) => [
             ...prev,
             {
-              role: "assistant",
+              role: "model",
               content: txt,
               msgType: type,
               stage: projectStage,
@@ -263,7 +268,7 @@ export const useChat = () => {
 
           addToDB(
             {
-              role: "assistant",
+              role: "model",
               content: txt,
               msgType: type,
               stage: projectStage,

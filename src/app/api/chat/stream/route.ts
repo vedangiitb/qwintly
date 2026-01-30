@@ -26,37 +26,41 @@ export const POST = postHandler(async ({ body, token }) => {
     questionAnswers,
   );
 
+  console.log(geminiPrompt)
+
   const result = await aiResponse(geminiPrompt, {
     tools: tool,
     toolCallNeeded: false,
   });
+
+  console.log(result,result.candidates[0].content)
+
   const response = {
     text: "",
     functionCallData: null,
   };
 
-  const parts = result.candidates?.[0]?.content?.parts ?? [];
+  // 1️⃣ Handle function call FIRST
+  if (result.functionCalls && result.functionCalls.length > 0) {
+    const fc = result.functionCalls[0];
 
-  const functionCallPart = parts.find((p) => p.functionCall);
-  const textPart = parts.find((p) => p.text);
-
-  if (functionCallPart?.functionCall) {
-    const data = await functionCall(
-      functionCallPart.functionCall,
-      token,
-      userId,
-      chatId,
-    );
+    const data = await functionCall(fc, token, userId, chatId);
 
     response.functionCallData = {
       data,
-      name: functionCallPart.functionCall.name,
+      name: fc.name, 
     };
-  } else if (textPart?.text) {
-    response.text = textPart.text;
-  } else {
-    throw new Error("AI returned no usable content");
+
+    // IMPORTANT: return here or skip text validation
+    return response;
   }
 
-  return response;
+  // 2️⃣ Handle text response
+  if (result.text && result.text.trim().length > 0) {
+    response.text = result.text;
+    return response;
+  }
+
+  // 3️⃣ Truly empty response (rare)
+  throw new Error("AI returned no usable content");
 });

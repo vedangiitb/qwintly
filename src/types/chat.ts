@@ -1,6 +1,6 @@
 export interface Message {
   id?: string;
-  role: "user" | "assistant";
+  role: "user" | "model";
   content: string | Questions;
   stage: Stage;
   createdAt?: string;
@@ -13,7 +13,7 @@ export interface FetchChatResult {
   error: string | null;
 }
 
-export type Role = "user" | "assistant" | "system";
+export type Role = "user" | "model" | "system";
 
 export interface recentChatInterface {
   id: string;

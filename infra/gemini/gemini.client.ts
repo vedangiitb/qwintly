@@ -8,7 +8,7 @@ import { ai, MODEL } from "./gemini.config";
 
 type AIResponseOptions = {
   tools?: Tool[];
-  model?: string;
+  model?: string; 
   toolCallNeeded?: boolean;
 };
 
@@ -23,17 +23,14 @@ export async function aiResponse(
   // Tool calling has highest priority
   if (tools && tools.length > 0) {
     config.tools = tools;
-    if (toolCallNeeded) {
+    // if (toolCallNeeded) {
     config.toolConfig = {
       functionCallingConfig: {
-        mode: FunctionCallingConfigMode.ANY,
+        mode: FunctionCallingConfigMode.AUTO,
       },
       };
-    };
+    // };
   }
-
-  console.log(JSON.stringify(request, null, 2));
-  console.log(JSON.stringify(config, null, 2));
 
   try {
     return await ai.models.generateContent({
