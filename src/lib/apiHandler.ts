@@ -82,8 +82,6 @@ export function getHandler(
         query,
       });
 
-      console.log(result);
-
       return ApiResponse.success(result);
     } catch (err: any) {
       console.error("GET route error:", err);

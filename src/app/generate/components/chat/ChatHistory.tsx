@@ -27,6 +27,7 @@ export default function ChatHistory({
               <RenderAIResponse
                 data={item.content as string}
                 msgType={item.msgType || "message"}
+                latest={idx === convHistory.length - 1}
               />
             )}
           </div>

@@ -2,27 +2,32 @@ import { getHandler } from "@/lib/apiHandler";
 import { verifyToken } from "@/lib/verifyToken";
 import { getDataSupabase } from "../../../../../infra/supabase/getData";
 
+type TaskRow = {
+  tasks: any[];
+  implemented: boolean;
+  info: CollectedInfo;
+};
+
 export const GET = getHandler(async ({ query, token }) => {
   const chatId = query.get("chatId");
   if (!chatId) throw new Error("Missing chatId");
-
   await verifyToken(token);
 
-  const { data, error } = await getDataSupabase(
+  const { data, error } = await getDataSupabase<TaskRow>(
     token,
-    "collected_info",
-    ["name", "description", "category", "target_users", "other_info"],
+    "task",
+    ["tasks", "implemented"],
     { col: "conv_id", value: chatId },
   );
 
-  if (error) {
-    console.error(error);
-    throw new Error(error.message);
-  }
-  const collectedInfo = data[0];
-
   // --- Return structured response ---
-  return {
-    collectedInfo: collectedInfo,
-  };
+  if (error) throw error;
+
+  const rows = (data ?? []).map((row) => ({
+    tasks: row.tasks ?? [],
+    info: row.info ?? {},
+    implemented: row.implemented ?? false,
+  }));
+
+  return { rows };
 });

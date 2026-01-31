@@ -6,17 +6,24 @@ import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { Questionnaire } from "./Questionnaire";
 import { PlanReview } from "./planPreview";
+import { useChat } from "../../hooks/useChat";
 
 export default function RenderAIResponse({
   data,
   msgType,
+  latest,
 }: {
   data: string;
   msgType: string;
+  latest: boolean;
 }) {
+  const { currPlan } = useChat();
   if (msgType == "questions") return <Questionnaire />;
 
-  if (msgType == "plan") return <PlanReview />;
+  if (msgType == "plan") {
+    if (latest) return <PlanReview plan={currPlan} />;
+    else return <p>Plan</p>;
+  }
   const displayMessage: string = data || "Something went wrong";
 
   return (

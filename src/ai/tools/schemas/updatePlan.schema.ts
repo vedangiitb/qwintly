@@ -65,6 +65,7 @@ export const updatePlanSchema = {
           description: { type: Type.STRING },
           category: { type: Type.STRING },
           targetUsers: { type: Type.STRING },
+          otherInfo: { type: Type.STRING },
         },
         required: ["name", "description", "category", "targetUsers"],
       },

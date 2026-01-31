@@ -1,3 +1,4 @@
+import { pmContext } from "./codeIndex";
 export const PLANNER_PROMPT = (
   questionAnswers: QuestionAnswers[],
   collectedInfo: CollectedInfo,
@@ -15,6 +16,9 @@ You have:
 - User feedback on that plan (approval or requested changes)
 
 ---
+You are given the following context about the project:
+
+${pmContext}
 
 ### Your Objective (PLANNER Stage)
 Refine and finalize the product plan based on user feedback.

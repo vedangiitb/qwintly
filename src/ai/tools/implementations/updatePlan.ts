@@ -1,7 +1,44 @@
 import { PlanTask } from "@/app/generate/components/chat/planPreview";
 import { Stage } from "@/types/chat";
+import { insertDataSupabase } from "../../../../infra/supabase/insertData";
 
-export const updatePlan = async () => {};
+export const updatePlan = async ({
+  tasks,
+  newInfo,
+  token,
+  userId,
+  convId,
+}: {
+  tasks: { items: PlanTask[] };
+  newInfo: any;
+  token: string;
+  userId: string;
+  convId: string;
+}) => {
+  // Update DB
+  const taskData = {
+    tasks: tasks.items.map((task: PlanTask) => {
+      return {
+        task_id: task.task_id || "",
+        task_type: task.task_type || "",
+        intent: task.intent || "",
+        description: task.description || "",
+        content: task.content || {},
+        page: task.page || "",
+        new_feature_name: task.new_feature_name || "",
+        feature: task.feature || "",
+        service: task.service || "",
+        component_id: task.component_id || "",
+      };
+    }),
+  };
+
+  await insertDataSupabase(
+    { tasks: taskData, conv_id: convId, user_id: userId, info: newInfo },
+    "task",
+    token,
+  );
+};
 
 export const updatePlanClient = async (
   params: any,

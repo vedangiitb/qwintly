@@ -1,6 +1,12 @@
 import { FetchChatResult, Message, Stage } from "@/types/chat";
 import { fetchUtil } from "@/utils/fetchUtil";
 
+export type TaskRow = {
+  tasks: any[];
+  implemented: boolean;
+  info: CollectedInfo;
+};
+
 // ------------------------ STREAM RESPONSE ------------------------
 
 // services/streamChatResponse.ts
@@ -188,5 +194,24 @@ export async function generatePlan(
   } catch (e: any) {
     console.error("generatePlan error", e);
     return false;
+  }
+}
+
+export async function fetchTasks(chatId: string) {
+  try {
+    const json = (await fetchUtil(
+      `/api/chat/fetchTasks?chatId=${encodeURIComponent(chatId)}`,
+      {
+        method: "GET",
+      },
+    )) as { data?: TaskRow[] };
+
+    return {
+      data: json.data ?? null,
+      error: null,
+    };
+  } catch (e: any) {
+    console.error("fetchTasks error", e);
+    return { data: null, error: e?.message };
   }
 }

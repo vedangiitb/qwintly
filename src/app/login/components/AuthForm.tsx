@@ -27,13 +27,10 @@ export default function AuthForm({ isExistingUser }: Props) {
   const [loading, setLoading] = useState(false);
   const { login, signUp } = useEmailAuth();
 
-  console.log(error);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      console.log("1");
       setLoading(true);
       setError("");
 
@@ -46,7 +43,7 @@ export default function AuthForm({ isExistingUser }: Props) {
           router.push("/account");
         } else {
           router.push(
-            `/login/account-created?email=${encodeURIComponent(email)}`
+            `/login/account-created?email=${encodeURIComponent(email)}`,
           );
         }
       }

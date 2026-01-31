@@ -1,9 +1,10 @@
 // lib/mq.ts
+import { PlanOutput } from "@/app/generate/components/chat/planPreview";
 import { PubSub } from "@google-cloud/pubsub";
 
 const projectId = process.env.GCP_PROJECT_ID!;
 const credentials = JSON.parse(
-  Buffer.from(process.env.GCP_SERVICE_ACCOUNT_KEY_BASE64!, "base64").toString()
+  Buffer.from(process.env.GCP_SERVICE_ACCOUNT_KEY_BASE64!, "base64").toString(),
 );
 
 const pubsub = new PubSub({
@@ -19,8 +20,8 @@ export async function publishWebsiteGeneration({
   newInfo,
 }: {
   chatId?: string;
-  tasks: any;
-  newInfo: any;
+  tasks: PlanOutput;
+  newInfo: CollectedInfo;
 }) {
   const payload = {
     chatId,

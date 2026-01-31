@@ -23,8 +23,6 @@ export const initConvService = async (
       body: JSON.stringify({ prompt }),
     });
 
-    console.log(json)
-
     toast.success("Conversation created!");
     return { id: json.data?.id ?? null, data: json.data };
   } catch (err: any) {

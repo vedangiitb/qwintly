@@ -32,7 +32,6 @@ export default function ConfigureProject() {
   );
 
   const change = (field: string, value: string | boolean) => {
-    console.log(details);
     updateConfig((prev) => ({ ...prev, [field]: value }));
     setConfig({ ...config, [field]: value });
   };

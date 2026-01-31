@@ -10,7 +10,6 @@ import { PageWrapper } from "./shared/PageWrapper";
 
 export default function CategoryPage() {
   const { setCategory, setStep, details } = useNewProject();
-  console.log(details);
 
   return (
     <PageWrapper>

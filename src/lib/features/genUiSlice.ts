@@ -13,8 +13,10 @@ interface GenerationState {
   url: string | null;
   // Project stage
   stage: Stage;
-  // Generated plan
-  plan: PlanOutput | null;
+  // plan
+  plans: PlanOutput[] | null;
+  // Currently generated plan
+  currPlan: PlanOutput | null;
 }
 
 const initialState: GenerationState = {
@@ -23,7 +25,8 @@ const initialState: GenerationState = {
   generated: false,
   url: null,
   stage: "init",
-  plan: null,
+  plans: null,
+  currPlan: null,
 };
 
 const generationSlice = createSlice({
@@ -56,8 +59,11 @@ const generationSlice = createSlice({
     updateStage(state, action: PayloadAction<Stage>) {
       state.stage = action.payload;
     },
-    updatePlan(state, action: PayloadAction<PlanOutput>) {
-      state.plan = action.payload;
+    updatePlans(state, action: PayloadAction<PlanOutput[]>) {
+      state.plans = action.payload;
+    },
+    updateCurrPlan(state, action: PayloadAction<PlanOutput>) {
+      state.currPlan = action.payload;
     },
   },
 });
@@ -69,7 +75,8 @@ export const {
   generationUrl,
   resetStatus,
   updateStage,
-  updatePlan,
+  updatePlans,
+  updateCurrPlan,
 } = generationSlice.actions;
 
 export default generationSlice.reducer;

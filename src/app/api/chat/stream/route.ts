@@ -26,14 +26,12 @@ export const POST = postHandler(async ({ body, token }) => {
     questionAnswers,
   );
 
-  console.log(geminiPrompt)
+  const toolCallNeeded = stage === "questioner" || stage === "planner";
 
   const result = await aiResponse(geminiPrompt, {
     tools: tool,
-    toolCallNeeded: false,
+    toolCallNeeded: toolCallNeeded,
   });
-
-  console.log(result,result.candidates[0].content)
 
   const response = {
     text: "",
@@ -48,7 +46,7 @@ export const POST = postHandler(async ({ body, token }) => {
 
     response.functionCallData = {
       data,
-      name: fc.name, 
+      name: fc.name,
     };
 
     // IMPORTANT: return here or skip text validation

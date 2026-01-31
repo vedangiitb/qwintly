@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Accordion,
   AccordionContent,
@@ -7,7 +6,7 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChat } from "../../hooks/useChat";
 
@@ -45,13 +44,14 @@ export type PlanTask = {
 };
 
 export type PlanOutput = {
+  tasks: PlanTask[];
+  implemented: boolean;
   newInfo: {
     name: string;
     description: string;
     category: string;
     targetUsers: string;
   };
-  tasks: PlanTask[];
 };
 
 // ---- Helpers ----
@@ -89,8 +89,8 @@ function groupTasksByIntent(tasks: PlanTask[]) {
 
 // ---- Main Component ----
 
-export function PlanReview() {
-  const { plan, approvePlan: onApprove } = useChat();
+export function PlanReview({ plan }: { plan: PlanOutput }) {
+  const { approvePlan: onApprove } = useChat();
   const groupedTasks = groupTasksByIntent(plan.tasks);
 
   return (

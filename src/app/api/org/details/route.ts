@@ -12,8 +12,6 @@ export const GET = getHandler(async ({ query, token }) => {
     }
   );
 
-  console.log(error)
-
   if (error) {
     console.error("Supabase get_user_organizations error:", error.message);
     throw new Error("Failed to fetch organization details");

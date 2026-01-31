@@ -24,8 +24,17 @@ export const getFunctionArgs = (
       userId: userId,
       convId: convId,
     };
-  } else if (fnName ==="update_plan"){
-    functionArgs = {}
+  } else if (fnName === "update_plan") {
+    console.log("Arge for function", fnName);
+    console.log(args);
+    const { tasks, new_info } = args;
+    functionArgs = {
+      tasks: tasks,
+      newInfo: new_info,
+      token: token,
+      userId: userId,
+      convId: convId,
+    };
   }
   return functionArgs;
 };

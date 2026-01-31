@@ -8,13 +8,13 @@ import { ai, MODEL } from "./gemini.config";
 
 type AIResponseOptions = {
   tools?: Tool[];
-  model?: string; 
+  model?: string;
   toolCallNeeded?: boolean;
 };
 
 export async function aiResponse(
   request: Content[],
-  options: AIResponseOptions = {}
+  options: AIResponseOptions = {},
 ) {
   const { tools, toolCallNeeded } = options;
 
@@ -23,13 +23,19 @@ export async function aiResponse(
   // Tool calling has highest priority
   if (tools && tools.length > 0) {
     config.tools = tools;
-    // if (toolCallNeeded) {
-    config.toolConfig = {
-      functionCallingConfig: {
-        mode: FunctionCallingConfigMode.AUTO,
-      },
+    if (toolCallNeeded) {
+      config.toolConfig = {
+        functionCallingConfig: {
+          mode: FunctionCallingConfigMode.AUTO,
+        },
       };
-    // };
+    } else {
+      config.toolConfig = {
+        functionCallingConfig: {
+          mode: FunctionCallingConfigMode.ANY,
+        },
+      };
+    }
   }
 
   try {

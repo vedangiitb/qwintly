@@ -14,26 +14,24 @@ export function Questionnaire() {
   const progress = ((index + 1) / questions.length) * 100;
 
   function updateAnswer(id: number, value: any) {
-    const updated = { ...answers };
-    updated[id].answer = value;
-    console.log(updated);
-    setAnswers(updated);
+    setAnswers((prev) => ({
+      ...prev,
+      [id]: {
+        ...prev[id],
+        answer: value,
+      },
+    }));
   }
 
   const canGoNext = () => {
-    console.log(
-      index,
-      answers[index],
-      answers[index]?.answer,
-      answers[index]?.answer.length,
-    );
-    return (
-      index !== undefined &&
-      answers !== undefined &&
-      answers[index] !== undefined &&
-      answers[index]?.answer !== undefined &&
-      answers[index]?.answer.length !== 0
-    );
+    const ans = answers[index]?.answer;
+
+    if (ans === undefined || ans === null) return false;
+
+    if (Array.isArray(ans)) return ans.length > 0;
+    if (typeof ans === "string") return ans.trim().length > 0;
+
+    return true;
   };
 
   const navigate = () => setIndex((i) => Math.min(i + 1, questions.length - 1));
@@ -73,7 +71,7 @@ export function Questionnaire() {
                   {q.type === "text" && (
                     <input
                       type="text"
-                      defaultValue={q.answer_default}
+                      value={answers[index]?.answer ?? ""}
                       onChange={(e) => updateAnswer(index, e.target.value)}
                       className="w-full rounded-md border border-input px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                       placeholder="Type your answer..."

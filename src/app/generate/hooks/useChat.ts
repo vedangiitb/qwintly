@@ -5,26 +5,29 @@ import {
   generationStarted,
   generationUrl,
   resetStatus,
-  updatePlan,
+  updateCurrPlan,
+  updatePlans,
   updateStage,
 } from "@/lib/features/genUiSlice";
 import { AppDispatch, RootState } from "@/lib/store";
 import { Message, recentChatInterface, Stage } from "@/types/chat";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { PlanOutput } from "../components/chat/planPreview";
 import {
   addToDB,
   fetchChatMessages,
   fetchCollectedInfo,
   fetchQuestionAnswers,
+  fetchTasks,
   generatePlan,
   streamChatResponse,
   submitAnswers,
+  TaskRow,
   userChats,
 } from "../services/chat/chatService";
 import { fetchUrl } from "../services/gen/fetchUrl";
 import { useChatSession } from "./chatSessionContext";
-import { PlanOutput } from "../components/chat/planPreview";
 
 export const useChat = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -43,7 +46,8 @@ export const useChat = () => {
   const generated = useSelector((state: RootState) => state.genUi.generated);
   const genUrl = useSelector((state: RootState) => state.genUi.url);
   const projectStage = useSelector((state: RootState) => state.genUi.stage);
-  const plan = useSelector((state: RootState) => state.genUi.plan);
+  const plans = useSelector((state: RootState) => state.genUi.plans);
+  const currPlan = useSelector((state: RootState) => state.genUi.currPlan);
 
   const {
     chatId: currentChatId,
@@ -79,8 +83,12 @@ export const useChat = () => {
   const updateCollectedInfo = (collectedInfo: CollectedInfo) =>
     setCollectedInfo(collectedInfo);
 
+  const updateProjectPlans = (plan: PlanOutput[]) => {
+    dispatch(updatePlans(plan));
+  };
+
   const updateProjectPlan = (plan: PlanOutput) => {
-    dispatch(updatePlan(plan));
+    dispatch(updateCurrPlan(plan));
   };
 
   const approvePlan = () => {};
@@ -121,8 +129,6 @@ export const useChat = () => {
     setCurrentChatId(chatId);
     const { messages: fetched, stage, error } = await fetchChatMessages(chatId);
     if (!error && fetched && fetched.length > 0) {
-      console.log("fetchChat", fetched);
-      console.log("stage", stage);
       updateProjectStage(stage);
       setMessages(fetched);
       if (stage === "executer") {
@@ -134,7 +140,6 @@ export const useChat = () => {
       }
 
       if (stage !== "init") {
-        console.log("Fetching data");
         const fetchData = async (projectId: string) => {
           const qa = await fetchQuestionAnswers(projectId);
           if (qa.error) throw new Error(qa.error);
@@ -146,6 +151,23 @@ export const useChat = () => {
             updateCollectedInfo(collected_info.collectedInfo);
         };
         await fetchData(chatId);
+      }
+
+      if (stage === "planner") {
+        const fetchPlan = async (projectId: string) => {
+          const plan: { data: TaskRow[] | null; error: string } =
+            await fetchTasks(projectId);
+          if (plan.error) throw new Error(plan.error);
+          if (plan.data)
+            updateProjectPlans(
+              plan.data.map((task) => ({
+                tasks: task.tasks ?? [],
+                newInfo: task.info ?? null,
+                implemented: task.implemented ?? false,
+              })),
+            );
+        };
+        await fetchPlan(chatId);
       }
 
       return true;
@@ -160,7 +182,6 @@ export const useChat = () => {
 
   const startStream = useCallback(
     async (chatId: string, prompt: string) => {
-      console.log(chatId, prompt);
       if (!chatId || !prompt) {
         throw new Error("chatId or prompt missing");
       }
@@ -230,9 +251,7 @@ export const useChat = () => {
               stage: projectStage,
             },
             chatId,
-          )
-            .then((ok) => console.log("addToDB(onComplete) success", ok))
-            .catch((e) => console.error("addToDB onComplete failed", e));
+          ).catch((e) => console.error("addToDB onComplete failed", e));
         }
 
         if (response.functionCallData) {
@@ -244,7 +263,7 @@ export const useChat = () => {
             updateProjectStage,
           );
           let txt = "";
-          let type = "";
+          let type = "message";
 
           if (name === "ask_questions") {
             updateQuestionsList(fnData);
@@ -274,9 +293,7 @@ export const useChat = () => {
               stage: projectStage,
             },
             chatId,
-          )
-            .then((ok) => console.log("addToDB(onComplete) success", ok))
-            .catch((e) => console.error("addToDB onComplete failed", e));
+          ).catch((e) => console.error("addToDB onComplete failed", e));
         }
       } finally {
         setResponseLoading(false);
@@ -296,7 +313,6 @@ export const useChat = () => {
 
   const submitResponse = useCallback(
     (id?: string) => {
-      console.log("prompt", prompt);
       setResponseLoading(true);
       const chatId = id ?? currentChatId;
       if (!chatId) throw new Error("No chatId provided for submitResponse");
@@ -351,7 +367,7 @@ export const useChat = () => {
     questionsList: questions,
     answersList: answers,
     submitAnswer,
-    plan,
+    currPlan,
     approvePlan,
   } as const;
 };
