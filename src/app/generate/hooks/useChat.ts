@@ -3,6 +3,7 @@ import { functionCallClient } from "@/ai/helpers/functionCallClient";
 import {
   generationFinished,
   generationStarted,
+  generationStatusUpdated,
   generationUrl,
   resetStatus,
   updateCurrPlan,
@@ -27,6 +28,8 @@ import {
   userChats,
 } from "../services/chat/chatService";
 import { fetchUrl } from "../services/gen/fetchUrl";
+import { startGen } from "../services/gen/startGen";
+import { fetchGenerationStatus } from "../services/gen/updateStatus";
 import { useChatSession } from "./chatSessionContext";
 
 export const useChat = () => {
@@ -66,17 +69,18 @@ export const useChat = () => {
     setCollectedInfo,
   } = useChatSession();
 
-  const startGeneration = () => {
-    dispatch(generationStarted());
-  };
-
   const updateProjectStage = (stage: Stage) => {
     dispatch(updateStage(stage));
   };
 
+  const updateStatus = (status: string) =>
+    dispatch(generationStatusUpdated(status));
+
   const setGenUrl = (url: string) => dispatch(generationUrl(url));
 
   const resetGenStatus = () => dispatch(resetStatus());
+
+  const finishGeneration = () => dispatch(generationFinished());
 
   const updateQuestionsList = (questions: Questions) => setQuestions(questions);
   const updateAnswers = (answers: UserAnswers[]) => setAnswers(answers);
@@ -91,7 +95,19 @@ export const useChat = () => {
     dispatch(updateCurrPlan(plan));
   };
 
-  const approvePlan = () => {};
+  const approvePlan = () => {
+    dispatch(generationStarted());
+
+    startGen(currentChatId, currPlan, collectedInfo);
+
+    fetchGenerationStatus(
+      wsRef,
+      currentChatId,
+      updateStatus,
+      setGenUrl,
+      finishGeneration,
+    );
+  };
 
   const prepareQARequest = (
     questions: Question[],
@@ -357,7 +373,6 @@ export const useChat = () => {
     isResponseLoading,
     recentChats: recentChatList,
     generatingsite,
-    startGeneration,
     changes,
     setChanges,
     generated,
@@ -371,84 +386,3 @@ export const useChat = () => {
     approvePlan,
   } as const;
 };
-
-// onComplete: (meta) => {
-//   finalSchema = meta.schema;
-//   console.log(finalSchema);
-
-//   setMessages((prev) => {
-//     const last = prev[prev.length - 1];
-//     if (last?.role === "assistant") return prev;
-
-//     return [...prev, { role: "assistant", content: assistantText }];
-//   });
-
-//   if (!assistantPersistedRef.current && assistantText?.length) {
-//     console.log(
-//       "onComplete: persisting assistant message (final)",
-//       assistantText
-//     );
-//     assistantPersistedRef.current = true;
-//     addToDB({ role: "assistant", content: assistantText }, chatId)
-//       .then((ok) => console.log("addToDB(onComplete) success", ok))
-//       .catch((e) => console.error("addToDB onComplete failed", e));
-//   }
-
-//   startGeneration();
-
-//   try {
-//     if (wsRef.current) {
-//       try {
-//         wsRef.current.close();
-//       } catch (e) {
-//         console.error("ws close failed", e);
-//       }
-//       wsRef.current = null;
-//     }
-
-//     const sessionId = chatId;
-
-//     const workerUrl =
-//       "wss://qwintly-wg-worker-296200543960.asia-south1.run.app";
-//     const wsUrl = `${workerUrl}/ws/${sessionId}`;
-//     const ws = new WebSocket(wsUrl);
-//     wsRef.current = ws;
-
-//     console.log("wsUrl", wsUrl);
-
-//     ws.addEventListener("open", () =>
-//       console.log("WS open for session", sessionId, wsUrl)
-//     );
-
-//     ws.addEventListener("message", (e) => {
-//       try {
-//         const msg = String(e.data);
-//         dispatch(generationStatusUpdated(msg));
-
-//         if (typeof msg === "string" && msg === "SUCCESS") {
-//           fetchUrl(chatId).then((url) => setGenUrl(url));
-//           try {
-//             ws.close();
-//           } catch (err) {
-//             console.error("ws close after SUCCESS failed", err);
-//           }
-//         }
-//       } catch (err) {
-//         console.error("WS parse message failed", err);
-//       }
-//     });
-
-//     ws.addEventListener("close", () => {
-//       dispatch(generationFinished());
-//       wsRef.current = null;
-//     });
-
-//     ws.addEventListener("error", (err) =>
-//       console.error("WS error", err)
-//     );
-//   } catch (err) {
-//     console.error("Failed to start generation WS", err);
-//     dispatch(generationFinished());
-//   }
-//   console.log("Collector COMPLETE:", meta.schema);
-// },

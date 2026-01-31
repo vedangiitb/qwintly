@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChat } from "../../hooks/useChat";
 
 // ---- Types inferred from planSchema ----
-
+// TODO: Replace usage of all the below with plan.interface.ts -> (Update imports everywhere)
 type TaskType = "ui_task" | "be_task" | "db_task";
 
 type Intent =

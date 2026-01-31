@@ -1,5 +1,6 @@
 // lib/mq.ts
-import { PlanOutput } from "@/app/generate/components/chat/planPreview";
+import "server-only";
+import { PlanOutput } from "@/types/ai/plan.interface";
 import { PubSub } from "@google-cloud/pubsub";
 
 const projectId = process.env.GCP_PROJECT_ID!;
@@ -14,15 +15,11 @@ const pubsub = new PubSub({
 
 const TOPIC_NAME = process.env.GCP_PUBSUB_TOPIC || "website-generation";
 
-export async function publishWebsiteGeneration({
-  chatId,
-  tasks,
-  newInfo,
-}: {
-  chatId?: string;
-  tasks: PlanOutput;
-  newInfo: CollectedInfo;
-}) {
+export async function publishWebsiteGeneration(
+  chatId: string,
+  tasks: PlanOutput,
+  newInfo: CollectedInfo,
+) {
   const payload = {
     chatId,
     tasks,
