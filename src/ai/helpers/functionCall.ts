@@ -27,10 +27,10 @@ export const getFunctionArgs = (
   } else if (fnName === "update_plan") {
     console.log("Arge for function", fnName);
     console.log(args);
-    const { tasks, new_info } = args;
+    const { tasks, newInfo } = args;
     functionArgs = {
       tasks: tasks,
-      newInfo: new_info,
+      newInfo: newInfo,
       token: token,
       userId: userId,
       convId: convId,

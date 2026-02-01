@@ -9,32 +9,38 @@ export const updatePlan = async ({
   userId,
   convId,
 }: {
-  tasks: { items: PlanTask[] };
+  tasks: PlanTask[];
   newInfo: any;
   token: string;
   userId: string;
   convId: string;
 }) => {
-  // Update DB
+  const safeTasks = Array.isArray(tasks) ? tasks : [];
+
   const taskData = {
-    tasks: tasks.items.map((task: PlanTask) => {
-      return {
-        task_id: task.task_id || "",
-        task_type: task.task_type || "",
-        intent: task.intent || "",
-        description: task.description || "",
-        content: task.content || {},
-        page: task.page || "",
-        new_feature_name: task.new_feature_name || "",
-        feature: task.feature || "",
-        service: task.service || "",
-        component_id: task.component_id || "",
-      };
-    }),
+    tasks: safeTasks.map((task: PlanTask) => ({
+      task_id: task.task_id ?? "",
+      task_type: task.task_type ?? "",
+      intent: task.intent ?? "",
+      description: task.description ?? "",
+      content: task.content ?? {},
+      page: task.page ?? "",
+      new_feature_name: task.new_feature_name ?? "",
+      feature: task.feature ?? "",
+      service: task.service ?? "",
+      component_id: task.component_id ?? "",
+    })),
+  };
+
+  const newInfoData = {
+    category: newInfo.category ?? "",
+    description: newInfo.description ?? "",
+    name: newInfo.name ?? "",
+    targetUsers: newInfo.target_users ?? "",
   };
 
   await insertDataSupabase(
-    { tasks: taskData, conv_id: convId, user_id: userId, info: newInfo },
+    { tasks: taskData, conv_id: convId, user_id: userId, info: newInfoData },
     "task",
     token,
   );
