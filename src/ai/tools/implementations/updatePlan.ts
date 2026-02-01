@@ -44,6 +44,8 @@ export const updatePlan = async ({
     "task",
     token,
   );
+
+  return { tasks: taskData, newInfo: newInfoData };
 };
 
 export const updatePlanClient = async (
@@ -59,10 +61,12 @@ export const updatePlanClient = async (
     const validTasks = rawTasks.filter(isValidTask);
 
     if (validTasks.length === 0) {
+      console.log(rawTasks);
       throw new Error("Planner returned no valid tasks");
     }
 
     if (!isValidNewInfo(params.newInfo)) {
+      console.log(params.newInfo);
       throw new Error("Planner returned invalid project info");
     }
 
@@ -91,16 +95,10 @@ function isNonEmptyString(value: any): value is string {
 function isValidTask(task: any): task is PlanTask {
   return (
     task &&
-    isNonEmptyString(task.task_id) &&
     ["ui_task", "be_task", "db_task"].includes(task.task_type) &&
     isNonEmptyString(task.intent) &&
     isNonEmptyString(task.description) &&
-    typeof task.content === "object" &&
-    isNonEmptyString(task.page) &&
-    isNonEmptyString(task.new_feature_name) &&
-    isNonEmptyString(task.feature) &&
-    isNonEmptyString(task.service) &&
-    isNonEmptyString(task.component_id)
+    typeof task.content === "object"
   );
 }
 

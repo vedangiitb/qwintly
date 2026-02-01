@@ -92,6 +92,21 @@ export const useChat = () => {
   };
 
   const updateProjectPlan = (plan: PlanOutput) => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "model",
+        content: "Plan",
+        msgType: "plan",
+        stage: projectStage,
+      },
+    ]);
+
+    addToDB(
+      { role: "model", content: "Plan", msgType: "plan", stage: projectStage },
+      currentChatId,
+    );
+    console.log(plan);
     dispatch(updateCurrPlan(plan));
   };
 
@@ -122,6 +137,7 @@ export const useChat = () => {
   };
 
   const submitAnswer = async (index: number, navigate: () => void) => {
+    setResponseLoading(true);
     if (index === questions.length - 1) {
       updateAnswers(answers);
       await submitAnswers(currentChatId, Object.values(answers));
@@ -287,7 +303,11 @@ export const useChat = () => {
             type = "questions";
           }
           if (name === "update_plan") {
-            updateProjectPlan(fnData);
+            updateProjectPlan({
+              tasks: fnData.tasks,
+              newInfo: fnData.newInfo,
+              implemented: false,
+            });
             txt = "Project plan";
             type = "plan";
           }
