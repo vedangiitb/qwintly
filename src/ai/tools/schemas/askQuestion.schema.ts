@@ -13,13 +13,13 @@ export const askQuestions = {
           name: { type: Type.STRING },
           description: { type: Type.STRING },
           category: { type: Type.STRING },
-          targetUsers: { type: Type.STRING },
+          target_users: { type: Type.STRING },
           otherInfo: {
             type: Type.ARRAY,
             items: { type: Type.STRING },
           },
         },
-        required: ["name", "description", "category", "targetUsers"],
+        required: ["name", "description", "category", "target_users"],
       },
       questions: {
         type: Type.ARRAY,

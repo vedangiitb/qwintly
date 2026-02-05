@@ -11,7 +11,6 @@ export interface ProjectCapabilites {
   db_task_intents: string[];
 }
 
-
 export interface ProjectStructure {
   pages: Page[];
   components: Page[];
@@ -32,5 +31,5 @@ export interface ProjectDetails {
   name: string;
   description: string;
   category: string;
-  targetUsers: string;
+  target_users: string;
 }

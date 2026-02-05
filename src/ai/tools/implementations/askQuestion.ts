@@ -32,7 +32,7 @@ export const askQuestions = async ({
     name: collectedInfo.name,
     description: collectedInfo.description,
     category: collectedInfo.category,
-    target_users: collectedInfo.targetUsers,
+    target_users: collectedInfo.target_users,
     other_info: collectedInfo.otherInfo,
     user_id: userId,
     conv_id: convId,

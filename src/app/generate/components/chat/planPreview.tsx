@@ -50,7 +50,7 @@ export type PlanOutput = {
     name: string;
     description: string;
     category: string;
-    targetUsers: string;
+    target_users: string;
   };
 };
 
@@ -114,7 +114,7 @@ export function PlanReview({ plan }: { plan: PlanOutput }) {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Target Users</p>
-            <p className="font-medium">{plan.newInfo.targetUsers}</p>
+            <p className="font-medium">{plan.newInfo.target_users}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Description</p>

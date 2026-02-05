@@ -1,7 +1,10 @@
 import { PlanTask } from "@/app/generate/components/chat/planPreview";
 import { Stage } from "@/types/chat";
 import { insertDataSupabase } from "../../../../infra/supabase/insertData";
-import { updateFieldSupabase } from "../../../../infra/supabase/updateField";
+import {
+  updateFieldsSupabase,
+  updateFieldSupabase,
+} from "../../../../infra/supabase/updateField";
 
 export const updatePlan = async ({
   tasks,
@@ -35,13 +38,31 @@ export const updatePlan = async ({
     category: newInfo.category ?? "",
     description: newInfo.description ?? "",
     name: newInfo.name ?? "",
-    targetUsers: newInfo.target_users ?? "",
+    target_users: newInfo.target_users ?? "",
   };
 
-  await insertDataSupabase(newInfoData, "collected_info", token);
+  const collectedInfoData = {
+    name: newInfo.name ?? "",
+    description: newInfo.description ?? "",
+    category: newInfo.category ?? "",
+    target_users: newInfo.target_users ?? "",
+  };
+
+  await updateFieldsSupabase(
+    convId,
+    collectedInfoData,
+    "collected_info",
+    token,
+    "conv_id",
+  );
 
   await insertDataSupabase(
-    { tasks: taskData, conv_id: convId, user_id: userId, info: newInfoData },
+    {
+      tasks: taskData,
+      conv_id: convId,
+      user_id: userId,
+      info: newInfoData,
+    },
     "task",
     token,
   );
@@ -111,6 +132,6 @@ function isValidNewInfo(info: any) {
     isNonEmptyString(info.name) &&
     isNonEmptyString(info.description) &&
     isNonEmptyString(info.category) &&
-    isNonEmptyString(info.targetUsers)
+    isNonEmptyString(info.target_users)
   );
 }

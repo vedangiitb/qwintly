@@ -5,7 +5,7 @@ export const pmContext: PmIndex = {
     name: "",
     description: "",
     category: "",
-    targetUsers: "",
+    target_users: "",
   },
   capabilities: {
     supported_task_types: ["ui_task", "be_task", "db_task"],

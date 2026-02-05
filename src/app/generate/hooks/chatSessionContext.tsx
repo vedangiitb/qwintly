@@ -64,7 +64,7 @@ export const ChatSessionProvider = ({
     name: "",
     description: "",
     category: "",
-    targetUsers: "",
+    target_users: "",
     otherInfo: [],
   });
 
@@ -86,7 +86,7 @@ export const ChatSessionProvider = ({
       name: "",
       description: "",
       category: "",
-      targetUsers: "",
+      target_users: "",
       otherInfo: [],
     });
   };
