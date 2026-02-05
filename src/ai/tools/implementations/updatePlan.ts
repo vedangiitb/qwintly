@@ -1,6 +1,7 @@
 import { PlanTask } from "@/app/generate/components/chat/planPreview";
 import { Stage } from "@/types/chat";
 import { insertDataSupabase } from "../../../../infra/supabase/insertData";
+import { updateFieldSupabase } from "../../../../infra/supabase/updateField";
 
 export const updatePlan = async ({
   tasks,
@@ -17,20 +18,18 @@ export const updatePlan = async ({
 }) => {
   const safeTasks = Array.isArray(tasks) ? tasks : [];
 
-  const taskData = {
-    tasks: safeTasks.map((task: PlanTask) => ({
-      task_id: task.task_id ?? "",
-      task_type: task.task_type ?? "",
-      intent: task.intent ?? "",
-      description: task.description ?? "",
-      content: task.content ?? {},
-      page: task.page ?? "",
-      new_feature_name: task.new_feature_name ?? "",
-      feature: task.feature ?? "",
-      service: task.service ?? "",
-      component_id: task.component_id ?? "",
-    })),
-  };
+  const taskData = safeTasks.map((task: PlanTask) => ({
+    task_id: task.task_id ?? "",
+    task_type: task.task_type ?? "",
+    intent: task.intent ?? "",
+    description: task.description ?? "",
+    content: task.content ?? {},
+    page: task.page ?? "",
+    new_feature_name: task.new_feature_name ?? "",
+    feature: task.feature ?? "",
+    service: task.service ?? "",
+    component_id: task.component_id ?? "",
+  }));
 
   const newInfoData = {
     category: newInfo.category ?? "",
@@ -39,11 +38,15 @@ export const updatePlan = async ({
     targetUsers: newInfo.target_users ?? "",
   };
 
+  await insertDataSupabase(newInfoData, "collected_info", token);
+
   await insertDataSupabase(
     { tasks: taskData, conv_id: convId, user_id: userId, info: newInfoData },
     "task",
     token,
   );
+
+  await updateFieldSupabase(convId, "stage", "planner", "chats", token);
 
   return { tasks: taskData, newInfo: newInfoData };
 };
@@ -75,14 +78,14 @@ export const updatePlanClient = async (
 
     return {
       tasks: validTasks,
-      collectedInfo: params.newInfo,
+      newInfo: params.newInfo,
     };
   } catch (error) {
     console.error("[PLAN_PARSE_ERROR]", error, params);
 
     return {
       tasks: [],
-      collectedInfo: null,
+      newInfo: null,
       error: "Failed to generate a valid plan. Please try again.",
     };
   }

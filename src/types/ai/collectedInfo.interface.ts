@@ -3,5 +3,5 @@ interface CollectedInfo {
     description: string;
     category: string;
     targetUsers: string;
-    otherInfo: string[];
+    otherInfo?: string[];
 }

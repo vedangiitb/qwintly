@@ -74,7 +74,7 @@ Behavior:
   • External integrations?
   • Real-time features?
 
-Tool usage rules (MANDATORY):
+Tool usage rules (MANDATORY) [Only applicable for Stage 2]:
 - You MUST call the tool "ask_questions"
 - You MUST NOT ask any questions in plain text
 - You MUST NOT output anything outside the tool call

@@ -26,13 +26,13 @@ export async function aiResponse(
     if (toolCallNeeded) {
       config.toolConfig = {
         functionCallingConfig: {
-          mode: FunctionCallingConfigMode.AUTO,
+          mode: FunctionCallingConfigMode.ANY,
         },
       };
     } else {
       config.toolConfig = {
         functionCallingConfig: {
-          mode: FunctionCallingConfigMode.ANY,
+          mode: FunctionCallingConfigMode.AUTO,
         },
       };
     }

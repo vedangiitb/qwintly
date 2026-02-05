@@ -14,6 +14,7 @@ import GeneratingStatus from "../components/chat/GeneratingStatus";
 import PreviewPanel from "../components/preview/previewPanel/PreviewPanel";
 import { useChat } from "../hooks/useChat";
 import { useChatUi } from "../hooks/useChatUi";
+import { useChatSession } from "../hooks/chatSessionContext";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -31,11 +32,15 @@ export default function Generate({ params }: Props) {
     generatingsite,
   } = useChat();
 
+  const { setChatId } = useChatSession();
+
   const { chatVisible } = useChatUi();
 
   useEffect(() => {
     const run = async () => {
+      console.log(id,"id")
       if (!id || hasSubmittedRef.current) return;
+      setChatId(id);
       if (prompt && !hasSubmittedRef.current) {
         hasSubmittedRef.current = true;
         submitResponse(id);

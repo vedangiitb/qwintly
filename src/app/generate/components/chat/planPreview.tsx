@@ -91,7 +91,10 @@ function groupTasksByIntent(tasks: PlanTask[]) {
 
 export function PlanReview({ plan }: { plan: PlanOutput }) {
   const { approvePlan: onApprove } = useChat();
+  console.log(plan);
+  if (!plan) return null;
   const groupedTasks = groupTasksByIntent(plan.tasks);
+  if (!groupedTasks) return null;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

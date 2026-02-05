@@ -1,12 +1,14 @@
 "use client";
 import ChatBox from "./components/chat/ChatBox";
+import { useChatSession } from "./hooks/chatSessionContext";
 import { useChat } from "./hooks/useChat";
 import { useInitConv } from "./hooks/useInitConv";
 
 export default function Generate() {
   const { prompt, setPrompt, generatingsite } = useChat();
-
+  const { setChatId } = useChatSession();
   const { initiateConversation, loading } = useInitConv();
+  setChatId(null);
   return (
     <div className="w-full flex flex-col h-full pl-4 pr-2 pb-2 overflow-hidden shadow-xl backdrop-blur-2xl bg-background">
       {/* Main content: flex-1 so it takes remaining height */}

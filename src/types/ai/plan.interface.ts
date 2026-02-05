@@ -37,5 +37,6 @@ export type PlanOutput = {
     description: string;
     category: string;
     targetUsers: string;
+    otherInfo?: string[];
   };
 };

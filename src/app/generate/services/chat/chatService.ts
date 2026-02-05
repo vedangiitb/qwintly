@@ -47,6 +47,7 @@ export async function streamChatResponse({
 
 export async function addToDB(message: Message, chatId: string) {
   try {
+    if (!chatId) throw new Error("Missing chatId");
     const json = await fetchUtil("/api/chat/updateDB", {
       method: "POST",
       body: JSON.stringify({ message, chatId }),
@@ -179,7 +180,7 @@ export async function generatePlan(
   questionAnswers: QuestionAnswers[],
 ) {
   try {
-    const json = await fetchUtil("/api/chat/stream", {
+    const json = (await fetchUtil("/api/chat/stream", {
       method: "POST",
       body: JSON.stringify({
         chatId,
@@ -188,12 +189,19 @@ export async function generatePlan(
         collectedInfo,
         questionAnswers,
       }),
-    });
+    })) as { data?: { text?: string; functionCallData: any } };
 
-    return json.success;
+    return {
+      text: json.data.text,
+      functionCallData: json.data.functionCallData,
+    };
   } catch (e: any) {
     console.error("generatePlan error", e);
-    return false;
+    return {
+      text: null,
+      functionCallData: null,
+      error: e?.message,
+    };
   }
 }
 
@@ -204,10 +212,10 @@ export async function fetchTasks(chatId: string) {
       {
         method: "GET",
       },
-    )) as { data?: TaskRow[] };
+    )) as { data?: { rows: TaskRow[] } };
 
     return {
-      data: json.data ?? null,
+      data: json.data.rows ?? null,
       error: null,
     };
   } catch (e: any) {

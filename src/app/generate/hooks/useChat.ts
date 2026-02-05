@@ -37,7 +37,6 @@ export const useChat = () => {
   const hasSubmittedRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
-  const [isResponseLoading, setResponseLoading] = useState(false);
   const [changes, setChanges] = useState(false);
 
   const generatingsite = useSelector(
@@ -67,6 +66,8 @@ export const useChat = () => {
     setAnswers,
     collectedInfo,
     setCollectedInfo,
+    isResponseLoading,
+    setResponseLoading,
   } = useChatSession();
 
   const updateProjectStage = (stage: Stage) => {
@@ -92,6 +93,8 @@ export const useChat = () => {
   };
 
   const updateProjectPlan = (plan: PlanOutput) => {
+    if (!currentChatId)
+      throw new Error("currentChatId not found in updateProjectPlan");
     setMessages((prev) => [
       ...prev,
       {
@@ -106,14 +109,14 @@ export const useChat = () => {
       { role: "model", content: "Plan", msgType: "plan", stage: projectStage },
       currentChatId,
     );
-    console.log(plan);
+    console.log(plan, "plan");
     dispatch(updateCurrPlan(plan));
   };
 
   const approvePlan = () => {
     dispatch(generationStarted());
 
-    startGen(currentChatId, currPlan, collectedInfo);
+    startGen(currentChatId, currPlan.tasks, collectedInfo);
 
     fetchGenerationStatus(
       wsRef,
@@ -137,19 +140,24 @@ export const useChat = () => {
   };
 
   const submitAnswer = async (index: number, navigate: () => void) => {
-    setResponseLoading(true);
     if (index === questions.length - 1) {
+      setResponseLoading(true);
       updateAnswers(answers);
       await submitAnswers(currentChatId, Object.values(answers));
       // TODO: See if answers were submitted and only then generate plan
       // TODO: Add loading status
-      await generatePlan(
+      const response = await generatePlan(
         currentChatId,
         projectStage,
         messages,
         collectedInfo,
         prepareQARequest(questions, answers),
       );
+
+      if (response.functionCallData) {
+        handleFunctionCall(response.functionCallData, currentChatId);
+      }
+      setResponseLoading(false);
     } else {
       navigate();
     }
@@ -189,6 +197,7 @@ export const useChat = () => {
         const fetchPlan = async (projectId: string) => {
           const plan: { data: TaskRow[] | null; error: string } =
             await fetchTasks(projectId);
+          console.log(plan, "planner call");
           if (plan.error) throw new Error(plan.error);
           if (plan.data)
             updateProjectPlans(
@@ -198,6 +207,10 @@ export const useChat = () => {
                 implemented: task.implemented ?? false,
               })),
             );
+
+          dispatch(
+            updateCurrPlan({ ...plan.data[0], newInfo: plan.data[0].info }),
+          );
         };
         await fetchPlan(chatId);
       }
@@ -285,51 +298,8 @@ export const useChat = () => {
             chatId,
           ).catch((e) => console.error("addToDB onComplete failed", e));
         }
-
         if (response.functionCallData) {
-          const { name, data } = response.functionCallData;
-          console.log("onFunction", data);
-          const fnData: any = await functionCallClient(
-            name,
-            data,
-            updateProjectStage,
-          );
-          let txt = "";
-          let type = "message";
-
-          if (name === "ask_questions") {
-            updateQuestionsList(fnData);
-            txt = "Please answer the questions";
-            type = "questions";
-          }
-          if (name === "update_plan") {
-            updateProjectPlan({
-              tasks: fnData.tasks,
-              newInfo: fnData.newInfo,
-              implemented: false,
-            });
-            txt = "Project plan";
-            type = "plan";
-          }
-          setMessages((prev) => [
-            ...prev,
-            {
-              role: "model",
-              content: txt,
-              msgType: type,
-              stage: projectStage,
-            },
-          ]);
-
-          addToDB(
-            {
-              role: "model",
-              content: txt,
-              msgType: type,
-              stage: projectStage,
-            },
-            chatId,
-          ).catch((e) => console.error("addToDB onComplete failed", e));
+          await handleFunctionCall(response.functionCallData, chatId);
         }
       } finally {
         setResponseLoading(false);
@@ -346,6 +316,64 @@ export const useChat = () => {
       setResponseLoading(false);
     }
   }, []);
+
+  const handleFunctionCall = async (
+    functionCallData: any,
+    chatIdOverride?: string | null,
+  ) => {
+    const effectiveChatId = chatIdOverride ?? currentChatId;
+    const { name, data } = functionCallData;
+    console.log("onFunction", data);
+    const fnData: any = await functionCallClient(
+      name,
+      data,
+      updateProjectStage,
+    );
+    let txt = "";
+    let type = "message";
+
+    if (name === "ask_questions") {
+      updateQuestionsList(fnData);
+      txt = "Please answer the questions";
+      type = "questions";
+    }
+    if (name === "update_plan") {
+      console.log(fnData, "update_plan");
+      const newCollectedInfo = fnData.newInfo;
+      updateCollectedInfo(newCollectedInfo);
+      updateProjectPlan({
+        tasks: fnData.tasks,
+        newInfo: fnData.newInfo,
+        implemented: false,
+      });
+      txt = "Project plan";
+      type = "plan";
+    }
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "model",
+        content: txt,
+        msgType: type,
+        stage: projectStage,
+      },
+    ]);
+
+    if (!effectiveChatId) {
+      console.error("handleFunctionCall missing chatId");
+      return;
+    }
+
+    addToDB(
+      {
+        role: "model",
+        content: txt,
+        msgType: type,
+        stage: projectStage,
+      },
+      effectiveChatId,
+    ).catch((e) => console.error("addToDB onComplete failed", e));
+  };
 
   const submitResponse = useCallback(
     (id?: string) => {

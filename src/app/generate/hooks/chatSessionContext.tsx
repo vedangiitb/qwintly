@@ -14,6 +14,7 @@ export type ChatSessionState = {
   questions: Questions;
   answers: UserAnswers[];
   collectedInfo: CollectedInfo;
+  isResponseLoading: boolean;
 
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   setChatId: (id: string | null) => void;
@@ -25,6 +26,7 @@ export type ChatSessionState = {
   setQuestions: React.Dispatch<React.SetStateAction<Questions>>;
   setAnswers: React.Dispatch<React.SetStateAction<Record<string, any>>>;
   setCollectedInfo: React.Dispatch<React.SetStateAction<CollectedInfo>>;
+  setResponseLoading: React.Dispatch<React.SetStateAction<boolean>>;
 
   addMessage: (msg: Message) => void;
   clearPrompt: () => void;
@@ -67,6 +69,7 @@ export const ChatSessionProvider = ({
   });
 
   const [prompt, setPrompt] = useState("");
+  const [isResponseLoading, setResponseLoading] = useState(false);
 
   /* ---------- HELPERS ---------- */
 
@@ -102,6 +105,7 @@ export const ChatSessionProvider = ({
         questions,
         answers,
         collectedInfo,
+        isResponseLoading,
 
         setMessages,
         setChatId,
@@ -110,6 +114,7 @@ export const ChatSessionProvider = ({
         setQuestions,
         setAnswers,
         setCollectedInfo,
+        setResponseLoading,
 
         addMessage,
         clearPrompt,
