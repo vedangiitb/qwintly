@@ -12,7 +12,7 @@ import {
 } from "@/lib/features/genUiSlice";
 import { AppDispatch, RootState } from "@/lib/store";
 import { Message, recentChatInterface, Stage } from "@/types/chat";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { PlanOutput } from "../components/chat/planPreview";
 import {
@@ -68,6 +68,7 @@ export const useChat = () => {
     setCollectedInfo,
     isResponseLoading,
     setResponseLoading,
+    setAnswersSubmitted,
   } = useChatSession();
 
   const updateProjectStage = (stage: Stage) => {
@@ -95,21 +96,6 @@ export const useChat = () => {
   const updateProjectPlan = (plan: PlanOutput) => {
     if (!currentChatId)
       throw new Error("currentChatId not found in updateProjectPlan");
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "model",
-        content: "Plan",
-        msgType: "plan",
-        stage: projectStage,
-      },
-    ]);
-
-    addToDB(
-      { role: "model", content: "Plan", msgType: "plan", stage: projectStage },
-      currentChatId,
-    );
-    console.log(plan, "plan");
     dispatch(updateCurrPlan(plan));
   };
 
@@ -139,8 +125,13 @@ export const useChat = () => {
     }));
   };
 
-  const submitAnswer = async (index: number, navigate: () => void) => {
+  const submitAnswer = async (
+    index: number,
+    navigate: () => void,
+    setSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
+  ) => {
     if (index === questions.length - 1) {
+      setSubmitting(true);
       setResponseLoading(true);
       updateAnswers(answers);
       await submitAnswers(currentChatId, Object.values(answers));
@@ -153,6 +144,12 @@ export const useChat = () => {
         collectedInfo,
         prepareQARequest(questions, answers),
       );
+      if (response.error) {
+        setSubmitting(false);
+        throw new Error(response.error);
+      }
+
+      setAnswersSubmitted(true);
 
       if (response.functionCallData) {
         handleFunctionCall(response.functionCallData, currentChatId);
@@ -185,6 +182,7 @@ export const useChat = () => {
           if (qa.error) throw new Error(qa.error);
           if (qa.questions && qa.answers) updateQuestionsList(qa.questions);
           updateAnswers(qa.answers);
+          setAnswersSubmitted(qa.submitted);
           const collected_info = await fetchCollectedInfo(projectId);
           if (collected_info.error) throw new Error(collected_info.error);
           if (collected_info.collectedInfo)

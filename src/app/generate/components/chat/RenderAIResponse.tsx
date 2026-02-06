@@ -18,60 +18,67 @@ export default function RenderAIResponse({
   latest: boolean;
 }) {
   const { currPlan } = useChat();
-  if (msgType == "questions") return <Questionnaire />;
-
-  if (msgType == "plan") {
-    if (latest) return <PlanReview plan={currPlan} />;
-    else return <p>Plan</p>;
-  }
   const displayMessage: string = data || "Something went wrong";
+
+  const aiCard = (msgType: string) => {
+    if (msgType == "plan") {
+      if (latest) return <PlanReview plan={currPlan} />;
+      else return <p>Plan</p>;
+    } else if (msgType == "questions") return <Questionnaire />;
+    else return defaultCard(displayMessage);
+  };
 
   return (
     <div className="flex items-start gap-3 my-4">
       <Avatar className="hidden sm:flex h-8 w-8 ring-2 ring-indigo-400/40">
         <AvatarFallback>⚡</AvatarFallback>
       </Avatar>
-
-      <Card
-        className={cn(
-          "w-full md:max-w-[75%] px-4 py-2 rounded-2xl",
-          "bg-muted/40 text-primary text-sm md:text-base",
-          "border transition-all",
-        )}
-      >
-        <ReactMarkdown
-          components={{
-            code({ className, children, ...props }) {
-              return (
-                <code
-                  className={cn(
-                    "rounded bg-muted px-1.5 py-0.5 text-xs font-mono text-indigo-300",
-                    className,
-                  )}
-                  {...props}
-                >
-                  {children}
-                </code>
-              );
-            },
-            pre({ children, ...props }) {
-              return (
-                <pre
-                  className="rounded-lg bg-zinc-900/80 p-3 overflow-x-auto text-xs text-blue-100"
-                  {...props}
-                >
-                  {children}
-                </pre>
-              );
-            },
-            p({ children }) {
-              return <p className="leading-relaxed my-1">{children}</p>;
-            },
-          }}
-        >
-          {displayMessage}
-        </ReactMarkdown>
-      </Card>
+      {aiCard(msgType)}
     </div>
   );
 }
+
+const defaultCard = (displayMessage: string) => {
+  return (
+    <Card
+      className={cn(
+        "w-full md:max-w-[75%] px-4 py-2 rounded-2xl",
+        "bg-muted/40 text-primary text-sm md:text-base",
+        "border transition-all",
+      )}
+    >
+      <ReactMarkdown
+        components={{
+          code({ className, children, ...props }) {
+            return (
+              <code
+                className={cn(
+                  "rounded bg-muted px-1.5 py-0.5 text-xs font-mono text-indigo-300",
+                  className,
+                )}
+                {...props}
+              >
+                {children}
+              </code>
+            );
+          },
+          pre({ children, ...props }) {
+            return (
+              <pre
+                className="rounded-lg bg-zinc-900/80 p-3 overflow-x-auto text-xs text-blue-100"
+                {...props}
+              >
+                {children}
+              </pre>
+            );
+          },
+          p({ children }) {
+            return <p className="leading-relaxed my-1">{children}</p>;
+          },
+        }}
+      >
+        {displayMessage}
+      </ReactMarkdown>
+    </Card>
+  );
+};

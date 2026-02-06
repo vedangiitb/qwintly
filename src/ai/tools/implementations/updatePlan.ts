@@ -66,7 +66,7 @@ export const updatePlan = async ({
     "task",
     token,
   );
-
+  // TODO: Replace this with updateFieldsSupabase
   await updateFieldSupabase(convId, "stage", "planner", "chats", token);
 
   return { tasks: taskData, newInfo: newInfoData };

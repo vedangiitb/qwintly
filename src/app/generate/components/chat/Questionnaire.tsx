@@ -7,8 +7,9 @@ import { useChatSession } from "../../hooks/chatSessionContext";
 import { useChat } from "../../hooks/useChat";
 
 export function Questionnaire() {
-  const { answers, setAnswers, questions } = useChatSession();
+  const { answers, setAnswers, questions, answersSubmitted } = useChatSession();
   const { submitAnswer } = useChat();
+  const [submitting, setSubmitting] = useState(false);
 
   const [index, setIndex] = useState(0);
   const progress = ((index + 1) / questions.length) * 100;
@@ -36,8 +37,35 @@ export function Questionnaire() {
 
   const navigate = () => setIndex((i) => Math.min(i + 1, questions.length - 1));
 
+  if (answersSubmitted) {
+    return (
+      <div className="w-full md:max-w-[85%] space-y-4">
+        <Card className="rounded-2xl">
+          <CardHeader>
+            <CardTitle className="text-base">Questionnaire submitted</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <p>
+              Thanks! Your full questionnaire has already been submitted, so no
+              more changes are needed here.
+            </p>
+          </CardContent>
+        </Card>
+        <Button variant="outline" disabled>
+          Already submitted
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="mx-auto w-full max-w-xl space-y-6">
+    <div
+      className={cn(
+        "mx-auto w-full max-w-xl space-y-6",
+        submitting && "opacity-60",
+      )}
+      aria-busy={submitting}
+    >
       <p>
         Please answer the following questions to help me get better
         understanding of your project
@@ -71,6 +99,7 @@ export function Questionnaire() {
                   {q.type === "text" && (
                     <input
                       type="text"
+                      disabled={submitting}
                       value={answers[index]?.answer ?? ""}
                       onChange={(e) => updateAnswer(index, e.target.value)}
                       className="w-full rounded-md border border-input px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -92,6 +121,7 @@ export function Questionnaire() {
                               "rounded-full",
                               selected && "shadow-sm",
                             )}
+                            disabled={submitting}
                             onClick={() => updateAnswer(index, opt)}
                           >
                             {opt}
@@ -116,6 +146,7 @@ export function Questionnaire() {
                             type="button"
                             variant={selected ? "default" : "outline"}
                             className="rounded-full"
+                            disabled={submitting}
                             onClick={() => {
                               const updated = selected
                                 ? current.filter((v) => v !== opt)
@@ -141,15 +172,15 @@ export function Questionnaire() {
       <div className="flex items-center justify-between">
         <Button
           variant="outline"
-          disabled={index === 0}
+          disabled={submitting || index === 0}
           onClick={() => setIndex((i) => i - 1)}
         >
           Back
         </Button>
 
         <Button
-          disabled={!canGoNext()}
-          onClick={() => submitAnswer(index, navigate)}
+          disabled={submitting || !canGoNext()}
+          onClick={() => submitAnswer(index, navigate, setSubmitting)}
         >
           {index === questions.length - 1 ? "Finish" : "Next"}
         </Button>

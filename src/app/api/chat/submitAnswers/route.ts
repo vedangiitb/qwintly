@@ -1,16 +1,24 @@
 import { postHandler } from "@/lib/apiHandler";
 import { verifyToken } from "@/lib/verifyToken";
-import { updateFieldSupabase } from "../../../../../infra/supabase/updateField";
+import { updateFieldsSupabase } from "../../../../../infra/supabase/updateField";
 
 export const POST = postHandler(async ({ token, body }) => {
   const { chatId, answers } = body;
   await verifyToken(token);
 
   try {
-    updateFieldSupabase(
+    // updateFieldSupabase(
+    //   chatId,
+    //   "answers",
+    //   answers,
+    //   "questions",
+    //   token,
+    //   "conv_id",
+    // );
+
+    updateFieldsSupabase(
       chatId,
-      "answers",
-      answers,
+      { answers: answers, submitted: true },
       "questions",
       token,
       "conv_id",

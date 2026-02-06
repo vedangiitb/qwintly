@@ -41,6 +41,7 @@ export const askQuestions = async ({
   await insertDataSupabase(collectedInfoData, "collected_info", token);
 
   // Update DB State - status
+  // TODO: Replace this with updateFieldsSupabase
   await updateFieldSupabase(convId, "stage", "questioner", "chats", token);
 
   return { questions, collectedInfo };

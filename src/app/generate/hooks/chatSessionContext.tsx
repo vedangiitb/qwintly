@@ -15,6 +15,8 @@ export type ChatSessionState = {
   answers: UserAnswers[];
   collectedInfo: CollectedInfo;
   isResponseLoading: boolean;
+  answersSubmitted: boolean;
+  setAnswersSubmitted: React.Dispatch<React.SetStateAction<boolean>>;
 
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   setChatId: (id: string | null) => void;
@@ -70,6 +72,7 @@ export const ChatSessionProvider = ({
 
   const [prompt, setPrompt] = useState("");
   const [isResponseLoading, setResponseLoading] = useState(false);
+  const [answersSubmitted, setAnswersSubmitted] = useState(false);
 
   /* ---------- HELPERS ---------- */
 
@@ -106,6 +109,8 @@ export const ChatSessionProvider = ({
         answers,
         collectedInfo,
         isResponseLoading,
+        answersSubmitted,
+        setAnswersSubmitted,
 
         setMessages,
         setChatId,

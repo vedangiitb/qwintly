@@ -119,11 +119,14 @@ export async function fetchQuestionAnswers(chatId: string) {
       {
         method: "GET",
       },
-    )) as { data?: { questions?: any[]; answers?: any[] } };
+    )) as {
+      data?: { questions?: any[]; answers?: any[]; submitted?: boolean };
+    };
 
     return {
       questions: json.data?.questions ?? null,
       answers: json.data?.answers ?? null,
+      submitted: json.data?.submitted ?? null,
       error: null,
     };
   } catch (e: any) {
@@ -131,6 +134,7 @@ export async function fetchQuestionAnswers(chatId: string) {
     return {
       questions: null,
       answers: null,
+      submitted: false,
       error: e?.message || "Unknown Error occured while fetching questions",
     };
   }
