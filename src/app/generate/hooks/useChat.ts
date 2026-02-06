@@ -334,6 +334,11 @@ export const useChat = () => {
 
     if (name === "ask_questions") {
       updateQuestionsList(fnData);
+      const answers = fnData.map((question: Question) => ({
+        id: question.id,
+        answer: "",
+      }));
+      updateAnswers(answers);
       txt = "Please answer the questions";
       type = "questions";
     }
