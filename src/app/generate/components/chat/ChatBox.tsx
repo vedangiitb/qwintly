@@ -1,7 +1,15 @@
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { ArrowUp, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils"; // assuming you use classNames utility
+import { useEffect, useMemo, useRef } from "react";
+
+const PLACEHOLDERS = [
+  "Describe what you want to build…",
+  "Build a landing page for a coffee shop",
+  "Create a pricing section with 3 tiers",
+  "Design a portfolio homepage",
+  "Make a minimalist blog layout",
+];
 
 export default function ChatBox({
   prompt,
@@ -11,77 +19,82 @@ export default function ChatBox({
   generatingsite,
 }: {
   prompt: string;
-  submitPrompt: any;
+  submitPrompt: (e?: React.FormEvent | React.KeyboardEvent) => void;
   setPrompt: (p: string) => void;
   isResponseLoading: boolean;
   generatingsite: boolean;
 }) {
   const isLoading = isResponseLoading || generatingsite;
+  const placeholderIndex = useMemo(
+    () => Math.floor(Math.random() * PLACEHOLDERS.length),
+    [],
+  );
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  /* Auto-grow textarea */
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+
+    el.style.height = "0px";
+    el.style.height = Math.min(el.scrollHeight, 192) + "px";
+  }, [prompt]);
+
+  const canSubmit = prompt.trim().length > 0 && !isLoading;
+
   return (
     <form
-      className="sticky bottom-2 right-0.5 left-0.5 md:mx-auto flex md:w-full md:max-w-3xl rounded-3xl gap-2 glassmorphic shadow-2xl border p-3 md:p-4 backdrop-blur-2xl transition-all duration-200 align-bottom"
-      onSubmit={() => submitPrompt()}
-      style={{
-        background:
-          "linear-gradient(110deg, rgba(255,255,255,0.16) 55%, rgba(195,189,255,0.10) 100%)",
-        boxShadow:
-          "0 8px 48px 0 rgba(109,231,225,0.10), 0 1.5px 4px 0 rgba(80,68,204,0.08)",
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!canSubmit) return;
+        submitPrompt(e);
       }}
+      className={cn(
+        "sticky bottom-2 left-0 right-0 mx-auto flex w-full max-w-3xl items-end gap-2",
+        "rounded-2xl border border-border/60",
+        "bg-muted/80 backdrop-blur-md",
+        "p-2 md:px-3 md:py-4 shadow-sm",
+      )}
     >
-      <Textarea
-        className={cn(
-          "rounded-2xl border-none outline-none focus:outline-none resize-none flex-1 text-accent-foreground shadow-none bg-accent p-3 md:p-4 min-h-[48px] max-h-48 transition-all duration-200 focus:ring-2 focus:ring-teal-200/50 focus:bg-white/10 backdrop-blur-sm",
-          isLoading ? "opacity-60 pointer-events-none" : "opacity-100"
-        )}
+      <textarea
+        ref={textareaRef}
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            submitPrompt(e);
+            if (canSubmit) submitPrompt(e);
           }
         }}
-        // TODO: Make this changing
-        placeholder="An AI tutor for learning Data Structures…"
+        placeholder={PLACEHOLDERS[placeholderIndex]}
+        rows={1}
         aria-label="Prompt"
-        disabled={isLoading}
-        style={{
-          backgroundColor: "var(--accent)",
-          fontSize: "14px",
-          overflowX: "hidden",
-        }}
+        className={cn(
+          "flex-1 resize-none bg-transparent px-3 py-2 pb-2 text-sm",
+          "border-0 outline-none ring-0 focus:outline-none focus:ring-0",
+          "max-h-48 text-foreground placeholder:text-muted-foreground/70",
+          "appearance-none",
+          isLoading && "opacity-70",
+        )}
       />
+
       <Button
         type="submit"
-        disabled={isLoading || !prompt}
-        aria-label="Submit prompt"
+        disabled={!canSubmit}
+        aria-label="Send"
         className={cn(
-          "mt-auto rounded-full bg-gradient-to-br dark:from-teal-400/90 dark:via-purple-500/90 dark:to-cyan-400/70 from-teal-600 via-purple-600 to-cyan-600 shadow-xl w-12 h-12 flex items-center justify-center p-0 transition-all duration-150 relative group disabled:opacity-80",
-          isLoading
-            ? "cursor-not-allowed animate-pulse"
-            : "hover:scale-105 hover:shadow-2xl hover:bg-gradient-to-br dark:from-cyan-300/60 dark:via-fuchsia-400/80 dark:to-purple-500/80"
+          "h-10 w-10 shrink-0 rounded-full p-0 shadow-sm transition-all",
+          canSubmit ? "hover:bg-accent" : "cursor-not-allowed opacity-60",
         )}
-        tabIndex={0}
       >
         {isLoading ? (
-          <Loader2 className="animate-spin text-white" size={22} />
+          <Loader2 className="animate-spin" size={18} />
         ) : (
-          <ArrowUp
-            size={21}
-            className="text-white group-hover:scale-125 transition duration-200"
-          />
+          <ArrowUp size={18} />
         )}
         <span className="sr-only">Send</span>
-        <span className="absolute -inset-1.5 opacity-0 group-focus-within:opacity-80 rounded-full bg-gradient-to-tr from-purple-400/60 via-teal-200/40 to-cyan-200/30 blur-xl pointer-events-none transition-opacity"></span>
       </Button>
-      <style jsx>{`
-        .glassmorphic {
-          box-shadow:
-            0 8px 48px 0 rgba(109, 231, 225, 0.1),
-            0 1.5px 4px 0 rgba(80, 68, 204, 0.08);
-          backdrop-filter: blur(24px) saturate(180%);
-        }
-      `}</style>
     </form>
   );
 }

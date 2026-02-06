@@ -1,13 +1,5 @@
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChat } from "../../hooks/useChat";
 
 // ---- Types inferred from planSchema ----
@@ -97,90 +89,99 @@ export function PlanReview({ plan }: { plan: PlanOutput }) {
   if (!groupedTasks) return null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {/* Left: Project Overview */}
-      <Card className="md:col-span-1 h-fit sticky top-6">
-        <CardHeader>
-          <CardTitle>📌 Project Overview</CardTitle>
+    <div className="w-full md:max-w-[90%] space-y-2">
+      {/* Top: Project Overview */}
+      <Card>
+        <CardHeader className="px-4">
+          <CardTitle className="text-sm">Project Overview</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div>
-            <p className="text-sm text-muted-foreground">Name</p>
-            <p className="font-medium">{plan.newInfo.name}</p>
+        <CardContent className="px-4 pb-3 text-sm">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+            <div>
+              <p className="text-xs text-muted-foreground">Name</p>
+              <p className="font-medium">{plan.newInfo.name}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Category</p>
+              <p className="font-medium">{plan.newInfo.category}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Target Users</p>
+              <p className="font-medium">{plan.newInfo.target_users}</p>
+            </div>
           </div>
+
           <div>
-            <p className="text-sm text-muted-foreground">Category</p>
-            <p className="font-medium">{plan.newInfo.category}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Target Users</p>
-            <p className="font-medium">{plan.newInfo.target_users}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Description</p>
-            <p className="text-sm">{plan.newInfo.description}</p>
+            <p className="text-xs text-muted-foreground">Description</p>
+            <p className="text-xs text-muted-foreground leading-snug">
+              {plan.newInfo.description}
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Right: Tasks */}
-      <Card className="md:col-span-2">
-        <CardHeader>
-          <CardTitle>🧠 Proposed Changes</CardTitle>
+      {/* Middle: Tasks */}
+      <Card>
+        <CardHeader className="px-4">
+          <CardTitle className="text-sm">Proposed Changes</CardTitle>
         </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[500px] pr-4">
-            <Accordion type="multiple" className="space-y-4">
-              {Object.entries(groupedTasks).map(([intent, tasks]) => (
-                <AccordionItem key={intent} value={intent}>
-                  <AccordionTrigger>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">
-                        {INTENT_LABEL[intent as Intent]}
-                      </span>
-                      <Badge variant="secondary">{tasks.length}</Badge>
+
+        <CardContent className="px-4 pt-0">
+          <div className="space-y-2">
+            {Object.entries(groupedTasks).map(([intent, tasks]) => (
+              <div key={intent} className="space-y-2">
+                {/* Intent header */}
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold">
+                    {INTENT_LABEL[intent as Intent]}
+                  </h3>
+                  <span className="text-xs text-muted-foreground">
+                    {tasks.length} changes
+                  </span>
+                </div>
+
+                {/* Tasks */}
+                <div className="space-y-1">
+                  {tasks.map((task) => (
+                    <div
+                      key={task.task_id}
+                      className="rounded-md bg-transparent border-l-2 border-muted px-3 py-2"
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[11px] font-medium text-muted-foreground">
+                          {TASK_TYPE_LABEL[task.task_type]}
+                        </span>
+                        {task.page && (
+                          <span className="text-[11px] text-muted-foreground">
+                            • Page: {task.page}
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-sm leading-snug">{task.description}</p>
+
+                      {Object.keys(task.content || {}).length > 0 && (
+                        <ul className="mt-1 text-xs text-muted-foreground list-disc list-inside">
+                          {Object.values(task.content).map((v, i) => (
+                            <li key={i}>{String(v)}</li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="space-y-3">
-                    {tasks.map((task) => (
-                      <Card key={task.task_id} className="border-muted">
-                        <CardContent className="pt-4 space-y-2">
-                          <div className="flex items-center gap-2">
-                            <Badge>{TASK_TYPE_LABEL[task.task_type]}</Badge>
-                            {task.page && (
-                              <Badge variant="outline">Page: {task.page}</Badge>
-                            )}
-                          </div>
-                          <p className="font-medium">{task.description}</p>
-                          {Object.keys(task.content || {}).length > 0 && (
-                            <div className="text-sm text-muted-foreground">
-                              {Object.values(task.content).map((v, i) => (
-                                <p key={i}>• {String(v)}</p>
-                              ))}
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </ScrollArea>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
 
       {/* Bottom: Feedback & Actions */}
-      <Card className="md:col-span-3">
-        <CardContent className="pt-6 space-y-4">
-          {/* <Textarea
-            placeholder="Want to change anything? Describe it here…"
-            onBlur={(e) => onRequestChanges(e.target.value)}
-          /> */}
-          <div className="flex justify-end gap-3">
-            {/* <Button variant="outline">Request Changes</Button> */}
-            <Button onClick={onApprove}>Approve Plan</Button>
-          </div>
+      <Card>
+        <CardContent className="px-4 flex justify-end">
+          <Button size="sm" onClick={onApprove}>
+            Approve Plan
+          </Button>
         </CardContent>
       </Card>
     </div>

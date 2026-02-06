@@ -16,7 +16,7 @@ export const GET = getHandler(async ({ query, token }) => {
   const { data, error } = await getDataSupabase<TaskRow>(
     token,
     "task",
-    ["tasks", "implemented"],
+    ["tasks", "implemented", "info"],
     { col: "conv_id", value: chatId },
   );
 

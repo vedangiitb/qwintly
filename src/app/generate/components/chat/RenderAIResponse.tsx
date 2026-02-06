@@ -30,9 +30,12 @@ export default function RenderAIResponse({
 
   return (
     <div className="flex items-start gap-3 my-4">
-      <Avatar className="hidden sm:flex h-8 w-8 ring-2 ring-indigo-400/40">
-        <AvatarFallback>⚡</AvatarFallback>
+      <Avatar className="hidden sm:flex h-8 w-8 bg-zinc-900/80">
+        <AvatarFallback className="text-zinc-300 text-sm font-medium">
+          ⚡
+        </AvatarFallback>
       </Avatar>
+
       {aiCard(msgType)}
     </div>
   );
