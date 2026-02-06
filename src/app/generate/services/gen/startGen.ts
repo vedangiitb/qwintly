@@ -1,4 +1,4 @@
-import { PlanOutput, PlanTask } from "@/types/ai/plan.interface";
+import { PlanTask } from "@/types/ai/plan.interface";
 
 export const startGen = async (
   chatId: string,
