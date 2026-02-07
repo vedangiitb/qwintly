@@ -1,9 +1,16 @@
 import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { createClient } from "@supabase/supabase-js";
 
+if (
+  !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+) {
+  throw new Error("Missing Supabase credentials");
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 );
 
 export interface User {
@@ -40,7 +47,7 @@ export const listenToAuthChanges = createAsyncThunk(
               email: data.user.email || null,
               displayName: data.user.user_metadata?.userName || null,
               emailVerified: !!data.user.email_confirmed_at,
-            })
+            }),
           );
         } else {
           dispatch(setUser(null));
@@ -56,7 +63,7 @@ export const listenToAuthChanges = createAsyncThunk(
               email: session.user.email || null,
               displayName: session.user.user_metadata?.userName || null,
               emailVerified: !!session.user.email_confirmed_at,
-            })
+            }),
           );
         } else {
           dispatch(setUser(null));
@@ -65,7 +72,7 @@ export const listenToAuthChanges = createAsyncThunk(
 
       resolve();
     });
-  }
+  },
 );
 
 // -----------------------------------

@@ -6,6 +6,10 @@ const KEY = process.env.TOKEN_SECRET!;
 //   throw new Error("TOKEN_SECRET must be set and 32 characters long");
 // }
 
+if (!KEY) {
+  throw new Error("TOKEN_SECRET must be set");
+}
+
 const ALGO = "aes-256-ctr";
 
 /** Encrypt text -> iv:hex:content:hex */
