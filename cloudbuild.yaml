@@ -1,0 +1,26 @@
+steps:
+  # Build Docker image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - build
+      - "-t"
+      - "asia-south1-docker.pkg.dev/$PROJECT_ID/qwintly/qwintly-dev"
+      - "."
+
+  # Push image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - push
+      - "asia-south1-docker.pkg.dev/$PROJECT_ID/qwintly/qwintly-dev"
+
+  # Deploy to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - qwintly-dev
+      - "--image=asia-south1-docker.pkg.dev/$PROJECT_ID/qwintly/qwintly-dev"
+      - "--region=asia-south1"
+      - "--platform=managed"
+      - "--allow-unauthenticated"
