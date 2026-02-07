@@ -3,16 +3,17 @@ import "server-only";
 import { PlanOutput } from "@/types/ai/plan.interface";
 import { PubSub } from "@google-cloud/pubsub";
 
-const projectId = process.env.GCP_PROJECT_ID || "";
-const gcpServiceAccKey = process.env.GCP_SERVICE_ACCOUNT_KEY || "";
-const credentials = JSON.parse(
-  Buffer.from(gcpServiceAccKey, "base64").toString(),
-);
+// const projectId = process.env.GCP_PROJECT_ID || "";
+// const gcpServiceAccKey = process.env.GCP_SERVICE_ACCOUNT_KEY || "";
+// const credentials = JSON.parse(
+//   Buffer.from(gcpServiceAccKey, "base64").toString(),
+// );
 
-const pubsub = new PubSub({
-  projectId,
-  credentials,
-});
+const pubsub = new PubSub({});
+// const pubsub = new PubSub({
+//   projectId,
+//   credentials,
+// });
 
 const TOPIC_NAME = process.env.GCP_PUBSUB_TOPIC || "website-generation";
 
