@@ -60,6 +60,5 @@ export const POST = postHandler(async ({ body, token }) => {
   }
 
   // 3️⃣ Truly empty response (rare)
-  console.log(result)
   throw new Error("AI returned no usable content");
 });

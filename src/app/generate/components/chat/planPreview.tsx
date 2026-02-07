@@ -83,7 +83,6 @@ function groupTasksByIntent(tasks: PlanTask[]) {
 
 export function PlanReview({ plan }: { plan: PlanOutput }) {
   const { approvePlan: onApprove } = useChat();
-  console.log(plan);
   if (!plan) return null;
   const groupedTasks = groupTasksByIntent(plan.tasks);
   if (!groupedTasks) return null;
@@ -91,29 +90,33 @@ export function PlanReview({ plan }: { plan: PlanOutput }) {
   return (
     <div className="w-full md:max-w-[90%] space-y-2">
       {/* Top: Project Overview */}
-      <Card>
+      <Card className="border-muted/60">
         <CardHeader className="px-4">
-          <CardTitle className="text-sm">Project Overview</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm">Project Overview</CardTitle>
+            <span className="text-[11px] text-muted-foreground">Summary</span>
+          </div>
         </CardHeader>
-        <CardContent className="px-4 pb-3 text-sm">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-            <div>
-              <p className="text-xs text-muted-foreground">Name</p>
-              <p className="font-medium">{plan.newInfo.name}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Category</p>
-              <p className="font-medium">{plan.newInfo.category}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Target Users</p>
-              <p className="font-medium">{plan.newInfo.target_users}</p>
+        <CardContent className="px-4 pb-2 text-sm">
+          <div className="rounded-md border border-muted/60 bg-muted/30 px-3 py-3">
+            <div className="space-y-2">
+              <p className="text-base font-semibold leading-tight">
+                {plan.newInfo.name}
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex items-center rounded-full border border-muted/70 bg-background py-1 text-[11px] font-medium text-foreground">
+                  {plan.newInfo.category}
+                </span>
+                <span className="inline-flex items-center rounded-full border border-muted/70 bg-background py-1 text-[11px] font-medium text-foreground">
+                  {plan.newInfo.target_users}
+                </span>
+              </div>
             </div>
           </div>
 
-          <div>
-            <p className="text-xs text-muted-foreground">Description</p>
-            <p className="text-xs text-muted-foreground leading-snug">
+          <div className="mt-3 space-y-1">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {plan.newInfo.description}
             </p>
           </div>

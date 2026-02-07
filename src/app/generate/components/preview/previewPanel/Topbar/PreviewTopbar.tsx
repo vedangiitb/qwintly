@@ -49,30 +49,31 @@ export default function PreviewTopbar() {
   };
 
   return (
-    <div className="glass-topbar flex items-center justify-between px-2 py-1 rounded-xl shadow-md border border-white/20 mb-3 select-none">
+    <div className="topbar flex items-center justify-between px-3 py-2 mb-3 select-none">
       <button
         aria-label={chatVisible ? "Close Chat Panel" : "Open Chat Panel"}
         onClick={() => toggleChatVisible()}
-        className="p-1 rounded-md transition-colors duration-200 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-teal-400"
+        className="topbar-icon"
       >
         {chatVisible ? (
-          <PanelLeftClose className="w-5 h-5 text-chart-2" />
+          <PanelLeftClose className="w-5 h-5 text-muted-foreground" />
         ) : (
-          <PanelLeftOpen className="w-5 h-5 text-chart-2" />
+          <PanelLeftOpen className="w-5 h-5 text-muted-foreground" />
         )}
       </button>
 
-      <h3 className="font-light tracking-wider select-text">Preview</h3>
+      <h3 className="title select-text">Preview</h3>
 
       {/* Controls Panel */}
       {generated && setChanges ? (
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <EditMode editMode={editMode} toggleEditMode={toggleEditMode} />
           <WidthSetting width={width} setWidth={setDeviceMode} />
           <button
             aria-label="Save changes"
             role="button"
             disabled={!changes}
+            className="topbar-icon"
             onClick={async () => {
               if (!changes) return;
               const ret = await updateDb({
@@ -89,7 +90,7 @@ export default function PreviewTopbar() {
           >
             <Save
               className={`w-5 h-5 cursor-pointer ${
-                changes ? "text-chart-2" : "text-muted-foreground"
+                changes ? "text-foreground" : "text-muted-foreground"
               }`}
             />
           </button>
@@ -104,9 +105,9 @@ export default function PreviewTopbar() {
           <button
             aria-label="Open in new window"
             onClick={openInNewWindow}
-            className="p-1 rounded-md hover:bg-white/20 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-400"
+            className="topbar-icon"
           >
-            <ExternalLink className="w-5 h-5 text-chart-2" />
+            <ExternalLink className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
       ) : (
@@ -114,22 +115,33 @@ export default function PreviewTopbar() {
       )}
 
       <style jsx>{`
-        .glass-topbar {
-          background: linear-gradient(
-            110deg,
-            rgba(34, 34, 64, 0.18) 65%,
-            rgba(195, 189, 255, 0.2) 100%
-          );
-          backdrop-filter: blur(24px) saturate(180%);
-          box-shadow:
-            0 2px 18px rgba(109, 231, 225, 0.09),
-            0 1.5px 8px rgba(80, 68, 204, 0.05);
+        .topbar {
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 10px;
         }
 
-        .text-gradient {
-          background: linear-gradient(90deg, #4ade80, #818cf8, #f472b6);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+        .topbar-icon {
+          padding: 6px;
+          border-radius: 8px;
+          transition: background 160ms ease, color 160ms ease;
+          outline: none;
+        }
+
+        .topbar-icon:hover {
+          background: rgba(255, 255, 255, 0.06);
+        }
+
+        .topbar-icon:focus-visible {
+          box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18);
+        }
+
+        .title {
+          font-size: 13px;
+          font-weight: 500;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: rgba(255, 255, 255, 0.7);
         }
       `}</style>
     </div>

@@ -25,8 +25,6 @@ export const getFunctionArgs = (
       convId: convId,
     };
   } else if (fnName === "update_plan") {
-    console.log("Arge for function", fnName);
-    console.log(args);
     const { tasks, newInfo } = args;
     functionArgs = {
       tasks: tasks,
