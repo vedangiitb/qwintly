@@ -32,7 +32,6 @@ export async function publishWebsiteGeneration(
       data: Buffer.from(JSON.stringify(payload)),
     });
 
-    console.log("Sent message to Pub/Sub:", messageId);
     return { success: true, messageId };
   } catch (err) {
     console.error("Pub/Sub publish failed:", err);

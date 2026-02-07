@@ -23,8 +23,6 @@ export default function ReviewProject() {
     } else {
       setError(false);
     }
-
-    console.log(details);
   };
 
   return (
@@ -34,9 +32,8 @@ export default function ReviewProject() {
         description="Make sure everything looks good before we generate your project."
       />
 
-
       <div>
-    {/* TODO: Check if the user has linked the github account and only show if NOT! */}
+        {/* TODO: Check if the user has linked the github account and only show if NOT! */}
         <button
           type="button"
           className="px-4 py-2 rounded-lg bg-muted cursor-pointer border hover:bg-muted/60 transition-all"

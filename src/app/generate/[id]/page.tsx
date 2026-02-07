@@ -38,7 +38,6 @@ export default function Generate({ params }: Props) {
 
   useEffect(() => {
     const run = async () => {
-      console.log(id,"id")
       if (!id || hasSubmittedRef.current) return;
       setChatId(id);
       if (prompt && !hasSubmittedRef.current) {

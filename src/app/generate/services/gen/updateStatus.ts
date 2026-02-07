@@ -26,8 +26,6 @@ export async function fetchGenerationStatus(
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
-    console.log("wsUrl", wsUrl);
-
     ws.addEventListener("open", () =>
       console.log("WS open for session", sessionId, wsUrl),
     );
