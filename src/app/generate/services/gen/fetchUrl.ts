@@ -9,7 +9,7 @@ export async function fetchUrl(id: string): Promise<string> {
     .single();
 
   if (error) throw error;
-  if (!data?.url) throw new Error("URL not found");
+  if (!data || !data.url) throw new Error("URL not found");
 
   return data.url;
 }
