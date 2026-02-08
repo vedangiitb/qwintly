@@ -1,17 +1,6 @@
-import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
-import { createClient } from "@supabase/supabase-js";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { supabase } from "../supabase-client";
 
-if (
-  !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-) {
-  throw new Error("Missing Supabase credentials");
-}
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
 
 export interface User {
   id: string;

@@ -14,6 +14,7 @@ const ALGO = "aes-256-ctr";
 
 /** Encrypt text -> iv:hex:content:hex */
 export function encrypt(text: string): string {
+  if (!KEY) return "";
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv(ALGO, Buffer.from(KEY), iv);
   const encrypted = Buffer.concat([
