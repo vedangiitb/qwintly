@@ -1,5 +1,4 @@
 // lib/mq.ts
-import "server-only";
 import { PlanOutput } from "@/types/ai/plan.interface";
 import { PubSub } from "@google-cloud/pubsub";
 
