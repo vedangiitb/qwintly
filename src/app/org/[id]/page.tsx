@@ -20,14 +20,14 @@ interface OrgDetails {
   subscription_expires_at: string;
 }
 
-type Props = { params: { id: string } };
+type Props = { params: Promise<{ id: string }> };
 
 export default function ManageOrg({ params }: Props) {
   const { getOrgProjects, fetchOrgDetails } = useOrg();
   const [details, setDetails] = useState<OrgDetails | null>(null);
   const [orgProjects, setOrgProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { id } = params;
+  const { id } = React.use(params);
   const router = useRouter();
 
   useEffect(() => {

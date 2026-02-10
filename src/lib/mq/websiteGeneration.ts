@@ -1,17 +1,18 @@
 // lib/mq.ts
-import "server-only";
 import { PlanOutput } from "@/types/ai/plan.interface";
 import { PubSub } from "@google-cloud/pubsub";
 
-const projectId = process.env.GCP_PROJECT_ID!;
-const credentials = JSON.parse(
-  Buffer.from(process.env.GCP_SERVICE_ACCOUNT_KEY_BASE64!, "base64").toString(),
-);
+// const projectId = process.env.GCP_PROJECT_ID || "";
+// const gcpServiceAccKey = process.env.GCP_SERVICE_ACCOUNT_KEY || "";
+// const credentials = JSON.parse(
+//   Buffer.from(gcpServiceAccKey, "base64").toString(),
+// );
 
-const pubsub = new PubSub({
-  projectId,
-  credentials,
-});
+const pubsub = new PubSub({});
+// const pubsub = new PubSub({
+//   projectId,
+//   credentials,
+// });
 
 const TOPIC_NAME = process.env.GCP_PUBSUB_TOPIC || "website-generation";
 
@@ -32,7 +33,6 @@ export async function publishWebsiteGeneration(
       data: Buffer.from(JSON.stringify(payload)),
     });
 
-    console.log("Sent message to Pub/Sub:", messageId);
     return { success: true, messageId };
   } catch (err) {
     console.error("Pub/Sub publish failed:", err);

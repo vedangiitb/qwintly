@@ -85,12 +85,10 @@ export const updatePlanClient = async (
     const validTasks = rawTasks.filter(isValidTask);
 
     if (validTasks.length === 0) {
-      console.log(rawTasks);
       throw new Error("Planner returned no valid tasks");
     }
 
     if (!isValidNewInfo(params.newInfo)) {
-      console.log(params.newInfo);
       throw new Error("Planner returned invalid project info");
     }
 

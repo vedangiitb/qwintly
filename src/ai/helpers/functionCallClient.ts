@@ -12,7 +12,6 @@ export const functionCallClient = async (
   data: any,
   updateProjectStage: (stage: Stage) => void,
 ): Promise<any> => {
-  console.log(name, data);
   const fn = implementations[name];
   if (!fn) throw new Error(`Function ${name} not found`);
   return await fn(data, updateProjectStage);

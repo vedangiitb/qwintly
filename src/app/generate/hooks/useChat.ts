@@ -51,6 +51,8 @@ export const useChat = () => {
   const plans = useSelector((state: RootState) => state.genUi.plans);
   const currPlan = useSelector((state: RootState) => state.genUi.currPlan);
 
+  console.log(projectStage, "projectStage");
+
   const {
     chatId: currentChatId,
     setChatId: setCurrentChatId,
@@ -168,7 +170,8 @@ export const useChat = () => {
     if (!error && fetched && fetched.length > 0) {
       updateProjectStage(stage);
       setMessages(fetched);
-      if (stage === "executer") {
+      // TODO: After implementing stage update on website genration check only if stage=="executer"
+      if (stage === "executer" || stage === "planner") {
         await fetchUrl(chatId).then((url) => {
           if (url) {
             setGenUrl(url);
@@ -195,7 +198,6 @@ export const useChat = () => {
         const fetchPlan = async (projectId: string) => {
           const plan: { data: TaskRow[] | null; error: string } =
             await fetchTasks(projectId);
-          console.log(plan, "planner call");
           if (plan.error) throw new Error(plan.error);
           if (plan.data)
             updateProjectPlans(
@@ -321,7 +323,6 @@ export const useChat = () => {
   ) => {
     const effectiveChatId = chatIdOverride ?? currentChatId;
     const { name, data } = functionCallData;
-    console.log("onFunction", data);
     const fnData: any = await functionCallClient(
       name,
       data,
@@ -341,7 +342,6 @@ export const useChat = () => {
       type = "questions";
     }
     if (name === "update_plan") {
-      console.log(fnData, "update_plan");
       const newCollectedInfo = fnData.newInfo;
       updateCollectedInfo(newCollectedInfo);
       updateProjectPlan({

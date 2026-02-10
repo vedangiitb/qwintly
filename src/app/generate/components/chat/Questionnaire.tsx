@@ -61,7 +61,7 @@ export function Questionnaire() {
   return (
     <div
       className={cn(
-        "mx-auto w-full max-w-xl space-y-6",
+        "w-full space-y-6 md:max-w-[85%] bg-muted/40 rounded-2xl border transition-all text-primary text-sm md:text-base p-4",
         submitting && "opacity-60",
       )}
       aria-busy={submitting}

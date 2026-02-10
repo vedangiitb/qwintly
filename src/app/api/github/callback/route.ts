@@ -12,6 +12,13 @@ export async function GET(req: NextRequest) {
   const clientSecret = process.env.GITHUB_CLIENT_SECRET!;
   const redirect = process.env.NEXT_PUBLIC_GITHUB_REDIRECT!;
 
+  if (!clientId || !clientSecret || !redirect) {
+    return NextResponse.json(
+      { error: "Missing GitHub credentials" },
+      { status: 500 },
+    );
+  }
+
   const response = await fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
     body: JSON.stringify({

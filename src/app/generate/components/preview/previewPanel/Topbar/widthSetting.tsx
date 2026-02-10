@@ -21,14 +21,14 @@ export default function WidthSetting({
         <Tooltip>
           <TooltipTrigger asChild>
             <Tablet
-              className="cursor-pointer w-5 h-5 text-chart-2 hover:text-chart-2/70 transition-colors"
+              className="cursor-pointer w-5 h-5 text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setWidth("tab")}
               aria-label="Switch to Tablet View"
               role="button"
               tabIndex={0}
             />
           </TooltipTrigger>
-          <TooltipContent side="right" className="text-xs">
+          <TooltipContent side="right" className="text-xs text-muted-foreground">
             Switch to Tablet View
           </TooltipContent>
         </Tooltip>
@@ -36,14 +36,14 @@ export default function WidthSetting({
         <Tooltip>
           <TooltipTrigger asChild>
             <Smartphone
-              className="cursor-pointer w-5 h-5 text-chart-2 hover:text-chart-2/70 transition-colors"
+              className="cursor-pointer w-5 h-5 text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setWidth("phone")}
               aria-label="Switch to Phone View"
               role="button"
               tabIndex={0}
             />
           </TooltipTrigger>
-          <TooltipContent side="right" className="text-xs">
+          <TooltipContent side="right" className="text-xs text-muted-foreground">
             Switch to Phone View
           </TooltipContent>
         </Tooltip>
@@ -51,14 +51,14 @@ export default function WidthSetting({
         <Tooltip>
           <TooltipTrigger asChild>
             <Monitor
-              className="cursor-pointer w-5 h-5 text-chart-2 hover:text-chart-2/70 transition-colors"
+              className="cursor-pointer w-5 h-5 text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setWidth("pc")}
               aria-label="Switch to PC View"
               role="button"
               tabIndex={0}
             />
           </TooltipTrigger>
-          <TooltipContent side="right" className="text-xs">
+          <TooltipContent side="right" className="text-xs text-muted-foreground">
             Switch to PC View
           </TooltipContent>
         </Tooltip>
