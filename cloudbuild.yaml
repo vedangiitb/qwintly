@@ -32,6 +32,6 @@ steps:
       - deploy
       - qwintly-dev
       - "--image=asia-south1-docker.pkg.dev/$PROJECT_ID/qwintly/qwintly-dev"
-      - "--region=asia-south1"
+      - "--region=us-central1"
       - "--platform=managed"
       - "--allow-unauthenticated"
