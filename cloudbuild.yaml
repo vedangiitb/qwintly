@@ -1,11 +1,19 @@
 options:
   logging: CLOUD_LOGGING_ONLY
 
+substitutions:
+  _NEXT_PUBLIC_SUPABASE_URL: "https://jxceaahrdymuhokduqdt.supabase.co"
+  _NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4Y2VhYWhyZHltdWhva2R1cWR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNjQxOTQsImV4cCI6MjA2Njk0MDE5NH0.LmwGEMmvmUXWRaJWZORXRdiKMv4b7A2he3I3y0v7MUs"
+
 steps:
   # Build Docker image
   - name: "gcr.io/cloud-builders/docker"
     args:
       - build
+      - "--build-arg"
+      - "NEXT_PUBLIC_SUPABASE_URL=${_NEXT_PUBLIC_SUPABASE_URL}"
+      - "--build-arg"
+      - "NEXT_PUBLIC_SUPABASE_ANON_KEY=${_NEXT_PUBLIC_SUPABASE_ANON_KEY}"
       - "-t"
       - "asia-south1-docker.pkg.dev/$PROJECT_ID/qwintly/qwintly-dev"
       - "."
