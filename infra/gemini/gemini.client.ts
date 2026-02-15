@@ -4,7 +4,7 @@ import {
   GenerateContentConfig,
   Tool,
 } from "@google/genai";
-import { ai, MODEL } from "./gemini.config";
+import { getGenAI, MODEL } from "./gemini.config";
 
 type AIResponseOptions = {
   tools?: Tool[];
@@ -39,6 +39,8 @@ export async function aiResponse(
   }
 
   try {
+    const ai = getGenAI();
+
     return await ai.models.generateContent({
       model: MODEL,
       contents: request,

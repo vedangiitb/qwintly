@@ -35,3 +35,4 @@ steps:
       - "--region=us-central1"
       - "--platform=managed"
       - "--allow-unauthenticated"
+      - "--update-secrets=GOOGLE_API_KEY=GOOGLE_API_KEY:latest"

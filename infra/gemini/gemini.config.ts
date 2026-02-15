@@ -2,18 +2,17 @@ import { GoogleGenAI } from "@google/genai";
 
 export const MODEL = "gemini-2.5-flash-lite";
 
-export function getGenAI() {
-  let ai: GoogleGenAI | null = null;
+let ai: GoogleGenAI | null = null;
+
+export function getGenAI(): GoogleGenAI {
+  if (ai) return ai;
+
   const key = process.env.GOOGLE_API_KEY;
 
-  // Build-time safe: return null
-  if (!key) return null;
-
-  if (!ai) {
-    ai = new GoogleGenAI({ apiKey: key });
+  if (!key) {
+    throw new Error("GOOGLE_API_KEY is not set"); 
   }
 
+  ai = new GoogleGenAI({ apiKey: key });
   return ai;
 }
-
-export const ai = getGenAI();
