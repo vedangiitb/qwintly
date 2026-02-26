@@ -27,6 +27,27 @@ export const ApiResponse = {
     ),
 };
 
+type HttpError = Error & { statusCode?: number; status?: number };
+
+function resolveErrorStatus(error: unknown): number {
+  const candidate = error as HttpError;
+  const status = candidate?.statusCode ?? candidate?.status;
+
+  if (typeof status === "number" && status >= 400 && status < 600) {
+    return status;
+  }
+
+  return 500;
+}
+
+function resolveErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "Internal server error";
+}
+
 // POST handler wrapper
 export function postHandler(
   handler: (ctx: { body: any; token: string }) => Promise<any>
@@ -55,9 +76,9 @@ export function postHandler(
       });
 
       return ApiResponse.success(result);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("POST route error:", err);
-      return ApiResponse.error(err.message || "Internal server error", 500);
+      return ApiResponse.error(resolveErrorMessage(err), resolveErrorStatus(err));
     }
   };
 }
@@ -83,9 +104,9 @@ export function getHandler(
       });
 
       return ApiResponse.success(result);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("GET route error:", err);
-      return ApiResponse.error(err.message || "Internal server error", 500);
+      return ApiResponse.error(resolveErrorMessage(err), resolveErrorStatus(err));
     }
   };
 }
@@ -122,11 +143,11 @@ export function streamHandler(
         return result.response; // direct passthrough
       }
 
-      // Otherwise → normal JSON response
+      // Otherwise normal JSON response
       return ApiResponse.stream(result);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("POST route error:", err);
-      return ApiResponse.error(err.message || "Internal server error", 500);
+      return ApiResponse.error(resolveErrorMessage(err), resolveErrorStatus(err));
     }
   };
 }

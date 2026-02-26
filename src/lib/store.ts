@@ -1,17 +1,11 @@
 import authReducer from "@/lib/features/authSlice";
-import newProjectReducer from "@/lib/features/newProjectSlice";
-import orgReducer from "@/lib/features/orgSlice";
-import promptReducer from "@/lib/features/promptSlice";
-import genUiReducer from "@/lib/features/genUiSlice";
+import generateReducer from "@/lib/features/generateSlice";
 import { configureStore } from "@reduxjs/toolkit";
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    org: orgReducer,
-    prompt: promptReducer,
-    newProject: newProjectReducer,
-    genUi: genUiReducer,
+    generate: generateReducer,
   },
 });
 
