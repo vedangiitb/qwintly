@@ -1,0 +1,111 @@
+"use client";
+
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
+import { Questionnaire } from "./Questionnaire";
+import { PlanReview } from "./planPreview";
+import { useChat } from "../hooks/useChat";
+
+export default function RenderAIResponse({
+  data,
+  msgType,
+  messageId,
+}: {
+  data: string;
+  msgType: string;
+  messageId?: string;
+}) {
+  const { questionAnswersByMessageId, plansByMessageId } = useChat();
+  const displayMessage: string = data || "Something went wrong";
+
+  const aiCard = (messageType: string) => {
+    const mappedMessageId = messageId ?? "";
+
+    if (messageType === "plan") {
+      const plan = plansByMessageId[mappedMessageId];
+      return (
+        <div className="w-full space-y-2">
+          {defaultCard(displayMessage)}
+          <PlanReview plan={plan} fallbackText={displayMessage} />
+        </div>
+      );
+    }
+
+    if (messageType === "questions") {
+      const questionSet = questionAnswersByMessageId[mappedMessageId];
+      return (
+        <div className="w-full space-y-2">
+          {defaultCard(displayMessage)}
+          <Questionnaire
+            questionSet={questionSet}
+            fallbackText={displayMessage}
+          />
+        </div>
+      );
+    }
+
+    if (messageType === "message") {
+      return defaultCard(displayMessage);
+    }
+    return defaultCard(displayMessage);
+  };
+
+  return (
+    <div className="flex items-start gap-3 my-4">
+      <Avatar className="hidden sm:flex h-8 w-8 bg-zinc-900/80">
+        <AvatarFallback className="text-zinc-300 text-sm font-medium">
+          ⚡
+        </AvatarFallback>
+      </Avatar>
+
+      {aiCard(msgType)}
+    </div>
+  );
+}
+
+const defaultCard = (displayMessage: string) => {
+  return (
+    <Card
+      className={cn(
+        "w-full md:max-w-[75%] px-4 py-2 rounded-2xl",
+        "bg-muted/40 text-primary text-sm md:text-base",
+        "border transition-all",
+      )}
+    >
+      <ReactMarkdown
+        components={{
+          code({ className, children, ...props }) {
+            return (
+              <code
+                className={cn(
+                  "rounded bg-muted px-1.5 py-0.5 text-xs font-mono text-indigo-300",
+                  className,
+                )}
+                {...props}
+              >
+                {children}
+              </code>
+            );
+          },
+          pre({ children, ...props }) {
+            return (
+              <pre
+                className="rounded-lg bg-zinc-900/80 p-3 overflow-x-auto text-xs text-blue-100"
+                {...props}
+              >
+                {children}
+              </pre>
+            );
+          },
+          p({ children }) {
+            return <p className="leading-relaxed my-1">{children}</p>;
+          },
+        }}
+      >
+        {displayMessage}
+      </ReactMarkdown>
+    </Card>
+  );
+};
