@@ -1,5 +1,5 @@
-"use client";
-import { useAuth } from "@/app/login/hooks/useAuth";
+﻿"use client";
+import { useAuth } from "@/features/auth/ui/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { LogIn } from "lucide-react";
 import Link from "next/link";
@@ -15,7 +15,7 @@ export default function NavBar() {
     <div>
       <header className="sticky top-0 z-20 flex items-center justify-end  md:justify-between py-1 px-2 border-b">
         <div className={`md:block hidden`} onClick={() => router.push("/")}>
-          <span className="cursor-pointer font-medium text-base tracking-wider text-transparent bg-gradient-to-tr dark:from-teal-200 dark:via-purple-300 dark:to-pink-400 from-teal-600 via-purple-600 to-pink-600 bg-clip-text drop-shadow select-none ml-2 transition">
+          <span className="cursor-pointer font-medium text-base tracking-wider text-transparent bg-linear-to-tr dark:from-teal-200 dark:via-purple-300 dark:to-pink-400 from-teal-600 via-purple-600 to-pink-600 bg-clip-text drop-shadow select-none ml-2 transition">
             Qwintly
           </span>
         </div>
@@ -23,17 +23,6 @@ export default function NavBar() {
         <div className="flex items-center gap-8">
           <div className="flex gap-4 items-center">
             <DarkMode />
-
-            {!loading && currentUser && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="cursor-pointer"
-                onClick={() => router.push("/org")}
-              >
-                Dashboard
-              </Button>
-            )}
 
             <UserPopover />
           </div>
@@ -50,7 +39,7 @@ export default function NavBar() {
                 </Button>
               </Link>
               <Link href="/login">
-                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300  cursor-pointer">
+                <Button className="bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300  cursor-pointer">
                   Get Started
                 </Button>
               </Link>
@@ -61,3 +50,5 @@ export default function NavBar() {
     </div>
   );
 }
+
+

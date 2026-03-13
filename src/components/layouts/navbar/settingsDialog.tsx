@@ -27,7 +27,7 @@ export default function SettingsDialog() {
             <p className="text-sm">Settings</p>
           </div>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-106.25">
           <DialogHeader className="border-b pb-4">
             <DialogTitle>Settings</DialogTitle>
           </DialogHeader>

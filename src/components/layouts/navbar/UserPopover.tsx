@@ -1,5 +1,5 @@
-"use client";
-import { useAuth } from "@/app/login/hooks/useAuth";
+﻿"use client";
+import { useAuth } from "@/features/auth/ui/hooks/useAuth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Popover,
@@ -28,8 +28,8 @@ export default function UserPopover() {
         >
           <span className="relative inline-block">
             <Avatar className="w-6 h-6">
-              <span className="absolute -inset-1 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-gradient-to-tr from-teal-400/60 via-purple-300/30 to-pink-200/40 blur-md opacity-60 group-hover:opacity-80 group-hover:blur-xl transition-all pointer-events-none" />
-              <AvatarFallback className="bg-gradient-to-tr from-teal-400/90 via-purple-500/90 to-cyan-400/70 text-white font-bold ring-1 ring-white/10">
+              <span className="absolute -inset-1 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-linear-to-tr from-teal-400/60 via-purple-300/30 to-pink-200/40 blur-md opacity-60 group-hover:opacity-80 group-hover:blur-xl transition-all pointer-events-none" />
+              <AvatarFallback className="bg-linear-to-tr from-teal-400/90 via-purple-500/90 to-cyan-400/70 text-white font-bold ring-1 ring-white/10">
                 {fallback}
               </AvatarFallback>
             </Avatar>
@@ -39,7 +39,7 @@ export default function UserPopover() {
       <PopoverContent
         align="start"
         sideOffset={7}
-        className="ml-2 p-4 rounded-3xl shadow-2xl border border-white/10 glass-popover min-w-[230px] bg-white/20 backdrop-blur-xl"
+        className="ml-2 p-4 rounded-3xl shadow-2xl border border-white/10 glass-popover min-w-57.5 bg-white/20 backdrop-blur-xl"
       >
         <div className="flex items-center gap-2 text-foreground pb-2 mb-2 border-b border-white/10">
           <CircleUser className="h-4 w-4 text-chart-2" />
