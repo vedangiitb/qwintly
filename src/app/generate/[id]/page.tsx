@@ -5,16 +5,16 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import ChatBox from "@/features/chat/ui/components/ChatBox";
+import ChatHistory from "@/features/chat/ui/components/ChatHistory";
+import GeneratingStatus from "@/features/chat/ui/components/GeneratingStatus";
+import { useChat } from "@/features/chat/ui/hooks/useChat";
+import PreviewPanel from "@/features/generate/ui/components/PreviewPanel";
+import { useGenerate } from "@/features/generate/ui/hooks/useGenerate";
+import { useGenerateUi } from "@/features/generate/ui/hooks/useGenerateUi";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import { toast } from "sonner";
-import ChatBox from "../components/chat/ChatBox";
-import ChatHistory from "../components/chat/ChatHistory";
-import GeneratingStatus from "../components/chat/GeneratingStatus";
-import PreviewPanel from "../components/preview/previewPanel/PreviewPanel";
-import { useChat } from "../hooks/useChat";
-import { useChatUi } from "../hooks/useChatUi";
-import { useChatSession } from "../hooks/chatSessionContext";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -24,36 +24,28 @@ export default function Generate({ params }: Props) {
   const {
     prompt,
     setPrompt,
-    submitResponse,
+    sendMessage,
     messages,
-    hasSubmittedRef,
-    fetchChat,
-    isResponseLoading,
-    generatingsite,
+    loadChat,
+    isGeneratingResponse,
   } = useChat();
-
-  const { setChatId } = useChatSession();
-
-  const { chatVisible } = useChatUi();
+  const { isGenerating } = useGenerate();
+  const { chatVisible } = useGenerateUi();
 
   useEffect(() => {
+    // useEffect for loading chat messages and chat info
     const run = async () => {
-      if (!id || hasSubmittedRef.current) return;
-      setChatId(id);
-      if (prompt && !hasSubmittedRef.current) {
-        hasSubmittedRef.current = true;
-        submitResponse(id);
-      } else if (!prompt) {
-        const isChatPresent = await fetchChat(id);
-        hasSubmittedRef.current = true;
-        if (!isChatPresent) {
-          toast.error("Chat Not found");
-          router.push("/generate");
-        }
+      if (!id) return;
+      try {
+        await loadChat(id);
+      } catch (err) {
+        console.error("Failed to load chat", err);
+        toast.error("Chat not found");
+        router.push("/generate");
       }
     };
     run();
-  }, [id, prompt]);
+  }, [id, loadChat, router]);
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
@@ -63,19 +55,19 @@ export default function Generate({ params }: Props) {
         >
           <ChatHistory
             convHistory={messages}
-            isResponseLoading={isResponseLoading}
-            generatingsite={generatingsite}
+            isResponseLoading={isGeneratingResponse}
+            isGenerating={isGenerating}
           />
-          <GeneratingStatus />
+          {isGenerating && <GeneratingStatus />}
           <ChatBox
             prompt={prompt}
-            submitPrompt={(e?: React.FormEvent) => {
-              if (e) e.preventDefault();
-              submitResponse(id);
+            submitPrompt={async (e?: React.FormEvent | React.KeyboardEvent) => {
+              e?.preventDefault();
+              await sendMessage(prompt);
             }}
             setPrompt={setPrompt}
-            isResponseLoading={isResponseLoading}
-            generatingsite={generatingsite}
+            isResponseLoading={isGeneratingResponse}
+            generatingsite={isGenerating}
           />
         </ResizablePanel>
 
@@ -84,12 +76,10 @@ export default function Generate({ params }: Props) {
           className={`${!chatVisible ? "hidden" : ""}`}
         />
 
-        <ResizablePanel minSize={50} className={`flex flex-col flex-1 p-2`}>
-          {/* <PreviewFrame /> */}
+        <ResizablePanel minSize={50} className="flex flex-col flex-1 p-2">
           <PreviewPanel />
         </ResizablePanel>
       </ResizablePanelGroup>
-      {/* </div> */}
     </div>
   );
 }
