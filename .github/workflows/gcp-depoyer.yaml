@@ -50,4 +50,4 @@ jobs:
             --platform=managed \
             --service-account=${{ secrets.RUNTIME_SERVICE_ACCOUNT }} \
             --allow-unauthenticated \
-            --set-secrets= NEXT_PUBLIC_GEMINI_API_KEY=gemini-api-key:latest,NEXT_PUBLIC_SUPABASE_URL=supabase-url:latest,NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=supabase-publishable-key:latest,UPSTASH_REDIS_REST_TOKEN_GEN_EVENTS=upstash-redis-rest-token-gen-events:latest,UPSTASH_REDIS_REST_URL_GEN_EVENTS=upstash-redis-rest-url-gen-events:latest,PUBSUB_TOPIC_WEB_GEN=pubsub-topic-web-gen:latest
+            --set-secrets=NEXT_PUBLIC_GEMINI_API_KEY=gemini-api-key:latest,NEXT_PUBLIC_SUPABASE_URL=supabase-url:latest,NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=supabase-publishable-key:latest,UPSTASH_REDIS_REST_TOKEN_GEN_EVENTS=upstash-redis-rest-token-gen-events:latest,UPSTASH_REDIS_REST_URL_GEN_EVENTS=upstash-redis-rest-url-gen-events:latest,PUBSUB_TOPIC_WEB_GEN=pubsub-topic-web-gen:latest
