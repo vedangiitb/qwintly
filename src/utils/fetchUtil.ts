@@ -1,3 +1,5 @@
+import { supabase } from "@/lib/supabase-client";
+
 // fetchUtil.ts
 
 interface ApiResponse<T = any> {
@@ -6,14 +8,24 @@ interface ApiResponse<T = any> {
   error?: string;
 }
 
+async function getAuthToken(): Promise<string | undefined> {
+  if (supabase) {
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.access_token) {
+        return data.session.access_token;
+      }
+    } catch (error) {
+      throw new Error("Failed to fetch auth token.", error.message);
+    }
+  }
+}
+
 export async function fetchUtil<T>(
   url: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<ApiResponse<T>> {
-  // Read Supabase session from localStorage
-  const raw = localStorage.getItem("sb-jxceaahrdymuhokduqdt-auth-token");
-  const session = raw ? JSON.parse(raw) : null;
-  const token = session?.access_token;
+  const token = await getAuthToken();
 
   const response = await fetch(url, {
     ...options,
@@ -41,12 +53,9 @@ export async function fetchUtil<T>(
 // fetchStreamUtil.ts
 export async function fetchStreamUtil(
   url: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<ReadableStreamDefaultReader<Uint8Array>> {
-  // Grab Supabase token from localStorage
-  const raw = localStorage.getItem("sb-jxceaahrdymuhokduqdt-auth-token");
-  const session = raw ? JSON.parse(raw) : null;
-  const token = session?.access_token;
+  const token = await getAuthToken();
 
   // Perform the request without JSON parsing
   const response = await fetch(url, {

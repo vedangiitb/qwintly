@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import SideBar from "./components/sidebar/sidebar";
-import { UiProvider } from "./hooks/uiContext";
+import SideBar from "@/components/layouts/sidebar/sidebar";
+import { GenerateUiProvider } from "@/features/generate/ui/hooks/generateUiContext";
 
 export default function GenerateLayout({
   children,
@@ -10,7 +10,7 @@ export default function GenerateLayout({
 }>) {
   const [showSidebar, setShowSidebar] = useState(false);
   return (
-    <UiProvider>
+    <GenerateUiProvider>
       <div className="flex flex-1 overflow-hidden text-foreground">
         <SideBar
           sidebarExpanded={showSidebar}
@@ -18,6 +18,6 @@ export default function GenerateLayout({
         />
         {children}
       </div>
-    </UiProvider>
+    </GenerateUiProvider>
   );
 }

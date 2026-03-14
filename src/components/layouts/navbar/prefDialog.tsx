@@ -1,16 +1,11 @@
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Settings2 } from "lucide-react";
 
 export default function PrefDialog() {
@@ -23,12 +18,10 @@ export default function PrefDialog() {
             <p className="text-sm">Preferences</p>
           </div>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-106.25">
           <DialogHeader>
             <DialogTitle>Edit Preferences</DialogTitle>
-            <DialogDescription>
-              Comming Soon...
-            </DialogDescription>
+            <DialogDescription>Comming Soon...</DialogDescription>
           </DialogHeader>
           {/* <div className="grid gap-4">
             <div className="grid gap-3">

@@ -28,21 +28,35 @@ export const listenToAuthChanges = createAsyncThunk(
   "auth/listenToAuthChanges",
   async (_, { dispatch }) => {
     return new Promise<void>((resolve) => {
-      supabase.auth.getUser().then(({ data }) => {
-        if (data?.user) {
-          dispatch(
-            setUser({
-              id: data.user.id,
-              email: data.user.email || null,
-              displayName: data.user.user_metadata?.userName || null,
-              emailVerified: !!data.user.email_confirmed_at,
-            }),
-          );
-        } else {
-          dispatch(setUser(null));
-        }
+      if (!supabase) {
+        dispatch(setUser(null));
         dispatch(setLoading(false));
-      });
+        resolve();
+        return;
+      }
+
+      supabase.auth
+        .getUser()
+        .then(({ data }) => {
+          if (data?.user) {
+            dispatch(
+              setUser({
+                id: data.user.id,
+                email: data.user.email || null,
+                displayName: data.user.user_metadata?.userName || null,
+                emailVerified: !!data.user.email_confirmed_at,
+              }),
+            );
+          } else {
+            dispatch(setUser(null));
+          }
+        })
+        .catch(() => {
+          dispatch(setUser(null));
+        })
+        .finally(() => {
+          dispatch(setLoading(false));
+        });
 
       supabase.auth.onAuthStateChange((event, session) => {
         if (session?.user) {
@@ -68,7 +82,9 @@ export const listenToAuthChanges = createAsyncThunk(
 // Logout
 // -----------------------------------
 export const logoutUser = createAsyncThunk("auth/logoutUser", async () => {
-  await supabase.auth.signOut();
+  if (supabase) {
+    await supabase.auth.signOut();
+  }
   return null;
 });
 
