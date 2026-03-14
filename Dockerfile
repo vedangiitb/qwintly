@@ -3,7 +3,10 @@ FROM node:18-slim AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+# Ensure optional native deps (like @tailwindcss/oxide) are installed in CI
+ENV NODE_ENV=development
+ENV NPM_CONFIG_OPTIONAL=true
+RUN npm ci --include=optional
 
 COPY . .
 
