@@ -28,6 +28,7 @@ export class GenerateClientError extends Error {
 
 export interface ApprovePlanParams {
   chatId: string;
+  planId: string;
   signal?: AbortSignal;
 }
 
@@ -86,7 +87,9 @@ const GENERATE_ENDPOINTS = {
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
-const isHistoryEvent = (value: unknown): value is GenerationStatusHistoryEvent => {
+const isHistoryEvent = (
+  value: unknown,
+): value is GenerationStatusHistoryEvent => {
   if (!isObject(value)) return false;
 
   return (
@@ -98,7 +101,9 @@ const isHistoryEvent = (value: unknown): value is GenerationStatusHistoryEvent =
   );
 };
 
-const toGenerationStreamEvent = (value: unknown): GenerationStreamEvent | null => {
+const toGenerationStreamEvent = (
+  value: unknown,
+): GenerationStreamEvent | null => {
   if (!isObject(value) || typeof value.type !== "string") {
     return null;
   }
@@ -125,7 +130,10 @@ const toGenerationStreamEvent = (value: unknown): GenerationStreamEvent | null =
     const payload = isObject(value.payload)
       ? (Object.fromEntries(
           Object.entries(value.payload)
-            .filter(([, itemValue]) => itemValue === undefined || typeof itemValue === "string")
+            .filter(
+              ([, itemValue]) =>
+                itemValue === undefined || typeof itemValue === "string",
+            )
             .map(([key, itemValue]) => [key, itemValue as string | undefined]),
         ) as GenerationRealtimeStatusEvent)
       : ({} as GenerationRealtimeStatusEvent);
@@ -144,31 +152,43 @@ const toGenerationStreamEvent = (value: unknown): GenerationStreamEvent | null =
 };
 
 export class GenerateClient implements GenerateClientContract {
-  constructor(private readonly httpClient: HttpClient = new FetchUtilHttpClient()) {}
+  constructor(
+    private readonly httpClient: HttpClient = new FetchUtilHttpClient(),
+  ) {}
 
   async approvePlan(params: ApprovePlanParams): Promise<ApprovePlanResult> {
     const chatId = ensureNonEmptyString(params.chatId, "chatId");
+    const planId = ensureNonEmptyString(params.planId, "planId");
 
-    return this.execute("approvePlan", GENERATE_ENDPOINTS.APPROVE_PLAN, async () => {
-      const data = await this.httpClient.post<ApprovePlanResult>(
-        GENERATE_ENDPOINTS.APPROVE_PLAN,
-        {
-          chatId,
-        },
-        params.signal,
-      );
+    return this.execute(
+      "approvePlan",
+      GENERATE_ENDPOINTS.APPROVE_PLAN,
+      async () => {
+        const data = await this.httpClient.post<ApprovePlanResult>(
+          GENERATE_ENDPOINTS.APPROVE_PLAN,
+          {
+            chatId,
+            planId,
+          },
+          params.signal,
+        );
 
-      if (!data?.success) {
-        throw new Error("Generation trigger was not acknowledged by the server");
-      }
+        if (!data?.success) {
+          throw new Error(
+            "Generation trigger was not acknowledged by the server",
+          );
+        }
 
-      ensureNonEmptyString(data.messageId, "messageId");
+        ensureNonEmptyString(data.messageId, "messageId");
 
-      return data;
-    });
+        return data;
+      },
+    );
   }
 
-  async streamGenerationStatus(params: StreamGenerationStatusParams): Promise<void> {
+  async streamGenerationStatus(
+    params: StreamGenerationStatusParams,
+  ): Promise<void> {
     const chatId = ensureNonEmptyString(params.chatId, "chatId");
 
     if (typeof params.onEvent !== "function") {

@@ -108,11 +108,11 @@ export const useGenerate = () => {
   );
 
   const approvePlan = useCallback(
-    async (chatId: string) => {
+    async (chatId: string, planId: string) => {
       setGenerateError(null);
       setActiveChatId(chatId);
       try {
-        await generateClient.approvePlan({ chatId });
+        await generateClient.approvePlan({ chatId, planId });
         setGenerating(true);
         setCurrentStatus("Queued for generation");
       } catch (err) {

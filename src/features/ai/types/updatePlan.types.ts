@@ -35,13 +35,14 @@ export type PlanTask = {
 export const PLAN_STATUS = {
   PENDING: "pending",
   UPDATED: "updated",
+  IMPLEMENTING: "implementing",
   IMPLEMENTED: "implemented",
 };
 
 export type PlanStatus = (typeof PLAN_STATUS)[keyof typeof PLAN_STATUS];
 
 export type Plan = {
-  id?: string;
+  id: string;
   tasks: PlanTask[];
   status: PlanStatus;
   messageId?: string;

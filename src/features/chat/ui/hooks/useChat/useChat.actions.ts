@@ -219,9 +219,7 @@ export const useChatActions = ({
         createdAt: new Date().toISOString(),
       };
 
-      setMessages((prev) =>
-        dedupeAndSortMessages([...prev, assistantMessage]),
-      );
+      setMessages((prev) => dedupeAndSortMessages([...prev, assistantMessage]));
     },
     [setMessages],
   );
@@ -361,7 +359,6 @@ export const useChatActions = ({
             },
           };
         });
-
       } catch (err) {
         const message = toErrorMessage(err, "Failed to submit answers.");
         setError(message);
@@ -414,16 +411,19 @@ export const useChatActions = ({
     setError,
   ]);
 
-  const approvePlan = useCallback(async () => {
-    clearError();
+  const approvePlan = useCallback(
+    async (planId: string) => {
+      clearError();
 
-    try {
-      await approveGenerationPlan(chatId);
-    } catch (err) {
-      const message = toErrorMessage(err, "Failed to approve plan.");
-      setError(message);
-    }
-  }, [chatId, clearError, approveGenerationPlan, setError]);
+      try {
+        await approveGenerationPlan(chatId, planId);
+      } catch (err) {
+        const message = toErrorMessage(err, "Failed to approve plan.");
+        setError(message);
+      }
+    },
+    [chatId, clearError, approveGenerationPlan, setError],
+  );
 
   return {
     loadRecentChats,

@@ -66,7 +66,7 @@ export function PlanReview({
   const groupedTasks = groupTasksByIntent(plan.tasks);
   const intentCount = Object.keys(groupedTasks).length;
   const taskCount = plan.tasks.length;
-  const shouldShowApprove = !isUpdatedPlan;
+  const shouldShowApprove = plan?.status === PLAN_STATUS.PENDING;
 
   return (
     <div className="w-full md:max-w-[90%] space-y-2">
@@ -152,7 +152,7 @@ export function PlanReview({
       {shouldShowApprove ? (
         <Card>
           <CardContent className="flex justify-end px-4">
-            <Button size="sm" onClick={onApprove}>
+            <Button size="sm" onClick={() => onApprove(plan.id)}>
               Approve Plan
             </Button>
           </CardContent>
