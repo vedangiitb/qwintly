@@ -2,6 +2,8 @@ import { PubSub } from "@google-cloud/pubsub";
 
 type GenerationTriggerPayload = {
   chatId: string;
+  planId: string;
+  requestType: string;
   timestamp: number;
 };
 
@@ -34,16 +36,17 @@ const defaultPublisher = new PubSubGenerationPublisher(
 
 export const generationTriggerService = async (
   chatId: string,
+  planId: string,
   publisher: GenerationPublisher = defaultPublisher,
 ): Promise<GenerationTriggerResult> => {
-  if (!chatId || !chatId.trim()) {
-    const error = new Error("Missing or invalid chatId");
-    (error as Error & { statusCode?: number }).statusCode = 400;
-    throw error;
-  }
-
+  // TODO: Have a logic to determine if the plan status is pending (P-High)
+  // TODO: Have a logic in worker to change the plan status to implementing(P-High)
+  // TODO: Replace with a logic to determine if request type is new or resume(P-High)
+  const requestType = "new";
   const payload: GenerationTriggerPayload = {
-    chatId: chatId.trim(),
+    chatId: chatId,
+    planId: planId,
+    requestType: requestType,
     timestamp: Date.now(),
   };
 
