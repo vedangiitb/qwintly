@@ -41,10 +41,12 @@ jobs:
 
           echo "::add-mask::$SUPABASE_URL"
           echo "::add-mask::$SUPABASE_PUBLISHABLE_KEY"
+          echo "::add-mask::${{ secrets.NEXT_PUBLIC_GA_ID }}"
 
           docker build \
             --build-arg NEXT_PUBLIC_SUPABASE_URL="$SUPABASE_URL" \
             --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
+            --build-arg NEXT_PUBLIC_GA_ID="${{ secrets.NEXT_PUBLIC_GA_ID }}" \
             -t ${{ env.REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }} .
 
       - name: Push container
