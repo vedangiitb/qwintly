@@ -4,15 +4,37 @@ import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/lib/store";
 import {
+  applyHistoryLogs,
+  applyRealtimeLog,
   appendStatusLog,
   clearStatusState,
   setActiveChatId,
-  setCurrentStatus,
+  setCurrentLog,
   setGenerateError,
   setGenerating,
+  setSiteUrl,
   setStatusLogs,
 } from "@/lib/features/generateSlice";
 import { GenerationStatusLog } from "../../generate.types";
+
+const normalizeSiteUrl = (value: string | null): string | null => {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  if (trimmed.startsWith("/")) return trimmed;
+
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith("//")) return `https:${trimmed}`;
+
+  try {
+    // eslint-disable-next-line no-new
+    new URL(`https://${trimmed}`);
+    return `https://${trimmed}`;
+  } catch {
+    return trimmed;
+  }
+};
 
 export const useGenerateContext = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -26,8 +48,16 @@ export const useGenerateContext = () => {
     (value: boolean) => dispatch(setGenerating(value)),
     [dispatch],
   );
-  const onSetCurrentStatus = useCallback(
-    (value: string | null) => dispatch(setCurrentStatus(value)),
+  const onSetCurrentLog = useCallback(
+    (value: GenerationStatusLog | null) => dispatch(setCurrentLog(value)),
+    [dispatch],
+  );
+  const onApplyHistoryLogs = useCallback(
+    (logs: GenerationStatusLog[]) => dispatch(applyHistoryLogs(logs)),
+    [dispatch],
+  );
+  const onApplyRealtimeLog = useCallback(
+    (log: GenerationStatusLog) => dispatch(applyRealtimeLog(log)),
     [dispatch],
   );
   const onSetStatusLogs = useCallback(
@@ -43,6 +73,10 @@ export const useGenerateContext = () => {
     (error: string | null) => dispatch(setGenerateError(error)),
     [dispatch],
   );
+  const onSetSiteUrl = useCallback(
+    (value: string | null) => dispatch(setSiteUrl(normalizeSiteUrl(value))),
+    [dispatch],
+  );
 
   return useMemo(
     () =>
@@ -50,7 +84,10 @@ export const useGenerateContext = () => {
         ...generateState,
         setActiveChatId: onSetActiveChatId,
         setGenerating: onSetGenerating,
-        setCurrentStatus: onSetCurrentStatus,
+        setCurrentLog: onSetCurrentLog,
+        applyHistoryLogs: onApplyHistoryLogs,
+        applyRealtimeLog: onApplyRealtimeLog,
+        setSiteUrl: onSetSiteUrl,
         setStatusLogs: onSetStatusLogs,
         appendStatusLog: onAppendStatusLog,
         clearStatusState: onClearStatusState,
@@ -60,7 +97,10 @@ export const useGenerateContext = () => {
       generateState,
       onSetActiveChatId,
       onSetGenerating,
-      onSetCurrentStatus,
+      onSetCurrentLog,
+      onApplyHistoryLogs,
+      onApplyRealtimeLog,
+      onSetSiteUrl,
       onSetStatusLogs,
       onAppendStatusLog,
       onClearStatusState,

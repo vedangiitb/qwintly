@@ -4,7 +4,7 @@ import { GenerationStatusLog } from "@/features/generate/generate.types";
 interface GenerateState {
   activeChatId: string | null;
   isGenerating: boolean;
-  currentStatus: string | null;
+  currentLog: GenerationStatusLog | null;
   statusLogs: GenerationStatusLog[];
   url: string | null;
   error: string | null;
@@ -13,7 +13,7 @@ interface GenerateState {
 const initialState: GenerateState = {
   activeChatId: null,
   isGenerating: false,
-  currentStatus: null,
+  currentLog: null,
   statusLogs: [],
   url: null,
   error: null,
@@ -29,8 +29,25 @@ const generateSlice = createSlice({
     setGenerating(state, action: PayloadAction<boolean>) {
       state.isGenerating = action.payload;
     },
-    setCurrentStatus(state, action: PayloadAction<string | null>) {
-      state.currentStatus = action.payload;
+    setCurrentLog(state, action: PayloadAction<GenerationStatusLog | null>) {
+      state.currentLog = action.payload;
+    },
+    applyHistoryLogs(state, action: PayloadAction<GenerationStatusLog[]>) {
+      const logs = action.payload;
+      if (!logs.length) {
+        state.currentLog = null;
+        state.statusLogs = [];
+        return;
+      }
+
+      state.currentLog = logs[logs.length - 1] ?? null;
+      state.statusLogs = logs.slice(0, -1);
+    },
+    applyRealtimeLog(state, action: PayloadAction<GenerationStatusLog>) {
+      if (state.currentLog) {
+        state.statusLogs.push(state.currentLog);
+      }
+      state.currentLog = action.payload;
     },
     setStatusLogs(state, action: PayloadAction<GenerationStatusLog[]>) {
       state.statusLogs = action.payload;
@@ -39,7 +56,7 @@ const generateSlice = createSlice({
       state.statusLogs.push(action.payload);
     },
     clearStatusState(state) {
-      state.currentStatus = null;
+      state.currentLog = null;
       state.statusLogs = [];
       state.error = null;
     },
@@ -55,7 +72,9 @@ const generateSlice = createSlice({
 export const {
   setActiveChatId,
   setGenerating,
-  setCurrentStatus,
+  setCurrentLog,
+  applyHistoryLogs,
+  applyRealtimeLog,
   setStatusLogs,
   appendStatusLog,
   clearStatusState,

@@ -10,7 +10,7 @@ export class SitesRepository extends DBRepository {
     const { data, error } = await supabase
       .from("project_sites")
       .select("url")
-      .eq("id", id)
+      .eq("conv_id", id)
       .maybeSingle();
     if (error) throw error;
     if (!data) return null;

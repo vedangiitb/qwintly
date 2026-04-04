@@ -16,6 +16,7 @@ export default function PreviewPanel() {
       {url ? (
         <iframe
           id="preview-frame"
+          key={url}
           src={url}
           style={{
             margin: "auto",

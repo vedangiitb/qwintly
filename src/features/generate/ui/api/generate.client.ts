@@ -60,8 +60,8 @@ export type GenerationStreamEvent =
       payload: GenerationStatusHistoryEvent[];
     }
   | {
-      type: "current_status";
-      payload: string | null;
+      type: "current";
+      payload: GenerationRealtimeStatusEvent;
     }
   | {
       type: "event";
@@ -119,14 +119,7 @@ const toGenerationStreamEvent = (
     };
   }
 
-  if (value.type === "current_status") {
-    return {
-      type: "current_status",
-      payload: typeof value.payload === "string" ? value.payload : null,
-    };
-  }
-
-  if (value.type === "event") {
+  if (value.type === "current" || value.type === "event") {
     const payload = isObject(value.payload)
       ? (Object.fromEntries(
           Object.entries(value.payload)
@@ -143,7 +136,7 @@ const toGenerationStreamEvent = (
     }
 
     return {
-      type: "event",
+      type: value.type,
       payload,
     };
   }
@@ -221,8 +214,14 @@ export class GenerateClient implements GenerateClientContract {
             buffer = frames.pop() ?? "";
 
             frames.forEach((frame) => {
-              const dataLines = frame
-                .split("\n")
+              const lines = frame.split(/\r?\n/);
+              const sseId = lines
+                .map((line) => line.trimEnd())
+                .find((line) => line.startsWith("id:"))
+                ?.slice(3)
+                .trim();
+
+              const dataLines = lines
                 .filter((line) => line.startsWith("data:"))
                 .map((line) => line.slice(5).trim());
 
@@ -239,6 +238,10 @@ export class GenerateClient implements GenerateClientContract {
 
               const event = toGenerationStreamEvent(parsedPayload);
               if (!event) return;
+
+              if (sseId && (event.type === "event" || event.type === "current")) {
+                event.payload = { ...event.payload, sse_id: sseId };
+              }
 
               params.onEvent(event);
             });
