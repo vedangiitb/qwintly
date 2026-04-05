@@ -5,6 +5,7 @@ import { verifyToken } from "@/lib/verifyToken";
 import { NextRequest } from "next/server";
 
 export const runtime = "nodejs"; // Required for SSE
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -21,13 +22,14 @@ export async function GET(req: NextRequest) {
 
   await verifyToken(token);
 
-  const stream = createGenerationStatusStream(chatId.trim(), token);
+  const stream = createGenerationStatusStream(chatId.trim(), token, req.signal);
 
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
+      "Cache-Control": "no-cache, no-transform",
       Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
     },
   });
 }

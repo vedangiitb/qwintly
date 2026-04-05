@@ -9,10 +9,12 @@ export const GET = getHandler(async ({ query, token }) => {
 
   await verifyToken(token);
 
-  const { questionAnswers, plans } = await fetchChatInfo(chatId, token);
+  const { questionAnswers, plans, siteUrl, isGenerating } = await fetchChatInfo(chatId, token);
 
   return {
     questionAnswers,
     plans,
+    siteUrl,
+    isGenerating
   };
 });

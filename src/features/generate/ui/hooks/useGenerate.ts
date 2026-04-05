@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import {
   generateClient,
   GenerationRealtimeStatusEvent,
@@ -9,6 +9,7 @@ import {
 } from "../api/generate.client";
 import { useGenerateContext } from "./useGenerateContext";
 import { GenerationStatusLog } from "../../generate.types";
+import { fetchChatInfo } from "@/features/chat/ui/services/fetchChatInfo.service";
 
 const TERMINAL_EVENTS = new Set(["generation_completed", "generation_failed"]);
 
@@ -25,12 +26,10 @@ const titleFromEventType = (eventType: string): string =>
     .map((part) => part[0].toUpperCase() + part.slice(1))
     .join(" ");
 
-const resolveStatusText = (
-  event: GenerationRealtimeStatusEvent,
-): string | null =>
-  safeTrim(event.message) ??
-  safeTrim(event.step) ??
-  titleFromEventType(event.event_type);
+const resolveStatusTextFromLog = (log: GenerationStatusLog | null): string | null => {
+  if (!log) return null;
+  return safeTrim(log.message) ?? safeTrim(log.step) ?? titleFromEventType(log.eventType);
+};
 
 const toHistoryLog = (
   event: GenerationStatusHistoryEvent,
@@ -56,71 +55,99 @@ export const useGenerate = () => {
   const {
     activeChatId,
     isGenerating,
-    currentStatus,
+    currentLog,
     statusLogs,
     error,
     setActiveChatId,
     setGenerating,
-    setCurrentStatus,
-    setStatusLogs,
-    appendStatusLog,
+    setCurrentLog,
+    applyHistoryLogs,
+    applyRealtimeLog,
     clearStatusState,
     setGenerateError,
+    setSiteUrl,
     url,
   } = useGenerateContext();
 
+  const urlFetchInFlightRef = useRef<Set<string>>(new Set());
+
+  const hydrateSiteUrl = useCallback(
+    async (chatId: string) => {
+      if (!chatId?.trim()) return;
+      if (urlFetchInFlightRef.current.has(chatId)) return;
+
+      urlFetchInFlightRef.current.add(chatId);
+      try {
+        const info = await fetchChatInfo(chatId);
+        setSiteUrl(info.siteUrl ?? null);
+      } catch {
+        // Best-effort: URL hydration shouldn't fail generation UX.
+      } finally {
+        urlFetchInFlightRef.current.delete(chatId);
+      }
+    },
+    [setSiteUrl],
+  );
+
   const handleStreamEvent = useCallback(
-    (streamEvent: GenerationStreamEvent) => {
+    (streamEvent: GenerationStreamEvent, chatId: string) => {
       if (streamEvent.type === "history") {
         const logs = streamEvent.payload.map(toHistoryLog);
-        setStatusLogs(logs);
-        const lastEventType = logs.length
-          ? logs[logs.length - 1].eventType
-          : null;
-        if (lastEventType) {
-          setGenerating(!TERMINAL_EVENTS.has(lastEventType));
+        applyHistoryLogs(logs);
+        const lastEventType = logs.length ? logs[logs.length - 1]?.eventType : null;
+        const isTerminal = lastEventType ? TERMINAL_EVENTS.has(lastEventType) : false;
+        setGenerating(lastEventType ? !isTerminal : true);
+        if (isTerminal) {
+          void hydrateSiteUrl(chatId);
         }
         return;
       }
 
-      if (streamEvent.type === "current_status") {
-        const status = safeTrim(streamEvent.payload);
-        setCurrentStatus(status);
-        if (status) {
-          setGenerating(!TERMINAL_EVENTS.has(status));
+      if (streamEvent.type === "current") {
+        const log = toRealtimeLog(streamEvent.payload);
+        setCurrentLog(log);
+        const isTerminal = TERMINAL_EVENTS.has(log.eventType);
+        setGenerating(!isTerminal);
+        if (isTerminal) {
+          void hydrateSiteUrl(chatId);
         }
         return;
       }
 
       if (streamEvent.type === "event") {
         const log = toRealtimeLog(streamEvent.payload);
-        appendStatusLog(log);
-        setCurrentStatus(resolveStatusText(streamEvent.payload));
-
-        if (TERMINAL_EVENTS.has(streamEvent.payload.event_type)) {
-          setGenerating(false);
-        } else {
-          setGenerating(true);
+        applyRealtimeLog(log);
+        const isTerminal = TERMINAL_EVENTS.has(log.eventType);
+        setGenerating(!isTerminal);
+        if (isTerminal) {
+          void hydrateSiteUrl(chatId);
         }
       }
     },
-    [appendStatusLog, setCurrentStatus, setGenerating, setStatusLogs],
+    [applyHistoryLogs, applyRealtimeLog, hydrateSiteUrl, setCurrentLog, setGenerating],
   );
 
   const approvePlan = useCallback(
     async (chatId: string, planId: string) => {
       setGenerateError(null);
       setActiveChatId(chatId);
+      setSiteUrl(null);
       try {
         await generateClient.approvePlan({ chatId, planId });
         setGenerating(true);
-        setCurrentStatus("Queued for generation");
+        setCurrentLog({
+          eventType: "generation_queued",
+          step: "Queued",
+          message: "Queued for generation",
+          seqNum: null,
+          createdAt: new Date().toISOString(),
+        });
       } catch (err) {
         setGenerating(false);
         throw err;
       }
     },
-    [setGenerateError, setActiveChatId, setGenerating, setCurrentStatus],
+    [setGenerateError, setActiveChatId, setGenerating, setCurrentLog, setSiteUrl],
   );
 
   const streamGenerationStatus = useCallback(
@@ -129,12 +156,13 @@ export const useGenerate = () => {
 
       setGenerateError(null);
       setActiveChatId(chatId);
+      setSiteUrl(null);
 
       try {
         await generateClient.streamGenerationStatus({
           chatId: chatId,
           signal: params.signal,
-          onEvent: handleStreamEvent,
+          onEvent: (event) => handleStreamEvent(event, chatId),
         });
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") {
@@ -155,13 +183,16 @@ export const useGenerate = () => {
   return {
     activeChatId,
     isGenerating,
-    currentStatus,
+    currentLog,
+    currentStatus: resolveStatusTextFromLog(currentLog),
     statusLogs,
     error,
     approvePlan,
     streamGenerationStatus,
     clearStatusState,
     setGenerating,
+    setActiveChatId,
+    setSiteUrl,
     url,
   } as const;
 };

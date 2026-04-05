@@ -82,8 +82,13 @@ export const useChatActions = ({
     setUrl,
     setIsGenerating,
   } = context;
-  const { approvePlan: approveGenerationPlan, clearStatusState } =
-    useGenerate();
+  const {
+    approvePlan: approveGenerationPlan,
+    clearStatusState,
+    setGenerating: setReduxGenerating,
+    setActiveChatId: setReduxActiveChatId,
+    setSiteUrl: setReduxSiteUrl,
+  } = useGenerate();
 
   const hydrateChatInfo = useCallback(
     async (targetChatId: string) => {
@@ -94,7 +99,10 @@ export const useChatActions = ({
       setLatestQuestionSetId(questionAnswers[0]?.id ?? null);
       setLatestPlanMessageId(resolveLatestPlanMessageId(plans));
       setUrl(siteUrl);
+      setReduxSiteUrl(siteUrl?.trim() ? siteUrl : null);
       setIsGenerating(isGenerating);
+      setReduxGenerating(isGenerating);
+      setReduxActiveChatId(targetChatId);
       return { questionAnswers, plans };
     },
     [
@@ -102,6 +110,11 @@ export const useChatActions = ({
       setPlansByMessageId,
       setLatestQuestionSetId,
       setLatestPlanMessageId,
+      setUrl,
+      setIsGenerating,
+      setReduxGenerating,
+      setReduxActiveChatId,
+      setReduxSiteUrl,
     ],
   );
 
