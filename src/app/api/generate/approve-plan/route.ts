@@ -18,5 +18,5 @@ export const POST = postHandler(async ({ body, token }) => {
 
   await verifyToken(token);
 
-  return generationTriggerService(chatId.trim(), planId.trim());
+  return generationTriggerService(chatId.trim(), planId.trim(), token);
 });
