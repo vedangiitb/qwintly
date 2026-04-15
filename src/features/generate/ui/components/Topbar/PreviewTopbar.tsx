@@ -22,11 +22,11 @@ export default function PreviewTopbar() {
   };
 
   return (
-    <div className="topbar flex items-center justify-between px-3 py-2 mb-3 select-none">
+    <div className="flex items-center justify-between px-4 py-2.5 mb-3 select-none bg-background/50 border border-border/40 backdrop-blur-sm rounded-xl shadow-sm">
       <button
         aria-label={chatVisible ? "Close Chat Panel" : "Open Chat Panel"}
         onClick={toggleChatVisible}
-        className="topbar-icon"
+        className="p-1.5 rounded-lg transition-all duration-150 ease-in-out hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring outline-none"
       >
         {chatVisible ? (
           <PanelLeftClose className="w-5 h-5 text-muted-foreground" />
@@ -35,7 +35,7 @@ export default function PreviewTopbar() {
         )}
       </button>
 
-      <h3 className="title select-text">Preview</h3>
+      <h3 className="text-[13px] font-medium tracking-widest uppercase text-muted-foreground/80 select-text">Preview</h3>
 
       {url ? (
         <div className="flex items-center gap-3">
@@ -44,7 +44,7 @@ export default function PreviewTopbar() {
           <button
             aria-label="Open in new window"
             onClick={openInNewWindow}
-            className="topbar-icon"
+            className="p-1.5 rounded-lg transition-all duration-150 ease-in-out hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring outline-none"
           >
             <ExternalLink className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -53,38 +53,6 @@ export default function PreviewTopbar() {
         <div />
       )}
 
-      <style jsx>{`
-        .topbar {
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 10px;
-        }
-
-        .topbar-icon {
-          padding: 6px;
-          border-radius: 8px;
-          transition:
-            background 160ms ease,
-            color 160ms ease;
-          outline: none;
-        }
-
-        .topbar-icon:hover {
-          background: rgba(255, 255, 255, 0.06);
-        }
-
-        .topbar-icon:focus-visible {
-          box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18);
-        }
-
-        .title {
-          font-size: 13px;
-          font-weight: 500;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: rgba(255, 255, 255, 0.7);
-        }
-      `}</style>
     </div>
   );
 }

@@ -23,9 +23,9 @@ export default function SidebarToggle({
               cursor-pointer
     flex items-center justify-center
    h-9 rounded-lg
-     hover:bg-muted
+     hover:bg-accent/50
     transition-all duration-200
-    ${!isExpanded ? "justify-center w-9" : "justify-start gap-2 px-2"}
+    ${!isExpanded ? "justify-center w-10 mx-auto" : "justify-start gap-2 px-3"}
   `}
             aria-label={isExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
           >

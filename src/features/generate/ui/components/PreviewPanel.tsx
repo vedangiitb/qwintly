@@ -22,8 +22,9 @@ export default function PreviewPanel() {
             margin: "auto",
             height: "800px",
             width: width,
-            border: "1px solid #ddd",
-            borderRadius: "6px",
+            border: "1px solid var(--border)",
+            borderRadius: "8px",
+            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)"
           }}
         />
       ) : (
