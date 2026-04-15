@@ -13,7 +13,7 @@ import PreviewPanel from "@/features/generate/ui/components/PreviewPanel";
 import { useGenerate } from "@/features/generate/ui/hooks/useGenerate";
 import { useGenerateUi } from "@/features/generate/ui/hooks/useGenerateUi";
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 type Props = { params: Promise<{ id: string }> };
@@ -31,6 +31,14 @@ export default function Generate({ params }: Props) {
   } = useChat();
   const { isGenerating } = useGenerate();
   const { chatVisible } = useGenerateUi();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     // useEffect for loading chat messages and chat info
@@ -49,7 +57,7 @@ export default function Generate({ params }: Props) {
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <ResizablePanelGroup direction="horizontal" className="h-full flex">
+      <ResizablePanelGroup direction={isMobile ? "vertical" : "horizontal"} className="h-full flex">
         <ResizablePanel
           className={`flex flex-col flex-1 overflow-y-auto px-2 py-4 h-full ${!chatVisible ? "hidden" : ""}`}
         >
@@ -73,10 +81,10 @@ export default function Generate({ params }: Props) {
 
         <ResizableHandle
           withHandle
-          className={`${!chatVisible ? "hidden" : ""}`}
+          className={`transition-all duration-300 bg-border/50 hover:bg-border/80 ${!chatVisible ? "hidden" : ""} ${isMobile ? "h-1.5 hover:h-2 w-full" : "w-1.5 hover:w-2 h-full"}`}
         />
 
-        <ResizablePanel minSize={50} className="flex flex-col flex-1 p-2">
+        <ResizablePanel minSize={40} className="flex flex-col flex-1 p-3 lg:p-4 bg-muted/10">
           <PreviewPanel />
         </ResizablePanel>
       </ResizablePanelGroup>

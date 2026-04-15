@@ -35,16 +35,16 @@ export default function NavItems({ isExpanded }: { isExpanded: boolean }) {
             <button
               className={`
                 cursor-pointer
-    flex items-center justify-center
+    flex items-center group
    h-9 rounded-lg  
-     hover:bg-muted
+     hover:bg-accent/50
     transition-all duration-200
-    ${!isExpanded ? "justify-center w-9" : "justify-start w-full gap-2 px-2"}
+    ${!isExpanded ? "justify-center w-10 mx-auto" : "justify-start w-full gap-3 px-3"}
   `}
               onClick={item.action}
               tabIndex={0}
             >
-              <span className="flex items-center justify-center w-5 h-5 text-muted-foreground group-hover:text-indigo-500 transition-colors">
+              <span className="flex items-center justify-center w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors">
                 {item.icon}
               </span>
 

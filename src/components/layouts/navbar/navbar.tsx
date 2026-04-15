@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useAuth } from "@/features/auth/ui/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { LogIn } from "lucide-react";
@@ -13,15 +13,15 @@ export default function NavBar() {
 
   return (
     <div>
-      <header className="sticky top-0 z-20 flex items-center justify-end  md:justify-between py-1 px-2 border-b">
+      <header className="sticky top-0 z-20 flex items-center justify-end md:justify-between py-1.5 px-4 backdrop-blur-md bg-background/80 border-b border-border/40">
         <div className={`md:block hidden`} onClick={() => router.push("/")}>
-          <span className="cursor-pointer font-medium text-base tracking-wider text-transparent bg-linear-to-tr dark:from-teal-200 dark:via-purple-300 dark:to-pink-400 from-teal-600 via-purple-600 to-pink-600 bg-clip-text drop-shadow select-none ml-2 transition">
+          <span className="cursor-pointer font-medium text-base tracking-wider text-transparent bg-linear-to-tr dark:from-teal-300 dark:via-purple-400 dark:to-pink-400 from-teal-600 via-purple-600 to-pink-600 bg-clip-text select-none ml-2 transition-opacity hover:opacity-80">
             Qwintly
           </span>
         </div>
 
-        <div className="flex items-center gap-8">
-          <div className="flex gap-4 items-center">
+        <div className="flex items-center gap-6">
+          <div className="flex gap-2 items-center">
             <DarkMode />
 
             <UserPopover />
@@ -32,14 +32,14 @@ export default function NavBar() {
               <Link href="/login">
                 <Button
                   variant="ghost"
-                  className="dark:text-white dark:hover:text-blue-200 hover:bg-blue-50 cursor-pointer text-black hover:text-blue-700 "
+                  className="text-muted-foreground hover:text-foreground hover:bg-accent/50 cursor-pointer"
                 >
                   <LogIn className="w-4 h-4 mr-2" />
                   Sign In
                 </Button>
               </Link>
               <Link href="/login">
-                <Button className="bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300  cursor-pointer">
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all duration-300 cursor-pointer rounded-full px-5">
                   Get Started
                 </Button>
               </Link>

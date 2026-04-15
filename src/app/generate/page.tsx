@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useAuth } from "@/features/auth/ui/hooks/useAuth";
 import ChatBox from "@/features/chat/ui/components/ChatBox";
@@ -53,10 +53,10 @@ export default function Generate() {
   };
 
   return (
-    <div className="w-full flex flex-col h-full pl-4 pr-2 pb-2 overflow-hidden shadow-xl backdrop-blur-2xl bg-background">
+    <div className="w-full flex flex-col h-full pl-4 pr-2 pb-2 overflow-hidden backdrop-blur-md bg-background">
       <div className="flex-1 flex items-center justify-center pb-28">
-        <div className="py-4 max-w-3xl text-center">
-          <p className="md:text-4xl text-2xl">
+        <div className="py-4 max-w-2xl text-center flex flex-col items-center gap-4">
+          <p className="md:text-4xl text-2xl font-semibold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-foreground to-muted-foreground p-2 text-balance leading-tight">
             Start with your application by typing your first message
           </p>
         </div>
