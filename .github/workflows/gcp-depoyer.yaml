@@ -26,9 +26,12 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: Configure Docker auth
         run: |
@@ -47,6 +50,7 @@ jobs:
             --build-arg NEXT_PUBLIC_SUPABASE_URL="$SUPABASE_URL" \
             --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
             --build-arg NEXT_PUBLIC_GA_ID="${{ secrets.NEXT_PUBLIC_GA_ID }}" \
+            --build-arg NEXT_PUBLIC_SITE_URL="${{ vars.NEXT_PUBLIC_SITE_URL }}" \
             -t ${{ env.REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }} .
 
       - name: Push container
@@ -61,4 +65,5 @@ jobs:
             --platform=managed \
             --service-account=${{ secrets.RUNTIME_SERVICE_ACCOUNT }} \
             --allow-unauthenticated \
+            --set-env-vars=NEXT_PUBLIC_GA_ID=${{ secrets.NEXT_PUBLIC_GA_ID }},NEXT_PUBLIC_SITE_URL=${{ vars.NEXT_PUBLIC_SITE_URL }} \
             --set-secrets=GEMINI_API_KEY=gemini-api-key:latest,NEXT_PUBLIC_SUPABASE_URL=supabase-url:latest,NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=supabase-publishable-key:latest,UPSTASH_REDIS_REST_TOKEN_GEN_EVENTS=upstash-redis-rest-token-gen-events:latest,UPSTASH_REDIS_REST_URL_GEN_EVENTS=upstash-redis-rest-url-gen-events:latest,PUBSUB_TOPIC_WEB_GEN=pubsub-topic-web-gen:latest

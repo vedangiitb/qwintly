@@ -1,8 +1,7 @@
-import LoginLayout from "@/features/auth/ui/layouts/LoginLayout";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Login",
+  title: "Account Created",
   robots: {
     index: false,
     follow: false,
@@ -13,4 +12,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default LoginLayout;
+export default function AccountCreatedLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return children;
+}
+

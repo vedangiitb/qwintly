@@ -6,6 +6,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ChatProvider } from "@/features/chat/ui/hooks/chatContext";
 import Script from "next/script";
+import { getSiteUrlFromEnv, getSiteUrlOrLocalhost } from "@/lib/seo/siteUrl";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,36 +18,111 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Qwintly",
-  description: "Website Generator",
-};
+const defaultTitle = "Qwintly";
+const defaultDescription =
+  "Qwintly is an AI-powered app generator. Describe what you want, and get a production-ready application with modern code.";
 
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+export function generateMetadata(): Metadata {
+  const siteUrl = getSiteUrlFromEnv();
+  const metadataBase = siteUrl ? new URL(siteUrl) : undefined;
+
+  return {
+    metadataBase,
+    title: {
+      default: defaultTitle,
+      template: `%s | ${defaultTitle}`,
+    },
+    description: defaultDescription,
+    applicationName: defaultTitle,
+    alternates: {
+      canonical: "/",
+    },
+    openGraph: {
+      type: "website",
+      url: "/",
+      siteName: defaultTitle,
+      title: defaultTitle,
+      description: defaultDescription,
+      images: [
+        {
+          url: "/opengraph-image",
+          width: 1200,
+          height: 630,
+          alt: `${defaultTitle} - AI-Powered App Generation`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: defaultTitle,
+      description: defaultDescription,
+      images: ["/opengraph-image"],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
+    },
+  };
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+  const structuredDataSiteUrl = getSiteUrlOrLocalhost();
+
   return (
     <html lang="en">
       <head>
-        {/* Load GA */}
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-          strategy="afterInteractive"
+        <script
+          type="application/ld+json"
+          // JSON-LD should be present in initial HTML for crawlers.
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                name: defaultTitle,
+                url: structuredDataSiteUrl,
+                logo: `${structuredDataSiteUrl}/logo.png`,
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                name: defaultTitle,
+                url: structuredDataSiteUrl,
+              },
+            ]),
+          }}
         />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${GA_ID}', {
-              page_path: window.location.pathname,
-            });
-          `}
-        </Script>
+
+        {GA_ID ? (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_ID}', {
+                  page_path: window.location.pathname,
+                });
+              `}
+            </Script>
+          </>
+        ) : null}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen overflow-hidden custom-scrollbar`}
