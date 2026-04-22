@@ -35,10 +35,11 @@ export const Hero: React.FC<HeroProps> = ({
           </div>
 
           <h1 className="text-4xl md:text-7xl font-bold tracking-tight text-slate-900 dark:text-white leading-[1.1]">
-            Build Your Dream App{" "}
+            Build Your Dream App with{" "}
             <span className="bg-clip-text text-transparent bg-linear-to-tr dark:from-teal-200 dark:via-purple-300 dark:to-pink-400 from-teal-500 via-purple-600 to-pink-600 animate-text-shimmer bg-[length:200%_auto]">
-              in Seconds
-            </span>
+              Qwintly
+            </span>{" "}
+            in Seconds
           </h1>
 
           <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">

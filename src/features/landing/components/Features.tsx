@@ -51,7 +51,7 @@ export const Features: React.FC = () => {
             Powerful Features for Your Next Big Idea
           </h2>
           <p className="text-slate-600 dark:text-slate-400">
-            Everything you need to build, deploy, and scale your application without written a single line of code.
+            Everything you need to build, deploy, and scale your application without writing a single line of code.
           </p>
         </div>
 
