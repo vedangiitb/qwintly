@@ -5,7 +5,7 @@ import {
   MESSAGE_TYPES,
   ROLES,
 } from "@/features/chat/types/messages.types";
-import { MutableRefObject, useCallback } from "react";
+import { MutableRefObject, useCallback, useEffect, useRef } from "react";
 import { ChatContextValue } from "../chatContext";
 import { createChat } from "../../services/createChat.service";
 import { fetchChatInfo } from "../../services/fetchChatInfo.service";
@@ -26,6 +26,7 @@ import {
 } from "./message.utils";
 import { isSupportedUiToolCall } from "./toolCall.utils";
 import { useGenerate } from "@/features/generate/ui/hooks/useGenerate";
+import { subscribeToGenerationTerminalEvents } from "@/features/generate/ui/hooks/generationTerminalEvents";
 
 type ChatActionContext = Pick<
   ChatContextValue,
@@ -90,6 +91,8 @@ export const useChatActions = ({
     setSiteUrl: setReduxSiteUrl,
   } = useGenerate();
 
+  const terminalHydrationInFlightRef = useRef<Set<string>>(new Set());
+
   const hydrateChatInfo = useCallback(
     async (targetChatId: string) => {
       const { questionAnswers, plans, siteUrl, isGenerating } =
@@ -117,6 +120,26 @@ export const useChatActions = ({
       setReduxSiteUrl,
     ],
   );
+
+  useEffect(() => {
+    return subscribeToGenerationTerminalEvents((targetChatId) => {
+      if (!chatId || targetChatId !== chatId) return;
+      if (terminalHydrationInFlightRef.current.has(targetChatId)) return;
+
+      terminalHydrationInFlightRef.current.add(targetChatId);
+      void hydrateChatInfo(targetChatId)
+        .catch((err) => {
+          const message = toErrorMessage(
+            err,
+            "Failed to refresh chat info after generation.",
+          );
+          setError(message);
+        })
+        .finally(() => {
+          terminalHydrationInFlightRef.current.delete(targetChatId);
+        });
+    });
+  }, [chatId, hydrateChatInfo, setError]);
 
   const loadRecentChats = useCallback(
     async (params?: { limit?: number; cursor?: string }) => {
@@ -428,6 +451,12 @@ export const useChatActions = ({
     async (planId: string) => {
       clearError();
 
+      if (!chatId?.trim()) {
+        const message = "No active chat selected.";
+        setError(message);
+        return;
+      }
+
       try {
         await approveGenerationPlan(chatId, planId);
       } catch (err) {
@@ -435,7 +464,7 @@ export const useChatActions = ({
         setError(message);
       }
     },
-    [chatId, clearError, approveGenerationPlan, setError],
+    [chatId, clearError, approveGenerationPlan, hydrateChatInfo, setError],
   );
 
   return {
