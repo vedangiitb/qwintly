@@ -10,6 +10,7 @@ import {
 import { useGenerateContext } from "./useGenerateContext";
 import { GenerationStatusLog } from "../../generate.types";
 import { fetchChatInfo } from "@/features/chat/ui/services/fetchChatInfo.service";
+import { emitGenerationTerminalEvent } from "./generationTerminalEvents";
 
 const TERMINAL_EVENTS = new Set(["generation_completed", "generation_failed"]);
 
@@ -70,6 +71,7 @@ export const useGenerate = () => {
   } = useGenerateContext();
 
   const urlFetchInFlightRef = useRef<Set<string>>(new Set());
+  const terminalEventEmittedRef = useRef<Set<string>>(new Set());
 
   const hydrateSiteUrl = useCallback(
     async (chatId: string) => {
@@ -91,6 +93,12 @@ export const useGenerate = () => {
 
   const handleStreamEvent = useCallback(
     (streamEvent: GenerationStreamEvent, chatId: string) => {
+      const emitTerminalOnce = () => {
+        if (terminalEventEmittedRef.current.has(chatId)) return;
+        terminalEventEmittedRef.current.add(chatId);
+        emitGenerationTerminalEvent(chatId);
+      };
+
       if (streamEvent.type === "history") {
         const logs = streamEvent.payload.map(toHistoryLog);
         applyHistoryLogs(logs);
@@ -99,6 +107,7 @@ export const useGenerate = () => {
         setGenerating(lastEventType ? !isTerminal : true);
         if (isTerminal) {
           void hydrateSiteUrl(chatId);
+          emitTerminalOnce();
         }
         return;
       }
@@ -110,6 +119,7 @@ export const useGenerate = () => {
         setGenerating(!isTerminal);
         if (isTerminal) {
           void hydrateSiteUrl(chatId);
+          emitTerminalOnce();
         }
         return;
       }
@@ -121,10 +131,17 @@ export const useGenerate = () => {
         setGenerating(!isTerminal);
         if (isTerminal) {
           void hydrateSiteUrl(chatId);
+          emitTerminalOnce();
         }
       }
     },
-    [applyHistoryLogs, applyRealtimeLog, hydrateSiteUrl, setCurrentLog, setGenerating],
+    [
+      applyHistoryLogs,
+      applyRealtimeLog,
+      hydrateSiteUrl,
+      setCurrentLog,
+      setGenerating,
+    ],
   );
 
   const approvePlan = useCallback(
@@ -153,6 +170,7 @@ export const useGenerate = () => {
   const streamGenerationStatus = useCallback(
     async (params: { chatId: string; signal?: AbortSignal }) => {
       const { chatId } = params;
+      terminalEventEmittedRef.current.delete(chatId);
 
       setGenerateError(null);
       setActiveChatId(chatId);
