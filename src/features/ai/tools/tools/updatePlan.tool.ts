@@ -4,6 +4,6 @@ import { UpdatePlanSchema } from "../schemas/updatePlan.schema";
 export const updatePlanTool = tool(async ({ tasks, status }) => ({ tasks, status }), {
   name: "update_plan",
   description:
-    "Create or update the structured implementation plan for the project.",
+    "Create or update the structured implementation plan for the project (tasks include a short name + description).",
   schema: UpdatePlanSchema,
 });

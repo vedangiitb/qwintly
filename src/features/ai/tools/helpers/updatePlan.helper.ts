@@ -13,6 +13,7 @@ type UpdatePlanArgs = {
     task_id?: unknown;
     task_type?: unknown;
     intent?: unknown;
+    task?: unknown;
     description?: unknown;
   }>;
 };
@@ -55,6 +56,7 @@ export class UpdatePlanToolHelper {
       task_id: typeof task.task_id === "string" ? task.task_id : "",
       task_type: this.normalizeTaskType(task.task_type),
       intent: this.normalizeIntent(task.intent),
+      task: typeof task.task === "string" ? task.task : "",
       description: typeof task.description === "string" ? task.description : "",
     }));
   }
@@ -62,7 +64,7 @@ export class UpdatePlanToolHelper {
   summarize(args: unknown): string {
     const tasks = this.parse(args);
     const descriptions = tasks
-      .map((task) => task.description.trim())
+      .map((task) => (task.task ? `${task.task}: ${task.description}` : task.description).trim())
       .filter(Boolean);
 
     if (!descriptions.length) return "No plan tasks provided";

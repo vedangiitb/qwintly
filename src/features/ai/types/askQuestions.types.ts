@@ -5,6 +5,7 @@ export interface Question {
   question: string;
   type: QuestionType;
   options: string[];
+  defaultAnswer?: string | string[];
 }
 
 export interface UserResponse {

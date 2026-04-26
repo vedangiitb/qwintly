@@ -59,6 +59,38 @@ export function Questionnaire({ questionSet, fallbackText }: QuestionnaireProps)
       response: responseMap[question.id] ?? "",
     }));
 
+  const resolveSkipResponse = (
+    question: QuestionAnswers["questions"][number],
+  ): string | string[] => {
+    const fallbackOption = question.options?.[0] ?? "";
+
+    if (question.type === "single_select") {
+      if (
+        typeof question.defaultAnswer === "string" &&
+        question.options?.includes(question.defaultAnswer)
+      ) {
+        return question.defaultAnswer;
+      }
+
+      return fallbackOption;
+    }
+
+    if (question.type === "multi_select") {
+      if (Array.isArray(question.defaultAnswer)) {
+        const filtered = question.defaultAnswer.filter(
+          (value): value is string =>
+            typeof value === "string" && question.options?.includes(value),
+        );
+
+        if (filtered.length > 0) return filtered;
+      }
+
+      return fallbackOption ? [fallbackOption] : [];
+    }
+
+    return "";
+  };
+
   const onSubmit = async () => {
     if (!questionSet) return;
     setSubmitting(true);
@@ -79,7 +111,7 @@ export function Questionnaire({ questionSet, fallbackText }: QuestionnaireProps)
       const skippedResponses = questionSet.questions.reduce<
         Record<string, string | string[]>
       >((acc, question) => {
-        acc[question.id] = question.type === "multi_select" ? [] : "";
+        acc[question.id] = resolveSkipResponse(question);
         return acc;
       }, {});
 
@@ -129,9 +161,9 @@ export function Questionnaire({ questionSet, fallbackText }: QuestionnaireProps)
   const currentQuestion = questionSet.questions[currentQuestionIndex];
   const isFirstQuestion = currentQuestionIndex === 0;
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
-  const skipValue = currentQuestion.type === "multi_select" ? [] : "";
 
   const onSkipCurrent = async () => {
+    const skipValue = resolveSkipResponse(currentQuestion);
     setQuestionResponse(currentQuestion.id, skipValue);
 
     if (isLastQuestion) {

@@ -8,6 +8,7 @@ type AskQuestionsArgs = {
     question?: unknown;
     type?: unknown;
     options?: unknown;
+    defaultAnswer?: unknown;
   }>;
 };
 
@@ -49,6 +50,7 @@ export class AskQuestionsToolHelper {
           typeof question.question === "string" ? question.question : "",
         type,
         options: [],
+        defaultAnswer: undefined,
       };
 
       normalizedQuestion.options = Array.isArray(question.options)
@@ -56,6 +58,29 @@ export class AskQuestionsToolHelper {
             (option): option is string => typeof option === "string",
           )
         : [];
+
+      const normalizedOptions = normalizedQuestion.options;
+      const rawDefaultAnswer = question.defaultAnswer;
+
+      if (type === "single_select") {
+        if (
+          typeof rawDefaultAnswer === "string" &&
+          normalizedOptions.includes(rawDefaultAnswer)
+        ) {
+          normalizedQuestion.defaultAnswer = rawDefaultAnswer;
+        }
+      } else if (type === "multi_select") {
+        if (Array.isArray(rawDefaultAnswer)) {
+          const filteredDefaults = rawDefaultAnswer.filter(
+            (value): value is string =>
+              typeof value === "string" && normalizedOptions.includes(value),
+          );
+
+          if (filteredDefaults.length > 0) {
+            normalizedQuestion.defaultAnswer = filteredDefaults;
+          }
+        }
+      }
       console.log("Normalized question", normalizedQuestion);
 
       return normalizedQuestion;

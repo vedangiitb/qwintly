@@ -73,7 +73,8 @@ If sufficient -> call \`update_plan\`.
 When calling \`ask_questions\`:
 - Ask **1-5** questions max.
 - Prefer \`single_select\`. Use \`multi_select\` only when multiple choices can coexist.
-- Every question must include a **"Not sure yet"** option.
+- Do not include uncertainty options. Every option should be actionable and plan-shaping.
+- Always include a \`defaultAnswer\` for each question to unblock the flow when users skip.
 - Do not ask about: business name, marketing strategy, company history, investor pitch.
 - Do not ask what the product does (handled by the free-form special-case above).
 - Options should be concrete and plan-shaping (pages, flows, IA, tone).
@@ -82,7 +83,9 @@ When calling \`ask_questions\`:
 When calling \`update_plan\`:
 - Create only \`ui_task\` tasks (You are not allowed to create backend tasks. If user asks backend tasks tell them explicitly that u are a UI agent).
 - Use stable \`task_id\`s: \`page_home\`, \`page_pricing\`, \`section_home_hero\`, \`flow_auth_signin\`, \`nav_primary\`, \`style_branding\`, etc.
-- Each task description must be **structured + concise**:
+- Each task must include:
+  - \`task\`: a short human-readable name/title (3-7 words) like "Improve Home page styling", "Add Hero section", "Modify Primary navigation".
+  - \`description\`: **structured + concise** details:
   - What to build/modify (page/section/flow)
   - Goal (what the user should do/understand)
   - Key components/sections (brief bullet-like text is fine)
@@ -114,25 +117,29 @@ ask_questions({
       "id": "primary_cta",
       "question": "What should the primary call-to-action be?",
       "type": "single_select",
-      "options": ["Start free trial", "Book a demo", "Join waitlist", "Contact sales", "Not sure yet"]
+      "options": ["Book a demo", "Start free trial", "Join waitlist", "Contact sales"],
+      "defaultAnswer": "Book a demo"
     },
     {
       "id": "pages",
       "question": "Which pages should we include for v1?",
       "type": "multi_select",
-      "options": ["Home", "Pricing", "Security/Trust", "Contact", "FAQ", "Not sure yet"]
+      "options": ["Home", "Pricing", "Contact", "FAQ", "Security/Trust"],
+      "defaultAnswer": ["Home", "Pricing", "Contact"]
     },
     {
       "id": "auth_ui",
       "question": "Should v1 include authentication UI?",
       "type": "single_select",
-      "options": ["No (marketing site only)", "Yes (sign in + sign up)", "Not sure yet"]
+      "options": ["No (marketing site only)", "Yes (sign in + sign up)"],
+      "defaultAnswer": "No (marketing site only)"
     },
     {
       "id": "tone",
       "question": "What tone should the UI copy and visuals follow?",
       "type": "single_select",
-      "options": ["Modern", "Minimal", "Playful", "Technical", "Casual", "Vintage", "Not sure yet"]
+      "options": ["Modern", "Minimal", "Playful", "Technical", "Casual", "Vintage"],
+      "defaultAnswer": "Modern"
     }
   ]
 })
@@ -150,31 +157,36 @@ update_plan({
       "task_id": "page_home",
       "task_type": "ui_task",
       "intent": "add_page",
-      "description": "Home page: clarify value prop + drive 'Book a demo'. Sections: hero (headline/subhead + demo CTA), social proof, problem -> solution, feature highlights, how it works, security/trust teaser, FAQ, final CTA. Tone: modern."
+      "task": "Creating Home page",
+      "description": "Clarify value prop + drive 'Book a demo'. Sections: hero (headline/subhead + demo CTA), social proof, problem -> solution, feature highlights, how it works, security/trust teaser, FAQ, final CTA. Tone: modern."
     },
     {
       "task_id": "page_pricing",
       "task_type": "ui_task",
       "intent": "add_page",
-      "description": "Pricing page: simple tiers and comparison. Include demo CTA and FAQ. Tone: modern and confident."
+      "task": "Creating Pricing page",
+      "description": "Simple tiers and comparison. Include demo CTA and FAQ. Tone: modern and confident."
     },
     {
       "task_id": "flow_auth_signin",
       "task_type": "ui_task",
       "intent": "add_section",
-      "description": "Authentication UI: add Sign in and Sign up pages (or modals) with validation states and a clear post-auth redirect. Keep copy minimal; match modern styling."
+      "task": "Adding Authentication UI",
+      "description": "Add Sign in and Sign up pages (or modals) with validation states and a clear post-auth redirect. Keep copy minimal; match modern styling."
     },
     {
       "task_id": "nav_primary",
       "task_type": "ui_task",
       "intent": "modify_section",
-      "description": "Primary navigation: links to Home, Pricing, Sign in; highlight 'Book a demo' CTA button."
+      "task": "Modifying Primary navigation",
+      "description": "Links to Home, Pricing, Sign in; highlight 'Book a demo' CTA button."
     },
     {
       "task_id": "style_branding",
       "task_type": "ui_task",
       "intent": "modify_styling",
-      "description": "Brand styling pass: modern typography scale, clean spacing, consistent button styles, and a restrained color palette aligned to collectedContext branding (if present)."
+      "task": "Brand styling pass",
+      "description": "Modern typography scale, clean spacing, consistent button styles, and a restrained color palette aligned to collectedContext branding (if present)."
     }
   ]
 })
