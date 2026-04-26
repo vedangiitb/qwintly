@@ -65,5 +65,5 @@ jobs:
             --platform=managed \
             --service-account=${{ secrets.RUNTIME_SERVICE_ACCOUNT }} \
             --allow-unauthenticated \
-            --set-env-vars=NEXT_PUBLIC_GA_ID=${{ secrets.NEXT_PUBLIC_GA_ID }},NEXT_PUBLIC_SITE_URL=${{ vars.NEXT_PUBLIC_SITE_URL }} \
-            --set-secrets=GEMINI_API_KEY=gemini-api-key:latest,NEXT_PUBLIC_SUPABASE_URL=supabase-url:latest,NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=supabase-publishable-key:latest,UPSTASH_REDIS_REST_TOKEN_GEN_EVENTS=upstash-redis-rest-token-gen-events:latest,UPSTASH_REDIS_REST_URL_GEN_EVENTS=upstash-redis-rest-url-gen-events:latest,PUBSUB_TOPIC_WEB_GEN=pubsub-topic-web-gen:latest
+            --set-env-vars=NEXT_PUBLIC_GA_ID=${{ secrets.NEXT_PUBLIC_GA_ID }},NEXT_PUBLIC_SITE_URL=${{ vars.NEXT_PUBLIC_SITE_URL }},NEXT_PUBLIC_SUPABASE_URL=${{vars.NEXT_PUBLIC_SUPABASE_URL}},NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${{vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}},UPSTASH_REDIS_REST_URL_GEN_EVENTS=${{vars.UPSTASH_REDIS_REST_URL_GEN_EVENTS}},PUBSUB_TOPIC_WEB_GEN=${{vars.PUBSUB_TOPIC_WEB_GEN}} \
+            --set-secrets=GEMINI_API_KEY=gemini-api-key:latest,UPSTASH_REDIS_REST_TOKEN_GEN_EVENTS=upstash-redis-rest-token-gen-events:latest
