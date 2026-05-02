@@ -11,5 +11,7 @@ export const POST = postHandler(async ({ body, token }) => {
 
   const apiKey = typeof body?.apiKey === "string" ? body.apiKey : "";
 
-  return updateKeyService({ keyId, apiKey }, token);
+  const provider = typeof body?.provider === "string" ? body.provider : "";
+
+  return updateKeyService({ keyId, apiKey, provider }, token);
 });

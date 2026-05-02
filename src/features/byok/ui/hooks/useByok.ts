@@ -44,7 +44,7 @@ export function useByok() {
     setIsSubmitting(true);
     try {
       if (keyId) {
-        await updateProviderKey({ keyId, apiKey });
+        await updateProviderKey({ keyId, provider, apiKey });
         toast.success(`Updated ${provider} key`);
       } else {
         await createProviderKey({ provider, apiKey });
@@ -54,7 +54,11 @@ export function useByok() {
       await loadKeys();
     } catch (error) {
       console.error("Failed to save BYOK key", error);
-      toast.error(`Could not save ${provider} key.`);
+      const message =
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : `Could not save ${provider} key.`;
+      toast.error(message);
       throw error;
     } finally {
       setIsSubmitting(false);

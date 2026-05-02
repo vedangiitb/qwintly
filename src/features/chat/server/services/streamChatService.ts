@@ -1,10 +1,12 @@
 import { WebsiteAgent } from "@/features/ai/flows/aiChatAgent/graph";
-import { MessagesRepository } from "../repositories/messages.repository";
 import { ROLES } from "../../types/messages.types";
+import { MessagesRepository } from "../repositories/messages.repository";
 import { persistMessage } from "./persistMessage.service";
+import { checkUserMessageLimit } from "./rateLimit.service";
 
 interface StreamChatDeps {
   chatId: string;
+  userId: string;
   userMessage: string;
   messageRepo: MessagesRepository;
   aiAgent: WebsiteAgent;
@@ -12,11 +14,17 @@ interface StreamChatDeps {
 
 export const streamChatService = async ({
   chatId,
+  userId,
   userMessage,
   messageRepo,
   aiAgent,
 }: StreamChatDeps) => {
   try {
+    /*
+     * Check if user is within daily limits
+     */
+    await checkUserMessageLimit(userId);
+
     /*
      * Persist user message
      */
