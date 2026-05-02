@@ -4,20 +4,53 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/ui/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { ArrowRight, KeyRound, LogOut, MailCheck, MailWarning, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  KeyRound,
+  LogOut,
+  MailCheck,
+  MailWarning,
+  ShieldCheck,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import {
+  type DailyMessagesResponse,
+  fetchDailyMessages,
+} from "@/features/auth/ui/services/accountMetrics.service";
+import { getLocalTimeStringForNextUTCMidnight } from "@/features/auth/ui/helpers/dailyUsage.helpers";
 
 export default function Account() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const [dailyMessages, setDailyMessages] =
+    useState<DailyMessagesResponse | null>(null);
+  const [dailyMessagesLoading, setDailyMessagesLoading] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
     }
   }, [loading, router, user]);
+
+  useEffect(() => {
+    async function loadDailyMessages() {
+      if (loading || !user) return;
+
+      setDailyMessagesLoading(true);
+      try {
+        const data = await fetchDailyMessages();
+        setDailyMessages(data);
+      } catch {
+        setDailyMessages(null);
+      } finally {
+        setDailyMessagesLoading(false);
+      }
+    }
+
+    loadDailyMessages();
+  }, [loading, user?.id]);
 
   if (loading) {
     return (
@@ -72,7 +105,9 @@ export default function Account() {
                       ) : (
                         <MailWarning className="size-3.5" />
                       )}
-                      {user.emailVerified ? "Email verified" : "Email unverified"}
+                      {user.emailVerified
+                        ? "Email verified"
+                        : "Email unverified"}
                     </span>
                   </div>
                   <p className="text-sm text-stone-600 dark:text-stone-300">
@@ -131,11 +166,15 @@ export default function Account() {
               </div>
               <div className="rounded-2xl border border-white/80 bg-white/65 p-4 dark:border-stone-800 dark:bg-stone-900/70">
                 <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
-                  Account
+                  Messages today (UTC)
                 </p>
-                <p className="mt-2 text-2xl font-semibold">Supabase</p>
+                <p className="mt-2 text-2xl font-semibold">
+                  {dailyMessagesLoading
+                    ? "Loading…"
+                    : `${dailyMessages?.count ?? 0}/${dailyMessages?.limit ?? 50}`}
+                </p>
                 <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
-                  Session-based authentication.
+                  Resets at {getLocalTimeStringForNextUTCMidnight()}.
                 </p>
               </div>
               <div className="rounded-2xl border border-white/80 bg-white/65 p-4 dark:border-stone-800 dark:bg-stone-900/70">
@@ -158,8 +197,8 @@ export default function Account() {
                   Bring your own key (BYOK)
                 </h2>
                 <p className="mt-2 text-sm leading-7 text-stone-600 dark:text-stone-300">
-                  Add your Gemini or OpenAI API key to unlock higher limits and keep
-                  your provider billing under your control.
+                  Add your Gemini or OpenAI API key to unlock higher limits and
+                  keep your provider billing under your control.
                 </p>
                 <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                   <Button
