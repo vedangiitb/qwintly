@@ -7,13 +7,14 @@ import { verifyToken } from "@/lib/verifyToken";
 export const POST = postHandler(async ({ body, token }) => {
   const { chatId, message } = body;
 
-  await verifyToken(token);
+  const userId = await verifyToken(token);
 
   const messageRepo = new MessagesRepository(token);
   const aiAgent = buildWebsiteAgent(token);
 
   const { agentMessageId, response, toolCall } = await streamChatService({
     chatId,
+    userId,
     userMessage: message,
     messageRepo,
     aiAgent,

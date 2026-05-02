@@ -41,10 +41,15 @@ export default function UserPopover() {
         sideOffset={7}
         className="ml-2 p-4 rounded-3xl shadow-2xl border border-white/10 glass-popover min-w-57.5 bg-white/20 backdrop-blur-xl"
       >
-        <div className="flex items-center gap-2 text-foreground pb-2 mb-2 border-b border-white/10">
+        <button
+          type="button"
+          aria-label="Go to account"
+          onClick={() => router.push("/account")}
+          className="flex w-full items-center gap-2 text-foreground pb-2 mb-2 border-b border-white/10 rounded-lg -mx-1 px-1 py-1 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
+        >
           <CircleUser className="h-4 w-4 text-chart-2" />
           <p className="text-[15px] font-semibold truncate">{currentUser}</p>
-        </div>
+        </button>
         <div className="flex flex-col gap-1 text-foreground/90 mb-2">
           <PrefDialog />
           <SettingsDialog />
