@@ -57,7 +57,10 @@ export default function Generate({ params }: Props) {
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <ResizablePanelGroup direction={isMobile ? "vertical" : "horizontal"} className="h-full flex">
+      <ResizablePanelGroup
+        direction={isMobile ? "vertical" : "horizontal"}
+        className="h-full flex"
+      >
         <ResizablePanel
           className={`flex flex-col flex-1 overflow-y-auto px-2 py-4 h-full ${!chatVisible ? "hidden" : ""}`}
         >
@@ -84,7 +87,10 @@ export default function Generate({ params }: Props) {
           className={`transition-all duration-300 bg-border/50 hover:bg-border/80 ${!chatVisible ? "hidden" : ""} ${isMobile ? "h-1.5 hover:h-2 w-full" : "w-1.5 hover:w-2 h-full"}`}
         />
 
-        <ResizablePanel minSize={40} className="flex flex-col flex-1 p-3 lg:p-4 bg-muted/10">
+        <ResizablePanel
+          minSize={isMobile ? 0 : 30}
+          className="flex flex-col flex-1 bg-muted/10"
+        >
           <PreviewPanel />
         </ResizablePanel>
       </ResizablePanelGroup>
