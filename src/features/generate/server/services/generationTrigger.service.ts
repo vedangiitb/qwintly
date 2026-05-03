@@ -1,5 +1,6 @@
 import { supabaseServer } from "@/lib/supabase-server";
 import { verifyToken } from "@/lib/verifyToken";
+import { UserKeysRepository } from "@/features/byok/server/repositories/userKeys.repository";
 import { PubSub } from "@google-cloud/pubsub";
 import jwt from "jsonwebtoken";
 
@@ -12,6 +13,9 @@ export type GenerationTriggerResult = {
   success: true;
   messageId: string;
 };
+
+export const BYOK_REQUIRED_MESSAGE =
+  "API key required. Please add your API key in BYOK settings.";
 
 type GenerationPublisher = {
   publish: (payload: GenerationTriggerPayload) => Promise<string>;
@@ -52,6 +56,13 @@ export const generationTriggerService = async (
 
     const userId = await verifyToken(token);
 
+    const hasKey = await new UserKeysRepository(token).hasAnyKey();
+    if (!hasKey) {
+      const error = new Error(BYOK_REQUIRED_MESSAGE);
+      (error as Error & { statusCode?: number }).statusCode = 403;
+      throw error;
+    }
+
     const { data, error } = await supabase.rpc("get_chat_request_type", {
       p_chat_id: chatId,
       p_user_id: userId,
@@ -83,11 +94,17 @@ export const generationTriggerService = async (
     const messageId = await publisher.publish(payload);
     return { success: true, messageId };
   } catch (error) {
+    const err = error as Error & { statusCode?: number };
     console.error("Pub/Sub publish failed", {
       chatId,
-      message: error.message,
-      stack: error.stack,
+      message: err?.message,
+      stack: err?.stack,
     });
-    throw new Error(error.message);
+
+    const wrapped = new Error(err?.message || "Failed to trigger generation.");
+    if (typeof err?.statusCode === "number") {
+      (wrapped as Error & { statusCode?: number }).statusCode = err.statusCode;
+    }
+    throw wrapped;
   }
 };

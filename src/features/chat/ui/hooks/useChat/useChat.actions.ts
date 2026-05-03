@@ -462,6 +462,7 @@ export const useChatActions = ({
       } catch (err) {
         const message = toErrorMessage(err, "Failed to approve plan.");
         setError(message);
+        throw err;
       }
     },
     [chatId, clearError, approveGenerationPlan, hydrateChatInfo, setError],

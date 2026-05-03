@@ -11,18 +11,21 @@ export class GenerateClientError extends Error {
   public readonly endpoint: string;
   public readonly operation: string;
   public readonly cause: unknown;
+  public readonly statusCode?: number;
 
   constructor(params: {
     message: string;
     endpoint: string;
     operation: string;
     cause?: unknown;
+    statusCode?: number;
   }) {
     super(params.message);
     this.name = "GenerateClientError";
     this.endpoint = params.endpoint;
     this.operation = params.operation;
     this.cause = params.cause;
+    this.statusCode = params.statusCode;
   }
 }
 
@@ -265,6 +268,11 @@ export class GenerateClient implements GenerateClientContract {
         throw error;
       }
 
+      const statusCode =
+        typeof (error as Error & { statusCode?: number })?.statusCode === "number"
+          ? (error as Error & { statusCode?: number }).statusCode
+          : undefined;
+
       throw new GenerateClientError({
         message: toClientErrorMessage(
           error,
@@ -273,6 +281,7 @@ export class GenerateClient implements GenerateClientContract {
         endpoint,
         operation,
         cause: error,
+        statusCode,
       });
     }
   }

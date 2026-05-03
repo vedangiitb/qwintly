@@ -14,6 +14,25 @@ Table: user_api_keys
 
 export class UserKeysRepository extends DBRepository {
   /**
+   * Returns true when the user has at least one saved key.
+   * Uses safe view.
+   */
+  async hasAnyKey(): Promise<boolean> {
+    const supabase = this.client;
+
+    const { data, error } = await supabase
+      .from("user_api_keys_safe")
+      .select("id")
+      .limit(1);
+
+    if (error) {
+      throw new Error(`Failed to check user keys: ${error.message}`);
+    }
+
+    return Array.isArray(data) && data.length > 0;
+  }
+
+  /**
    * Fetch metadata only (NO encrypted_key)
    * Uses safe view
    */
@@ -32,7 +51,6 @@ export class UserKeysRepository extends DBRepository {
     return data.map((row) => ({
       id: row.id,
       provider: row.provider,
-      isActive: row.is_active,
       createdAt: row.created_at,
       updatedAt: row.updated_at ? row.updated_at : null,
       lastUsedAt: row.last_used_at ? row.last_used_at : null,
