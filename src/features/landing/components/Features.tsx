@@ -44,35 +44,36 @@ const features = [
 
 export const Features: React.FC = () => {
   return (
-    <section className="py-24 bg-slate-50/50 dark:bg-slate-900/50">
-      <div className="container mx-auto px-4">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
-            Powerful Features for Your Next Big Idea
-          </h2>
-          <p className="text-slate-600 dark:text-slate-400">
-            Everything you need to build, deploy, and scale your application without writing a single line of code.
-          </p>
-        </div>
+    <section className="border-t border-stone-200/70 pt-16 dark:border-stone-800/70">
+      <div className="mx-auto mb-12 max-w-2xl text-center">
+        <h2 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-5xl dark:text-stone-50">
+          Powerful Features for Your Next Big Idea
+        </h2>
+        <p className="mt-4 text-sm leading-7 text-stone-600 dark:text-stone-300">
+          Everything you need to build, deploy, and scale your application
+          without writing a single line of code.
+        </p>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {features.map((feature, index) => (
+          <div
+            key={index}
+            className="group rounded-3xl border border-stone-200/80 bg-white/55 p-6 shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-md dark:border-stone-800/70 dark:bg-stone-950/30"
+          >
             <div
-              key={index}
-              className="p-8 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+              className={`mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/70 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110 dark:border-stone-800/70 dark:bg-stone-900/60 ${feature.color}`}
             >
-              <div className={`w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 ${feature.color}`}>
-                <feature.icon className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">
-                {feature.title}
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm">
-                {feature.description}
-              </p>
+              <feature.icon className="h-6 w-6" />
             </div>
-          ))}
-        </div>
+            <h3 className="text-lg font-semibold tracking-tight text-stone-900 dark:text-stone-50">
+              {feature.title}
+            </h3>
+            <p className="mt-2 text-sm leading-7 text-stone-600 dark:text-stone-300">
+              {feature.description}
+            </p>
+          </div>
+        ))}
       </div>
     </section>
   );

@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useChat } from "../hooks/useChat";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const TASK_TYPE_LABEL: Record<Plan["tasks"][number]["task_type"], string> = {
   ui_task: "UI",
@@ -37,6 +39,7 @@ export function PlanReview({
   fallbackText?: string;
 }) {
   const { approvePlan: onApprove } = useChat();
+  const router = useRouter();
   const isUpdatedPlan = plan?.status === PLAN_STATUS.UPDATED;
   const [isExpanded, setIsExpanded] = useState(!isUpdatedPlan);
   const [expandedTaskMap, setExpandedTaskMap] = useState<Record<string, boolean>>(
@@ -61,6 +64,30 @@ export function PlanReview({
   const intentCount = Object.keys(groupedTasks).length;
   const taskCount = plan.tasks.length;
   const shouldShowApprove = plan?.status === PLAN_STATUS.PENDING;
+
+  const handleApprove = async () => {
+    try {
+      await onApprove(plan.id);
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : "Failed to approve plan.";
+
+      const statusCode =
+        typeof (error as Error & { statusCode?: number })?.statusCode === "number"
+          ? (error as Error & { statusCode?: number }).statusCode
+          : undefined;
+
+      if (statusCode === 403) {
+        toast.error("You haven't added an API key. Redirecting to BYOK…");
+        router.push("/byok");
+        return;
+      }
+
+      toast.error(message);
+    }
+  };
 
   return (
     <div className="w-full md:max-w-[90%] space-y-2">
@@ -175,15 +202,15 @@ export function PlanReview({
         </CardContent>
       </Card>
 
-      {shouldShowApprove ? (
-        <Card>
-          <CardContent className="flex justify-end px-4">
-            <Button size="sm" onClick={() => onApprove(plan.id)}>
-              Approve Plan
-            </Button>
-          </CardContent>
-        </Card>
-      ) : null}
+       {shouldShowApprove ? (
+         <Card>
+           <CardContent className="flex justify-end px-4">
+             <Button size="sm" onClick={handleApprove}>
+               Approve Plan
+             </Button>
+           </CardContent>
+         </Card>
+       ) : null}
     </div>
   );
 }

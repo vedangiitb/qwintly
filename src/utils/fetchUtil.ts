@@ -44,7 +44,9 @@ export async function fetchUtil<T>(
   }
 
   if (!response.ok || !json.success) {
-    throw new Error(json?.error || "Unexpected server error occurred.");
+    const error = new Error(json?.error || "Unexpected server error occurred.");
+    (error as Error & { statusCode?: number }).statusCode = response.status;
+    throw error;
   }
 
   return json;

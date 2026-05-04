@@ -65,29 +65,30 @@ export const LandingPage: React.FC = () => {
   };
 
   return (
-    <div className="h-full text-foreground flex bg-white dark:bg-slate-950">
+    <div className="h-full flex text-stone-900 dark:text-stone-100">
       <SideBar
         sidebarExpanded={showSidebar}
         setSidebarExpanded={setShowSidebar}
       />
 
-      <div className="w-full flex flex-col h-full overflow-y-auto custom-scrollbar">
-        <main className="flex-1">
-          <Hero 
-            prompt={prompt}
-            setPrompt={setPrompt}
-            submitPrompt={submitPrompt}
-            isGeneratingResponse={isGeneratingResponse}
-            user={user}
-          />
-          <Features />
-          <HowItWorks />
-          
-          <footer className="py-12 border-t border-slate-200 dark:border-slate-800 text-center">
-             <p className="text-slate-500 dark:text-slate-400 text-sm">
-                &copy; {new Date().getFullYear()} Qwintly. Built with AI for the future of development.
-             </p>
-          </footer>
+      <div className="w-full flex flex-col h-full min-h-0 overflow-y-auto custom-scrollbar bg-[linear-gradient(180deg,#f7f3ea_0%,#f2efe6_55%,#ece8df_100%)] dark:bg-[linear-gradient(180deg,#111111_0%,#171717_55%,#1c1917_100%)]">
+        <main className="flex-1 min-h-0">
+          <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14 space-y-16">
+            <Hero
+              prompt={prompt}
+              setPrompt={setPrompt}
+              submitPrompt={submitPrompt}
+              isGeneratingResponse={isGeneratingResponse}
+              user={user}
+            />
+            <Features />
+            <HowItWorks />
+
+            <footer className="border-t border-stone-200/70 py-10 text-center text-sm text-stone-500 dark:border-stone-800/70 dark:text-stone-400">
+              &copy; {new Date().getFullYear()} Qwintly. Built with AI for the
+              future of development.
+            </footer>
+          </div>
         </main>
       </div>
     </div>

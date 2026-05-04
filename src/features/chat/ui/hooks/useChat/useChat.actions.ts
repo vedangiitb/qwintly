@@ -227,9 +227,10 @@ export const useChatActions = ({
   );
 
   const appendUserMessage = useCallback(
-    (type: Message["type"], content: string) => {
+    (type: Message["type"], content: string, opts?: { id?: string }) => {
+      const messageId = opts?.id ?? `temp-user-${Date.now()}`;
       const userMessage: Message = {
-        id: `temp-user-${Date.now()}`,
+        id: messageId,
         role: ROLES.USER,
         type,
         content,
@@ -237,6 +238,7 @@ export const useChatActions = ({
       };
       setPrompt("");
       setMessages((prev) => dedupeAndSortMessages([...prev, userMessage]));
+      return messageId;
     },
     [setPrompt, setMessages],
   );
@@ -458,13 +460,38 @@ export const useChatActions = ({
       }
 
       try {
-        await approveGenerationPlan(chatId, planId);
+        setIsGeneratingResponse(true);
+        const tempMessageId = appendUserMessage(
+          MESSAGE_TYPES.PLAN,
+          "Plan approved.",
+        );
+        const result = await approveGenerationPlan(chatId, planId);
+        setMessages((prev) =>
+          prev.map((message) =>
+            message.id === tempMessageId
+              ? { ...message, id: result.approvalMessageId }
+              : message,
+          ),
+        );
+        await hydrateChatInfo(chatId);
       } catch (err) {
         const message = toErrorMessage(err, "Failed to approve plan.");
         setError(message);
+        throw err;
+      } finally {
+        setIsGeneratingResponse(false);
       }
     },
-    [chatId, clearError, approveGenerationPlan, hydrateChatInfo, setError],
+    [
+      chatId,
+      clearError,
+      setIsGeneratingResponse,
+      appendUserMessage,
+      approveGenerationPlan,
+      hydrateChatInfo,
+      setMessages,
+      setError,
+    ],
   );
 
   return {

@@ -9,22 +9,6 @@ const TERMINAL_EVENTS = new Set(["generation_completed", "generation_failed"]);
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const compareStreamIds = (a: string, b: string): number => {
-  const [aMsRaw, aSeqRaw = "0"] = a.split("-");
-  const [bMsRaw, bSeqRaw = "0"] = b.split("-");
-  const aMs = Number(aMsRaw);
-  const bMs = Number(bMsRaw);
-  if (Number.isFinite(aMs) && Number.isFinite(bMs) && aMs !== bMs) {
-    return aMs - bMs;
-  }
-  const aSeq = Number(aSeqRaw);
-  const bSeq = Number(bSeqRaw);
-  if (Number.isFinite(aSeq) && Number.isFinite(bSeq) && aSeq !== bSeq) {
-    return aSeq - bSeq;
-  }
-  return a.localeCompare(b);
-};
-
 export const createGenerationStatusStream = (
   chatId: string,
   token: string,
@@ -52,7 +36,20 @@ export const createGenerationStatusStream = (
         controller.enqueue(encoder.encode(": keep-alive\r\n\r\n"));
       };
 
-      const send = (params: { type: string; payload: unknown; id?: string }) => {
+      const keepAliveIntervalMs = 15000;
+      let lastKeepAliveAt = 0;
+      const keepAliveIfDue = () => {
+        const now = Date.now();
+        if (now - lastKeepAliveAt < keepAliveIntervalMs) return;
+        lastKeepAliveAt = now;
+        keepAlive();
+      };
+
+      const send = (params: {
+        type: string;
+        payload: unknown;
+        id?: string;
+      }) => {
         if (closed) return;
 
         const lines: string[] = [];
@@ -79,9 +76,14 @@ export const createGenerationStatusStream = (
         console.log(`[SSE] Starting stream for chatId: ${chatId}`);
 
         // Prime the stream to bypass buffering proxies
-        controller.enqueue(encoder.encode(": " + " ".repeat(1024) + "\r\n\r\n"));
+        controller.enqueue(
+          encoder.encode(": " + " ".repeat(1024) + "\r\n\r\n"),
+        );
 
-        send({ type: "connection", payload: { status: "initializing", chatId } });
+        send({
+          type: "connection",
+          payload: { status: "initializing", chatId },
+        });
 
         let genId = "";
         const startTime = Date.now();
@@ -100,41 +102,64 @@ export const createGenerationStatusStream = (
             return;
           }
 
-          keepAlive();
+          keepAliveIfDue();
           await sleep(2500);
         }
 
         if (closed) return;
 
-        send({ type: "connection", payload: { status: "ready", chatId, genId } });
+        send({
+          type: "connection",
+          payload: { status: "ready", chatId, genId },
+        });
 
-        const history = await statusRepository.fetchGenerationHistory(chatId, genId);
+        const history = await statusRepository.fetchGenerationHistory(
+          chatId,
+          genId,
+        );
         send({ type: "history", payload: history });
 
         const streamKey = `chat:${chatId}:gen:${genId}:events`;
+        const stateKey = `chat:${chatId}:state:${genId}`;
 
-        // Tail event (helps when DB history is stale or empty)
-        const tail = (await redis.xrevrange<RedisStreamFields>(
-          streamKey,
-          "+",
-          "-",
-          1,
-        )) as Record<string, RedisStreamFields>;
-
-        const tailEntries = Object.entries(tail);
         let lastId = "0-0";
+        let lastSeqSeen = 0;
 
-        if (tailEntries.length) {
-          const [tailId, tailFields] = tailEntries[0];
-          lastId = tailId;
+        type RedisGenerationState = {
+          event_type?: string | null;
+          step?: string | null;
+          message?: string | null;
+          seq_num?: string | null;
+          last_seq?: string | null;
+        };
+
+        const state = (await redis.hmget(
+          stateKey,
+          "event_type",
+          "step",
+          "message",
+          "seq_num",
+          "last_seq",
+        )) as RedisGenerationState | null;
+
+        if (state && typeof state.event_type === "string" && state.event_type) {
+          const seqNumRaw =
+            (typeof state.seq_num === "string" && state.seq_num) ||
+            (typeof state.last_seq === "string" && state.last_seq) ||
+            "0";
+          const parsedSeq = Number.parseInt(seqNumRaw, 10);
+          lastSeqSeen = Number.isFinite(parsedSeq) ? parsedSeq : 0;
 
           const nowIso = new Date().toISOString();
           const payload: RedisStreamFields = {
-            ...tailFields,
-            created_at: tailFields.created_at || nowIso,
+            event_type: state.event_type,
+            step: typeof state.step === "string" ? state.step : "",
+            message: typeof state.message === "string" ? state.message : "",
+            seq_num: seqNumRaw,
+            created_at: nowIso,
           };
 
-          send({ type: "current", payload, id: tailId });
+          send({ type: "current", payload });
 
           if (TERMINAL_EVENTS.has(payload.event_type)) {
             closeStream();
@@ -156,12 +181,10 @@ export const createGenerationStatusStream = (
             pollBatchSize,
           )) as Record<string, RedisStreamFields>;
 
-          const entries = Object.entries(range).sort(([aId], [bId]) =>
-            compareStreamIds(aId, bId),
-          );
+          const entries = Object.entries(range);
 
           if (!entries.length) {
-            keepAlive();
+            keepAliveIfDue();
             await sleep(pollIntervalMs);
             continue;
           }
@@ -170,6 +193,12 @@ export const createGenerationStatusStream = (
             if (closed) return;
             lastId = id;
 
+            const seqRaw = fields.seq_num;
+            const parsedSeq = seqRaw ? Number.parseInt(seqRaw, 10) : Number.NaN;
+            if (Number.isFinite(parsedSeq) && parsedSeq <= lastSeqSeen) {
+              continue;
+            }
+
             const nowIso = new Date().toISOString();
             const payload: RedisStreamFields = {
               ...fields,
@@ -177,6 +206,10 @@ export const createGenerationStatusStream = (
             };
 
             send({ type: "event", payload, id });
+
+            if (Number.isFinite(parsedSeq)) {
+              lastSeqSeen = parsedSeq;
+            }
 
             if (TERMINAL_EVENTS.has(payload.event_type)) {
               closeStream();
@@ -189,7 +222,8 @@ export const createGenerationStatusStream = (
         try {
           send({
             type: "error",
-            payload: err instanceof Error ? err.message : "Internal stream error",
+            payload:
+              err instanceof Error ? err.message : "Internal stream error",
           });
         } catch {
           // ignored
@@ -207,4 +241,3 @@ export const createGenerationStatusStream = (
     },
   });
 };
-
