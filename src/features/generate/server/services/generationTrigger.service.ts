@@ -1,6 +1,9 @@
 import { supabaseServer } from "@/lib/supabase-server";
 import { verifyToken } from "@/lib/verifyToken";
 import { UserKeysRepository } from "@/features/byok/server/repositories/userKeys.repository";
+import { persistMessage } from "@/features/chat/server/services/persistMessage.service";
+import { MessagesRepository } from "@/features/chat/server/repositories/messages.repository";
+import { MESSAGE_TYPES, ROLES } from "@/features/chat/types/messages.types";
 import { PubSub } from "@google-cloud/pubsub";
 import jwt from "jsonwebtoken";
 
@@ -12,6 +15,7 @@ type GenerationTriggerPayload = {
 export type GenerationTriggerResult = {
   success: true;
   messageId: string;
+  approvalMessageId: string;
 };
 
 export const BYOK_REQUIRED_MESSAGE =
@@ -76,6 +80,14 @@ export const generationTriggerService = async (
     }
     console.log(`Sending ${requestType} pubsub request for chatId: ${chatId}`);
 
+    const approvalMessageId = await persistMessage({
+      chatId,
+      content: "Plan approved.",
+      role: ROLES.USER,
+      repo: new MessagesRepository(token),
+      type: MESSAGE_TYPES.PLAN,
+    });
+
     const jobToken = jwt.sign(
       {
         userId,
@@ -92,7 +104,7 @@ export const generationTriggerService = async (
       timestamp: Date.now(),
     };
     const messageId = await publisher.publish(payload);
-    return { success: true, messageId };
+    return { success: true, messageId, approvalMessageId };
   } catch (error) {
     const err = error as Error & { statusCode?: number };
     console.error("Pub/Sub publish failed", {

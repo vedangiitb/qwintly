@@ -38,6 +38,7 @@ export interface ApprovePlanParams {
 export interface ApprovePlanResult {
   success: true;
   messageId: string;
+  approvalMessageId: string;
 }
 
 export interface GenerationStatusHistoryEvent {
@@ -176,6 +177,7 @@ export class GenerateClient implements GenerateClientContract {
         }
 
         ensureNonEmptyString(data.messageId, "messageId");
+        ensureNonEmptyString(data.approvalMessageId, "approvalMessageId");
 
         return data;
       },

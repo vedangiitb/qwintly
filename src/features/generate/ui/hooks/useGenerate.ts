@@ -6,6 +6,7 @@ import {
   GenerationRealtimeStatusEvent,
   GenerationStatusHistoryEvent,
   GenerationStreamEvent,
+  ApprovePlanResult,
 } from "../api/generate.client";
 import { useGenerateContext } from "./useGenerateContext";
 import { GenerationStatusLog } from "../../generate.types";
@@ -145,12 +146,12 @@ export const useGenerate = () => {
   );
 
   const approvePlan = useCallback(
-    async (chatId: string, planId: string) => {
+    async (chatId: string, planId: string): Promise<ApprovePlanResult> => {
       setGenerateError(null);
       setActiveChatId(chatId);
       setSiteUrl(null);
       try {
-        await generateClient.approvePlan({ chatId, planId });
+        const result = await generateClient.approvePlan({ chatId, planId });
         setGenerating(true);
         setCurrentLog({
           eventType: "generation_queued",
@@ -159,6 +160,7 @@ export const useGenerate = () => {
           seqNum: null,
           createdAt: new Date().toISOString(),
         });
+        return result;
       } catch (err) {
         setGenerating(false);
         throw err;
