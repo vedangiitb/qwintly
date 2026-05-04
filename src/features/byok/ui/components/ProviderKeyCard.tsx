@@ -11,6 +11,7 @@ type ProviderKeyCardProps = {
   provider: "gemini" | "openai";
   description: string;
   accentClassName: string;
+  providerDisabled: boolean;
   keyDetails?: UserApiKeyDetails;
   totalKeys: number;
   isLoading: boolean;
@@ -38,6 +39,7 @@ export default function ProviderKeyCard({
   provider,
   description,
   accentClassName,
+  providerDisabled,
   keyDetails,
   totalKeys,
   isLoading,
@@ -46,13 +48,23 @@ export default function ProviderKeyCard({
   onUpdate,
   onDelete,
 }: ProviderKeyCardProps) {
+  const canAddKey = !providerDisabled;
+
   return (
     <Card
       className={cn(
-        "overflow-hidden rounded-4xl border border-stone-200/80 bg-white/80 shadow-[0_16px_60px_rgba(28,25,23,0.08)] backdrop-blur-xl dark:border-stone-800/80 dark:bg-stone-950/70",
+        "group relative overflow-hidden rounded-4xl border border-stone-200/80 bg-white/80 shadow-[0_16px_60px_rgba(28,25,23,0.08)] backdrop-blur-xl transition-opacity dark:border-stone-800/80 dark:bg-stone-950/70",
         accentClassName,
+        providerDisabled && !keyDetails && "opacity-60 cursor-not-allowed",
       )}
     >
+      {providerDisabled && !keyDetails && (
+        <div className="pointer-events-none absolute inset-x-0 top-4 flex justify-end px-6 opacity-0 transition-opacity group-hover:opacity-100 sm:px-7">
+          <div className="rounded-full border border-stone-200/80 bg-white/90 px-3 py-1 text-xs font-semibold tracking-wide text-stone-700 shadow-sm backdrop-blur dark:border-stone-700/80 dark:bg-stone-950/80 dark:text-stone-200">
+            Coming soon
+          </div>
+        </div>
+      )}
       <CardContent className="p-6 sm:p-7">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-4">
@@ -89,7 +101,10 @@ export default function ProviderKeyCard({
                     </Badge>
                   )}
                   {totalKeys > 1 && (
-                    <Badge variant="secondary" className="rounded-full px-3 py-1">
+                    <Badge
+                      variant="secondary"
+                      className="rounded-full px-3 py-1"
+                    >
                       {totalKeys} stored keys
                     </Badge>
                   )}
@@ -100,7 +115,9 @@ export default function ProviderKeyCard({
                     <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
                       Key
                     </p>
-                    <p className="mt-1 font-medium text-foreground">Stored securely</p>
+                    <p className="mt-1 font-medium text-foreground">
+                      Stored securely
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
@@ -149,7 +166,9 @@ export default function ProviderKeyCard({
               </>
             ) : (
               <Button
-                onClick={onCreate}
+                onClick={canAddKey ? onCreate : undefined}
+                disabled={!canAddKey}
+                title={!canAddKey ? "Coming soon" : undefined}
                 className="h-11 rounded-2xl bg-stone-900 text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
               >
                 <Plus className="size-4" />

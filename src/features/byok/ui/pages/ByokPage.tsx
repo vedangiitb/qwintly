@@ -2,7 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/ui/hooks/useAuth";
-import { ByokProvider, UserApiKeyDetails } from "@/features/byok/ui/api/byok.api";
+import {
+  ByokProvider,
+  UserApiKeyDetails,
+} from "@/features/byok/ui/api/byok.api";
 import KeyFormDialog from "@/features/byok/ui/components/KeyFormDialog";
 import ProviderKeyCard from "@/features/byok/ui/components/ProviderKeyCard";
 import { useByok } from "@/features/byok/ui/hooks/useByok";
@@ -14,17 +17,21 @@ import { useEffect, useState } from "react";
 const providerConfig: Array<{
   id: ByokProvider;
   description: string;
+  isDisabled: boolean;
   accentClassName: string;
 }> = [
   {
     id: "gemini",
     description: "Use your Gemini key for models powered through Google.",
+    isDisabled: false,
     accentClassName:
       "bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.22),_transparent_35%),linear-gradient(135deg,rgba(255,255,255,0.88),rgba(255,247,237,0.75))] dark:bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.2),_transparent_35%),linear-gradient(135deg,rgba(28,25,23,0.92),rgba(41,37,36,0.82))]",
   },
   {
     id: "openai",
-    description: "Connect your OpenAI key for completions and future provider routing.",
+    description:
+      "Connect your OpenAI key for completions and future provider routing.",
+    isDisabled: true,
     accentClassName:
       "bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.18),_transparent_35%),linear-gradient(135deg,rgba(255,255,255,0.88),rgba(240,253,250,0.78))] dark:bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.18),_transparent_35%),linear-gradient(135deg,rgba(28,25,23,0.92),rgba(17,24,39,0.82))]",
   },
@@ -41,8 +48,15 @@ function getProviderKeys(keys: UserApiKeyDetails[], provider: ByokProvider) {
 export default function ByokPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
-  const { keys, isLoading, isSubmitting, deletingProvider, loadKeys, submitKey, removeKey } =
-    useByok();
+  const {
+    keys,
+    isLoading,
+    isSubmitting,
+    deletingProvider,
+    loadKeys,
+    submitKey,
+    removeKey,
+  } = useByok();
 
   const [dialogState, setDialogState] = useState<{
     open: boolean;
@@ -106,9 +120,10 @@ export default function ByokPage() {
                     Secure provider keys with a clean control panel
                   </h1>
                   <p className="max-w-2xl text-sm leading-7 text-stone-600 dark:text-stone-300">
-                    Manage your Gemini and OpenAI credentials from one place. Keys
-                    are encrypted through KMS before they are stored, and this page
-                    only exposes metadata such as creation time and version.
+                    Manage your Gemini and OpenAI credentials from one place.
+                    Keys are encrypted through KMS before they are stored, and
+                    this page only exposes metadata such as creation time and
+                    version.
                   </p>
                 </div>
               </div>
@@ -120,7 +135,9 @@ export default function ByokPage() {
                   disabled={isLoading}
                   className="h-11 rounded-2xl border-stone-300 bg-white/70 px-5 hover:bg-white dark:border-stone-700 dark:bg-stone-900/70 dark:hover:bg-stone-900"
                 >
-                  <RefreshCcw className={cn("size-4", isLoading && "animate-spin")} />
+                  <RefreshCcw
+                    className={cn("size-4", isLoading && "animate-spin")}
+                  />
                   Refresh
                 </Button>
                 <Button
@@ -138,7 +155,7 @@ export default function ByokPage() {
                 <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
                   Providers
                 </p>
-                <p className="mt-2 text-2xl font-semibold">2 enabled</p>
+                <p className="mt-2 text-2xl font-semibold">1 enabled</p>
               </div>
               <div className="rounded-2xl border border-white/80 bg-white/65 p-4 dark:border-stone-800 dark:bg-stone-900/70">
                 <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
@@ -168,10 +185,12 @@ export default function ByokPage() {
                     keyDetails={latestKey}
                     totalKeys={providerKeys.length}
                     isLoading={isLoading}
+                    providerDisabled={provider.isDisabled}
                     isDeleting={deletingProvider === provider.id}
                     onCreate={() => openDialog(provider.id, "create")}
                     onUpdate={() =>
-                      latestKey && openDialog(provider.id, "update", latestKey.id)
+                      latestKey &&
+                      openDialog(provider.id, "update", latestKey.id)
                     }
                     onDelete={() =>
                       latestKey && removeKey(latestKey.id, provider.id)
@@ -186,7 +205,9 @@ export default function ByokPage() {
 
       <KeyFormDialog
         open={dialogState.open}
-        onOpenChange={(open) => setDialogState((current) => ({ ...current, open }))}
+        onOpenChange={(open) =>
+          setDialogState((current) => ({ ...current, open }))
+        }
         provider={dialogState.provider}
         mode={dialogState.mode}
         isSubmitting={isSubmitting}
