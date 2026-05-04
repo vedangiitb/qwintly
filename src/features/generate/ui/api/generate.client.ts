@@ -49,6 +49,11 @@ export interface GenerationStatusHistoryEvent {
   created_at: string;
 }
 
+export type GenerationSummary = {
+  status: string;
+  messages: string[];
+};
+
 export type GenerationRealtimeStatusEvent = {
   event_type: string;
   step?: string;
@@ -78,14 +83,23 @@ export interface StreamGenerationStatusParams {
   signal?: AbortSignal;
 }
 
+export interface FetchGenerationSummaryParams {
+  msgId: string;
+  signal?: AbortSignal;
+}
+
 export interface GenerateClientContract {
   approvePlan(params: ApprovePlanParams): Promise<ApprovePlanResult>;
   streamGenerationStatus(params: StreamGenerationStatusParams): Promise<void>;
+  fetchGenerationSummary(
+    params: FetchGenerationSummaryParams,
+  ): Promise<GenerationSummary>;
 }
 
 const GENERATE_ENDPOINTS = {
   APPROVE_PLAN: "/api/generate/approve-plan",
   FETCH_STATUS: "/api/generate/fetch-status",
+  FETCH_GEN_SUMMARY: "/api/generate/fetch-gen-summary",
 } as const;
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
@@ -254,6 +268,29 @@ export class GenerateClient implements GenerateClientContract {
         } finally {
           reader.releaseLock();
         }
+      },
+    );
+  }
+
+  async fetchGenerationSummary(
+    params: FetchGenerationSummaryParams,
+  ): Promise<GenerationSummary> {
+    const msgId = ensureNonEmptyString(params.msgId, "msgId");
+
+    return this.execute(
+      "fetchGenerationSummary",
+      GENERATE_ENDPOINTS.FETCH_GEN_SUMMARY,
+      async () => {
+        const url = buildUrl(GENERATE_ENDPOINTS.FETCH_GEN_SUMMARY, { msgId });
+        const data = await this.httpClient.get<GenerationSummary>(
+          url,
+          params.signal,
+        );
+
+        return {
+          status: typeof data?.status === "string" ? data.status : "",
+          messages: Array.isArray(data?.messages) ? data.messages : [],
+        };
       },
     );
   }
