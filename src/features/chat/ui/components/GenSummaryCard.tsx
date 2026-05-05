@@ -31,16 +31,19 @@ export const GenSummaryCard = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<GenerationSummary | null>(null);
+  const [fetchedForMsgId, setFetchedForMsgId] = useState<string | null>(null);
 
   const canFetch = Boolean(messageId?.trim());
 
   useEffect(() => {
     if (!isExpanded) return;
     if (!canFetch) return;
-    if (summary || isLoading) return;
+    if (summary) return;
+    if (fetchedForMsgId === messageId) return;
 
     setIsLoading(true);
     setError(null);
+    setFetchedForMsgId(messageId);
 
     const controller = new AbortController();
     void generateClient
@@ -53,7 +56,14 @@ export const GenSummaryCard = ({
       .finally(() => setIsLoading(false));
 
     return () => controller.abort();
-  }, [isExpanded, canFetch, summary, isLoading, messageId]);
+  }, [isExpanded, canFetch, summary, messageId, fetchedForMsgId]);
+
+  useEffect(() => {
+    setSummary(null);
+    setError(null);
+    setIsLoading(false);
+    setFetchedForMsgId(null);
+  }, [messageId]);
 
   const statusLabel = useMemo(() => summary?.status?.trim() ?? "", [summary]);
   const badgeVariant = useMemo(
@@ -96,9 +106,25 @@ export const GenSummaryCard = ({
 
           <AccordionContent className="pb-3">
             {isLoading ? (
-              <div className="text-xs text-muted-foreground">Loading…</div>
+              <div className="text-xs text-muted-foreground">Loading...</div>
             ) : error ? (
-              <div className="text-xs text-destructive">{error}</div>
+              <div className="flex items-start justify-between gap-2">
+                <div className="text-xs text-destructive">{error}</div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  disabled={!canFetch}
+                  onClick={() => {
+                    setError(null);
+                    setSummary(null);
+                    setFetchedForMsgId(null);
+                  }}
+                  className="h-7 text-xs"
+                >
+                  Retry
+                </Button>
+              </div>
             ) : summary ? (
               <ScrollArea className="max-h-72 pr-2">
                 {summary.messages?.length ? (
@@ -141,4 +167,3 @@ export const GenSummaryCard = ({
     </div>
   );
 };
-
