@@ -12,6 +12,7 @@ export const MESSAGE_TYPES = {
   MESSAGE: "message",
   PLAN: "plan",
   QUESTIONS: "questions",
+  GEN_SUMMARY: "gen_summary",
 } as const;
 
 export type MessageType = (typeof MESSAGE_TYPES)[keyof typeof MESSAGE_TYPES];

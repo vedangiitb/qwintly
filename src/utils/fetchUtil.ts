@@ -27,14 +27,23 @@ export async function fetchUtil<T>(
 ): Promise<ApiResponse<T>> {
   const token = await getAuthToken();
 
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {}),
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(options.headers || {}),
+      },
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error && error.message.trim()
+        ? error.message
+        : "Network request failed.";
+    throw new Error(`Fetch failed loading: ${options.method ?? "GET"} "${url}". ${message}`);
+  }
 
   let json: ApiResponse<T>;
   try {

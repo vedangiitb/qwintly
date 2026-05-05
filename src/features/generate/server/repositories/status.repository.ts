@@ -8,10 +8,15 @@ export type GenerationStatusHistoryEvent = {
   created_at: string;
 };
 
+export type GenerationSummary = {
+  status: string;
+  messages: string[];
+};
+
 export class StatusRepository extends DBRepository {
   async fetchGenerationHistory(
     chatId: string,
-    genId: string
+    genId: string,
   ): Promise<GenerationStatusHistoryEvent[]> {
     if (!chatId?.trim()) throw new Error("Chat ID is required");
 
@@ -25,6 +30,33 @@ export class StatusRepository extends DBRepository {
 
     if (error) throw new Error(error.message);
     return data ?? [];
+  }
+
+  async fetchGenerationSummary(msgId: string): Promise<GenerationSummary> {
+    if (!msgId?.trim()) throw new Error("Message ID is required");
+    const supabase = this.client;
+    const { data, error } = await supabase.rpc("get_generation_summary", {
+      p_msg_id: msgId,
+    });
+
+    if (error) throw new Error(error.message);
+
+    const rows = Array.isArray(data) ? data : [];
+    const payload = (rows[0] ?? null) as
+      | {
+          genStatus?: unknown;
+          messages?: unknown;
+        }
+      | null;
+
+    const status =
+      typeof payload?.genStatus === "string" ? payload.genStatus : "";
+
+    const messages = Array.isArray(payload?.messages)
+      ? payload.messages.filter((item): item is string => typeof item === "string")
+      : [];
+
+    return { status, messages };
   }
 
   async getGenSession(chatId: string): Promise<string> {

@@ -7,6 +7,8 @@ import ReactMarkdown from "react-markdown";
 import { Questionnaire } from "./Questionnaire";
 import { PlanReview } from "./planPreview";
 import { useChat } from "../hooks/useChat";
+import { MESSAGE_TYPES } from "../../types/messages.types";
+import { GenSummaryCard } from "./GenSummaryCard";
 
 export default function RenderAIResponse({
   data,
@@ -23,7 +25,7 @@ export default function RenderAIResponse({
   const aiCard = (messageType: string) => {
     const mappedMessageId = messageId ?? "";
 
-    if (messageType === "plan") {
+    if (messageType === MESSAGE_TYPES.PLAN) {
       const plan = plansByMessageId[mappedMessageId];
       return (
         <div className="w-full space-y-2">
@@ -33,7 +35,7 @@ export default function RenderAIResponse({
       );
     }
 
-    if (messageType === "questions") {
+    if (messageType === MESSAGE_TYPES.QUESTIONS) {
       const questionSet = questionAnswersByMessageId[mappedMessageId];
       return (
         <div className="w-full space-y-2">
@@ -46,7 +48,17 @@ export default function RenderAIResponse({
       );
     }
 
-    if (messageType === "message") {
+    if (messageType === MESSAGE_TYPES.GEN_SUMMARY) {
+      return (
+        <GenSummaryCard
+          displayMessage={displayMessage}
+          messageId={mappedMessageId}
+          renderMessageBody={(content) => defaultCard(content)}
+        />
+      );
+    }
+
+    if (messageType === MESSAGE_TYPES.MESSAGE) {
       return defaultCard(displayMessage);
     }
     return defaultCard(displayMessage);
@@ -74,38 +86,44 @@ const defaultCard = (displayMessage: string) => {
         "border transition-all",
       )}
     >
-      <ReactMarkdown
-        components={{
-          code({ className, children, ...props }) {
-            return (
-              <code
-                className={cn(
-                  "rounded bg-muted px-1.5 py-0.5 text-xs font-mono text-indigo-300",
-                  className,
-                )}
-                {...props}
-              >
-                {children}
-              </code>
-            );
-          },
-          pre({ children, ...props }) {
-            return (
-              <pre
-                className="rounded-lg bg-zinc-900/80 p-3 overflow-x-auto text-xs text-blue-100"
-                {...props}
-              >
-                {children}
-              </pre>
-            );
-          },
-          p({ children }) {
-            return <p className="leading-relaxed my-1">{children}</p>;
-          },
-        }}
-      >
-        {displayMessage}
-      </ReactMarkdown>
+      <MarkdownBody displayMessage={displayMessage} />
     </Card>
+  );
+};
+
+const MarkdownBody = ({ displayMessage }: { displayMessage: string }) => {
+  return (
+    <ReactMarkdown
+      components={{
+        code({ className, children, ...props }) {
+          return (
+            <code
+              className={cn(
+                "rounded bg-muted px-1.5 py-0.5 text-xs font-mono text-indigo-300",
+                className,
+              )}
+              {...props}
+            >
+              {children}
+            </code>
+          );
+        },
+        pre({ children, ...props }) {
+          return (
+            <pre
+              className="rounded-lg bg-zinc-900/80 p-3 overflow-x-auto text-xs text-blue-100"
+              {...props}
+            >
+              {children}
+            </pre>
+          );
+        },
+        p({ children }) {
+          return <p className="leading-relaxed my-1">{children}</p>;
+        },
+      }}
+    >
+      {displayMessage}
+    </ReactMarkdown>
   );
 };

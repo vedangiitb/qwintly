@@ -121,13 +121,33 @@ export const useChatActions = ({
     ],
   );
 
+  const refreshLatestMessages = useCallback(
+    async (targetChatId: string) => {
+      const result = await fetchChatMessages({
+        chatId: targetChatId,
+        limit: DEFAULT_MESSAGES_PAGE_SIZE,
+      });
+
+      setMessages((prev) => dedupeAndSortMessages([...prev, ...result.messages]));
+
+      // Only initialize pagination state if we don't have it yet.
+      setMessagesCursor((prevCursor) =>
+        prevCursor === null || prevCursor === undefined ? result.nextCursor : prevCursor,
+      );
+      setHasMoreMessages((prevHasMore) =>
+        prevHasMore === false ? Boolean(result.nextCursor) : prevHasMore,
+      );
+    },
+    [setMessages, setMessagesCursor, setHasMoreMessages],
+  );
+
   useEffect(() => {
     return subscribeToGenerationTerminalEvents((targetChatId) => {
       if (!chatId || targetChatId !== chatId) return;
       if (terminalHydrationInFlightRef.current.has(targetChatId)) return;
 
       terminalHydrationInFlightRef.current.add(targetChatId);
-      void hydrateChatInfo(targetChatId)
+      void Promise.all([hydrateChatInfo(targetChatId), refreshLatestMessages(targetChatId)])
         .catch((err) => {
           const message = toErrorMessage(
             err,
@@ -139,7 +159,7 @@ export const useChatActions = ({
           terminalHydrationInFlightRef.current.delete(targetChatId);
         });
     });
-  }, [chatId, hydrateChatInfo, setError]);
+  }, [chatId, hydrateChatInfo, refreshLatestMessages, setError]);
 
   const loadRecentChats = useCallback(
     async (params?: { limit?: number; cursor?: string }) => {

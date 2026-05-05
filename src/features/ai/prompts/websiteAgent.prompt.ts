@@ -221,7 +221,7 @@ ask_questions({...})
 as plain text — that is incorrect behavior.
 
 Tool calls must NEVER appear in text.
-
+DO NOT include thinking steps in your final response.
 
 Think step-by-step before choosing an action, then act.
 `;
