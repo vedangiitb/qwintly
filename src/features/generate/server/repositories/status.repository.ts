@@ -41,22 +41,19 @@ export class StatusRepository extends DBRepository {
 
     if (error) throw new Error(error.message);
 
-    const payload = data as
+    const rows = Array.isArray(data) ? data : [];
+    const payload = (rows[0] ?? null) as
       | {
-          status?: unknown;
           genStatus?: unknown;
           messages?: unknown;
         }
       | null;
 
     const status =
-      (typeof payload?.status === "string" ? payload.status : "") ||
-      (typeof payload?.genStatus === "string" ? payload.genStatus : "");
+      typeof payload?.genStatus === "string" ? payload.genStatus : "";
 
     const messages = Array.isArray(payload?.messages)
-      ? payload.messages.filter(
-          (item): item is string => typeof item === "string",
-        )
+      ? payload.messages.filter((item): item is string => typeof item === "string")
       : [];
 
     return { status, messages };
