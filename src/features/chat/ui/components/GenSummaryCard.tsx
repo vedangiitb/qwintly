@@ -40,6 +40,7 @@ export const GenSummaryCard = ({
     if (!canFetch) return;
     if (summary) return;
     if (fetchedForMsgId === messageId) return;
+    if (isLoading) return;
 
     setIsLoading(true);
     setError(null);
@@ -50,13 +51,18 @@ export const GenSummaryCard = ({
       .fetchGenerationSummary({ msgId: messageId, signal: controller.signal })
       .then((data) => setSummary(data))
       .catch((err) => {
-        if (err instanceof Error && err.name === "AbortError") return;
+        if (err instanceof Error && err.name === "AbortError") {
+          // React StrictMode runs effects setup+cleanup+setup in dev; the first request is aborted.
+          // If we keep the "attempted" marker set, the second setup won't fetch.
+          setFetchedForMsgId(null);
+          return;
+        }
         setError(err instanceof Error ? err.message : "Failed to load details.");
       })
       .finally(() => setIsLoading(false));
 
     return () => controller.abort();
-  }, [isExpanded, canFetch, summary, messageId, fetchedForMsgId]);
+  }, [isExpanded, canFetch, summary, messageId, fetchedForMsgId, isLoading]);
 
   useEffect(() => {
     setSummary(null);
