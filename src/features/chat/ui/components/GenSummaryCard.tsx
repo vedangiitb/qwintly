@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import type { GenerationSummary } from "@/features/generate/ui/api/generate.client";
 import { generateClient } from "@/features/generate/ui/api/generate.client";
 import { cn } from "@/lib/utils";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const statusBadgeVariant = (
   status: string,
@@ -32,6 +32,7 @@ export const GenSummaryCard = ({
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<GenerationSummary | null>(null);
   const [fetchedForMsgId, setFetchedForMsgId] = useState<string | null>(null);
+  const inFlightControllerRef = useRef<AbortController | null>(null);
 
   const canFetch = Boolean(messageId?.trim());
 
@@ -40,13 +41,14 @@ export const GenSummaryCard = ({
     if (!canFetch) return;
     if (summary) return;
     if (fetchedForMsgId === messageId) return;
-    if (isLoading) return;
+    if (inFlightControllerRef.current) return;
 
     setIsLoading(true);
     setError(null);
     setFetchedForMsgId(messageId);
 
     const controller = new AbortController();
+    inFlightControllerRef.current = controller;
     void generateClient
       .fetchGenerationSummary({ msgId: messageId, signal: controller.signal })
       .then((data) => setSummary(data))
@@ -57,16 +59,21 @@ export const GenSummaryCard = ({
         }
         setError(err instanceof Error ? err.message : "Failed to load details.");
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => {
+        inFlightControllerRef.current = null;
+        setIsLoading(false);
+      });
 
     return () => controller.abort();
-  }, [isExpanded, canFetch, summary, messageId, fetchedForMsgId, isLoading]);
+  }, [isExpanded, canFetch, summary, messageId, fetchedForMsgId]);
 
   useEffect(() => {
     setSummary(null);
     setError(null);
     setIsLoading(false);
     setFetchedForMsgId(null);
+    inFlightControllerRef.current?.abort();
+    inFlightControllerRef.current = null;
   }, [messageId]);
 
   useEffect(() => {
