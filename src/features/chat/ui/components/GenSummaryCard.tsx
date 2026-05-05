@@ -52,8 +52,6 @@ export const GenSummaryCard = ({
       .then((data) => setSummary(data))
       .catch((err) => {
         if (err instanceof Error && err.name === "AbortError") {
-          // React StrictMode runs effects setup+cleanup+setup in dev; the first request is aborted.
-          // If we keep the "attempted" marker set, the second setup won't fetch.
           setFetchedForMsgId(null);
           return;
         }

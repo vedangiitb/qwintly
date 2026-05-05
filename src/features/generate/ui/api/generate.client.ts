@@ -167,6 +167,11 @@ export class GenerateClient implements GenerateClientContract {
     private readonly httpClient: HttpClient = new FetchUtilHttpClient(),
   ) {}
 
+  private readonly generationSummaryCache = new Map<
+    string,
+    Promise<GenerationSummary>
+  >();
+
   async approvePlan(params: ApprovePlanParams): Promise<ApprovePlanResult> {
     const chatId = ensureNonEmptyString(params.chatId, "chatId");
     const planId = ensureNonEmptyString(params.planId, "planId");
@@ -277,7 +282,10 @@ export class GenerateClient implements GenerateClientContract {
   ): Promise<GenerationSummary> {
     const msgId = ensureNonEmptyString(params.msgId, "msgId");
 
-    return this.execute(
+    const cached = this.generationSummaryCache.get(msgId);
+    if (cached) return cached;
+
+    const task = this.execute(
       "fetchGenerationSummary",
       GENERATE_ENDPOINTS.FETCH_GEN_SUMMARY,
       async () => {
@@ -292,7 +300,13 @@ export class GenerateClient implements GenerateClientContract {
           messages: Array.isArray(data?.messages) ? data.messages : [],
         };
       },
-    );
+    ).catch((error) => {
+      this.generationSummaryCache.delete(msgId);
+      throw error;
+    });
+
+    this.generationSummaryCache.set(msgId, task);
+    return task;
   }
 
   private async execute<T>(
