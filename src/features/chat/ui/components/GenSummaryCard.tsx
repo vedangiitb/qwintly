@@ -65,6 +65,12 @@ export const GenSummaryCard = ({
     setFetchedForMsgId(null);
   }, [messageId]);
 
+  useEffect(() => {
+    if (isExpanded) return;
+    if (summary) return;
+    setFetchedForMsgId(null);
+  }, [isExpanded, summary]);
+
   const statusLabel = useMemo(() => summary?.status?.trim() ?? "", [summary]);
   const badgeVariant = useMemo(
     () => statusBadgeVariant(statusLabel),
@@ -145,20 +151,8 @@ export const GenSummaryCard = ({
                 )}
               </ScrollArea>
             ) : (
-              <div className="flex items-center justify-between gap-2">
-                <div className="text-xs text-muted-foreground">
-                  Expand to load details.
-                </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  disabled={!canFetch}
-                  onClick={() => setIsExpanded(true)}
-                  className="h-7 text-xs"
-                >
-                  Load
-                </Button>
+              <div className="text-xs text-muted-foreground">
+                {canFetch ? "No details available." : "Missing message id."}
               </div>
             )}
           </AccordionContent>
