@@ -6,6 +6,7 @@ import { MessagesRepository } from "@/features/chat/server/repositories/messages
 import { MESSAGE_TYPES, ROLES } from "@/features/chat/types/messages.types";
 import { PubSub } from "@google-cloud/pubsub";
 import jwt from "jsonwebtoken";
+import { getPreferencesService } from "@/features/auth/server/services/getPreferences.service";
 
 type GenerationTriggerPayload = {
   jobToken: string;
@@ -43,14 +44,11 @@ const defaultPublisher = new PubSubGenerationPublisher(
   process.env.PUBSUB_TOPIC_WEB_GEN,
 );
 
-const DEFAULT_PROVIDER = "gemini";
-
 export const generationTriggerService = async (
   chatId: string,
   planId: string,
   token: string,
   publisher: GenerationPublisher = defaultPublisher,
-  provider: string = DEFAULT_PROVIDER,
 ): Promise<GenerationTriggerResult> => {
   try {
     const supabase = supabaseServer(token);
@@ -71,6 +69,10 @@ export const generationTriggerService = async (
       p_chat_id: chatId,
       p_user_id: userId,
     });
+
+    const userPreferences = await getPreferencesService(userId, token);
+    const provider = userPreferences?.pref_provider;
+    const model = userPreferences?.pref_model;
     if (error) {
       throw error;
     }
@@ -92,6 +94,7 @@ export const generationTriggerService = async (
       {
         userId,
         provider,
+        model,
         chatId,
         planId,
         requestType,
