@@ -26,28 +26,27 @@ interface AgentResponse {
   toolCalls: ToolCall[];
 }
 
-export const agentCall = async (
+export const invokeAgentOnce = async (
   llm: ChatGoogle,
   tools: any[],
   context: BaseMessage[],
+): Promise<{ responseToUser: string; toolCalls: ToolCall[] }> => {
+  console.log("Agent Call (invoke)");
+  return llmCallwithTools(llm, context, tools);
+};
+
+export const persistAgentResult = async (
+  responseToUser: string,
+  toolCalls: ToolCall[],
   chatId: string,
   toolCallRepo: ToolsRepository,
   messagesRepo: MessagesRepository,
   resolveToolRepository?: ToolRepositoryResolver,
 ): Promise<AgentResponse> => {
-  console.log("Agent Call");
-  // 1. Bind and Invoke
-  const { responseToUser, toolCalls } = await llmCallwithTools(
-    llm,
-    context,
-    tools,
-  );
+  console.log("Agent Call (persist)");
   let aiMessageId: string | null = null;
 
-  console.log("Ai Response to user", responseToUser);
-  console.log("Ai tool calls", toolCalls);
-
-  const messageType = toolCalls
+  const messageType = toolCalls?.length
     ? resolveMessageType(toolCalls[0]?.name)
     : MESSAGE_TYPES.MESSAGE;
 
@@ -61,8 +60,7 @@ export const agentCall = async (
 
   let toolCallsList: ToolCall[] = [];
 
-  if (toolCalls) {
-    // 2. Process all tool calls in parallel for better performance
+  if (toolCalls?.length) {
     toolCallsList = await Promise.all(
       toolCalls.map(async (call) => {
         if (!aiMessageId) {

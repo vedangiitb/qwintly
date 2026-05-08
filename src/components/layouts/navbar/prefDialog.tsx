@@ -54,6 +54,7 @@ export default function PrefDialog() {
 
   useEffect(() => {
     if (!open) return;
+    if (isLoading && !preferences) return;
 
     const provider = preferences?.pref_provider ?? DEFAULT_PROVIDER;
     const group = resolveModelGroup(provider);
@@ -66,7 +67,7 @@ export default function PrefDialog() {
 
     setDraftProvider(provider);
     setDraftModel(resolvedModel);
-  }, [open, preferences]);
+  }, [open, preferences, isLoading]);
 
   useEffect(() => {
     if (!open) return;
@@ -124,55 +125,67 @@ export default function PrefDialog() {
           </DialogHeader>
 
           <div className="grid gap-4 pt-2">
-            <div className="flex items-center justify-between border-b py-3">
-              <p className="text-sm">Provider</p>
-              <DropdownMenu>
-                <DropdownMenuTrigger className="flex gap-2 hover:bg-accent py-1 px-2 rounded-md">
-                  <p className="text-sm">
-                    {providerOptions.find((p) => p.id === (draftProvider || selectedProvider))
-                      ?.label ?? "Select"}
-                  </p>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Providers</DropdownMenuLabel>
-                  {providerOptions.map((p) => (
-                    <DropdownMenuItem
-                      key={p.id}
-                      onClick={() => setDraftProvider(p.id)}
-                    >
-                      {p.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            {isLoading && !preferences ? (
+              <>
+                <div className="flex items-center justify-between border-b py-3">
+                  <p className="text-sm">Provider</p>
+                  <div className="h-8 w-28 rounded-md bg-muted animate-pulse" />
+                </div>
+                <div className="flex items-center justify-between border-b py-3">
+                  <p className="text-sm">Model</p>
+                  <div className="h-8 w-56 rounded-md bg-muted animate-pulse" />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-between border-b py-3">
+                  <p className="text-sm">Provider</p>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex gap-2 hover:bg-accent py-1 px-2 rounded-md">
+                      <p className="text-sm">
+                        {providerOptions.find((p) => p.id === (draftProvider || selectedProvider))
+                          ?.label ?? "Select"}
+                      </p>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Providers</DropdownMenuLabel>
+                      {providerOptions.map((p) => (
+                        <DropdownMenuItem
+                          key={p.id}
+                          onClick={() => setDraftProvider(p.id)}
+                        >
+                          {p.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
 
-            <div className="flex items-center justify-between border-b py-3">
-              <p className="text-sm">Model</p>
-              <DropdownMenu>
-                <DropdownMenuTrigger className="flex gap-2 hover:bg-accent py-1 px-2 rounded-md max-w-70 justify-end">
-                  <p className="text-sm truncate">
-                    {draftModel || selectedModel || "Select"}
-                  </p>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="max-h-72 overflow-auto">
-                  <DropdownMenuLabel>Models</DropdownMenuLabel>
-                  {modelOptions.map((m) => (
-                    <DropdownMenuItem key={m.id} onClick={() => setDraftModel(m.id)}>
-                      {m.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                <div className="flex items-center justify-between border-b py-3">
+                  <p className="text-sm">Model</p>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex gap-2 hover:bg-accent py-1 px-2 rounded-md max-w-70 justify-end">
+                      <p className="text-sm truncate">
+                        {draftModel || selectedModel || "Select"}
+                      </p>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="max-h-72 overflow-auto">
+                      <DropdownMenuLabel>Models</DropdownMenuLabel>
+                      {modelOptions.map((m) => (
+                        <DropdownMenuItem key={m.id} onClick={() => setDraftModel(m.id)}>
+                          {m.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </>
+            )}
 
             {error ? (
               <p className="text-sm text-destructive">{error}</p>
             ) : null}
 
-            {isLoading && !preferences ? (
-              <p className="text-sm text-muted-foreground">Loading…</p>
-            ) : null}
           </div>
 
           <DialogFooter>
