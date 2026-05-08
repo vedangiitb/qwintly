@@ -493,7 +493,6 @@ export const useChatActions = ({
               : message,
           ),
         );
-        await hydrateChatInfo(chatId);
       } catch (err) {
         const message = toErrorMessage(err, "Failed to approve plan.");
         setError(message);
