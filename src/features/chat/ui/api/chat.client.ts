@@ -83,6 +83,7 @@ export interface FetchChatInfoResult {
   questionAnswers: QuestionAnswers[];
   plans: Plan[];
   siteUrl: string;
+  previewUrl: string;
   isGenerating: boolean;
 }
 
@@ -203,6 +204,7 @@ export class ChatClient implements ChatClientContract {
           questionAnswers: data?.questionAnswers ?? [],
           plans: data?.plans ?? [],
           siteUrl: data?.siteUrl ?? "",
+          previewUrl: data?.previewUrl ?? "",
           isGenerating: data?.isGenerating ?? false,
         };
       },
