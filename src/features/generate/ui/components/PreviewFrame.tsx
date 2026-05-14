@@ -8,7 +8,7 @@ export default function PreviewFrame() {
           <Sun size={26} className="text-muted-foreground" />
         </div>
         <h4 className="font-semibold text-foreground tracking-tight mb-2">No Preview Available</h4>
-        <p className="text-sm max-w-[260px] text-muted-foreground/80 leading-relaxed text-balance">
+        <p className="text-sm max-w-65 text-muted-foreground/80 leading-relaxed text-balance">
           Website preview will appear here once the generation is complete.
         </p>
       </div>

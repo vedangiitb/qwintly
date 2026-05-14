@@ -6,7 +6,7 @@ import {
   GenerationRealtimeStatusEvent,
   GenerationStatusHistoryEvent,
   GenerationStreamEvent,
-  ApprovePlanResult,
+  TriggerActionResult,
 } from "../api/generate.client";
 import { useGenerateContext } from "./useGenerateContext";
 import { GenerationStatusLog } from "../../generate.types";
@@ -28,9 +28,15 @@ const titleFromEventType = (eventType: string): string =>
     .map((part) => part[0].toUpperCase() + part.slice(1))
     .join(" ");
 
-const resolveStatusTextFromLog = (log: GenerationStatusLog | null): string | null => {
+const resolveStatusTextFromLog = (
+  log: GenerationStatusLog | null,
+): string | null => {
   if (!log) return null;
-  return safeTrim(log.message) ?? safeTrim(log.step) ?? titleFromEventType(log.eventType);
+  return (
+    safeTrim(log.message) ??
+    safeTrim(log.step) ??
+    titleFromEventType(log.eventType)
+  );
 };
 
 const toHistoryLog = (
@@ -69,6 +75,10 @@ export const useGenerate = () => {
     setGenerateError,
     setSiteUrl,
     url,
+    setSessionId,
+    sessionId,
+    previewUrl,
+    setPreviewUrl,
   } = useGenerateContext();
 
   const urlFetchInFlightRef = useRef<Set<string>>(new Set());
@@ -103,8 +113,12 @@ export const useGenerate = () => {
       if (streamEvent.type === "history") {
         const logs = streamEvent.payload.map(toHistoryLog);
         applyHistoryLogs(logs);
-        const lastEventType = logs.length ? logs[logs.length - 1]?.eventType : null;
-        const isTerminal = lastEventType ? TERMINAL_EVENTS.has(lastEventType) : false;
+        const lastEventType = logs.length
+          ? logs[logs.length - 1]?.eventType
+          : null;
+        const isTerminal = lastEventType
+          ? TERMINAL_EVENTS.has(lastEventType)
+          : false;
         setGenerating(lastEventType ? !isTerminal : true);
         if (isTerminal) {
           void hydrateSiteUrl(chatId);
@@ -146,7 +160,10 @@ export const useGenerate = () => {
   );
 
   const approvePlan = useCallback(
-    async (chatId: string, planId: string): Promise<ApprovePlanResult> => {
+    async (
+      chatId: string,
+      planId: string,
+    ): Promise<TriggerActionResult<"approve_plan">> => {
       setGenerateError(null);
       setActiveChatId(chatId);
       setSiteUrl(null);
@@ -160,13 +177,135 @@ export const useGenerate = () => {
           seqNum: null,
           createdAt: new Date().toISOString(),
         });
+        const sessionId = result.sessionId;
+        setSessionId(sessionId);
         return result;
       } catch (err) {
         setGenerating(false);
         throw err;
       }
     },
-    [setGenerateError, setActiveChatId, setGenerating, setCurrentLog, setSiteUrl],
+    [
+      setGenerateError,
+      setActiveChatId,
+      setGenerating,
+      setCurrentLog,
+      setSiteUrl,
+    ],
+  );
+
+  const deployApp = useCallback(
+    async (
+      chatId: string,
+      genSessionId: string,
+    ): Promise<TriggerActionResult<"deploy_app">> => {
+      setGenerateError(null);
+      setActiveChatId(chatId);
+      setSiteUrl(null);
+      try {
+        const result = await generateClient.deployApp({
+          chatId,
+          sessionId: genSessionId,
+        });
+        setGenerating(true);
+        setCurrentLog({
+          eventType: "deployment_queued",
+          step: "Queued",
+          message: "Queued for deployment",
+          seqNum: null,
+          createdAt: new Date().toISOString(),
+        });
+        setSessionId(result.sessionId);
+        return result;
+      } catch (err) {
+        setGenerating(false);
+        throw err;
+      }
+    },
+    [
+      setGenerateError,
+      setActiveChatId,
+      setGenerating,
+      setCurrentLog,
+      setSiteUrl,
+      setSessionId,
+    ],
+  );
+
+  const retryGenerate = useCallback(
+    async (
+      chatId: string,
+      retrySessionId: string,
+    ): Promise<TriggerActionResult<"retry_generate">> => {
+      setGenerateError(null);
+      setActiveChatId(chatId);
+      setSiteUrl(null);
+      try {
+        const result = await generateClient.retryGenerate({
+          chatId,
+          sessionId: retrySessionId,
+        });
+        setGenerating(true);
+        setCurrentLog({
+          eventType: "generation_queued",
+          step: "Queued",
+          message: "Queued for generation",
+          seqNum: null,
+          createdAt: new Date().toISOString(),
+        });
+        setSessionId(result.sessionId);
+        return result;
+      } catch (err) {
+        setGenerating(false);
+        throw err;
+      }
+    },
+    [
+      setGenerateError,
+      setActiveChatId,
+      setGenerating,
+      setCurrentLog,
+      setSiteUrl,
+      setSessionId,
+    ],
+  );
+
+  const retryDeploy = useCallback(
+    async (
+      chatId: string,
+      retrySessionId: string,
+    ): Promise<TriggerActionResult<"retry_deploy">> => {
+      setGenerateError(null);
+      setActiveChatId(chatId);
+      setSiteUrl(null);
+      try {
+        const result = await generateClient.retryDeploy({
+          chatId,
+          sessionId: retrySessionId,
+        });
+        setGenerating(true);
+        setCurrentLog({
+          eventType: "deployment_queued",
+          step: "Queued",
+          message: "Queued for deployment",
+          seqNum: null,
+          createdAt: new Date().toISOString(),
+        });
+        setSessionId(result.sessionId);
+        return result;
+      } catch (err) {
+        setGenerating(false);
+        throw err;
+      }
+    },
+    [
+      setGenerateError,
+      setActiveChatId,
+      setGenerating,
+      setCurrentLog,
+      setSiteUrl,
+      setSessionId,
+    ],
   );
 
   const streamGenerationStatus = useCallback(
@@ -182,6 +321,7 @@ export const useGenerate = () => {
         await generateClient.streamGenerationStatus({
           chatId: chatId,
           signal: params.signal,
+          sessionId: sessionId,
           onEvent: (event) => handleStreamEvent(event, chatId),
         });
       } catch (err) {
@@ -208,11 +348,16 @@ export const useGenerate = () => {
     statusLogs,
     error,
     approvePlan,
+    deployApp,
+    retryGenerate,
+    retryDeploy,
     streamGenerationStatus,
     clearStatusState,
     setGenerating,
     setActiveChatId,
     setSiteUrl,
     url,
+    previewUrl,
+    setPreviewUrl,
   } as const;
 };

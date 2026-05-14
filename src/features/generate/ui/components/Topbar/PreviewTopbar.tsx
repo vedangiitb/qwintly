@@ -3,22 +3,21 @@
 import { useGenerateUi } from "@/features/generate/ui/hooks/useGenerateUi";
 import { ExternalLink, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useGenerate } from "../../hooks/useGenerate";
-import EditMode from "./EditMode";
 import WidthSetting from "./widthSetting";
 
-export default function PreviewTopbar() {
-  const {
-    chatVisible,
-    toggleChatVisible,
-    width,
-    setDeviceMode,
-    editMode,
-    toggleEditMode,
-  } = useGenerateUi();
+export default function PreviewTopbar({
+  updateDisplayUrl,
+  displayUrl,
+}: {
+  updateDisplayUrl: (url: string) => void;
+  displayUrl: string;
+}) {
+  const { chatVisible, toggleChatVisible, width, setDeviceMode } =
+    useGenerateUi();
   const { url } = useGenerate();
 
   const openInNewWindow = () => {
-    if (url) window.open(url, "_blank");
+    if (displayUrl) window.open(displayUrl, "_blank");
   };
 
   return (
@@ -39,9 +38,20 @@ export default function PreviewTopbar() {
         Preview
       </h3>
 
-      {url ? (
+      {url && url != displayUrl ? (
+        <button
+          aria-label="Open in new window"
+          onClick={() => updateDisplayUrl(url)}
+          className="p-1.5 rounded-lg transition-all duration-150 ease-in-out hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring outline-none"
+        >
+          Show deployed version
+        </button>
+      ) : (
+        <div />
+      )}
+
+      {displayUrl ? (
         <div className="flex items-center gap-3">
-          <EditMode editMode={editMode} toggleEditMode={toggleEditMode} />
           <WidthSetting width={width} setWidth={setDeviceMode} />
           <button
             aria-label="Open in new window"

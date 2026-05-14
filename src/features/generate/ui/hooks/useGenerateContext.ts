@@ -14,6 +14,7 @@ import {
   setGenerating,
   setSiteUrl,
   setStatusLogs,
+  setSessionId,
 } from "@/lib/features/generateSlice";
 import { GenerationStatusLog } from "../../generate.types";
 
@@ -68,12 +69,23 @@ export const useGenerateContext = () => {
     (log: GenerationStatusLog) => dispatch(appendStatusLog(log)),
     [dispatch],
   );
-  const onClearStatusState = useCallback(() => dispatch(clearStatusState()), [dispatch]);
+  const onClearStatusState = useCallback(
+    () => dispatch(clearStatusState()),
+    [dispatch],
+  );
   const onSetGenerateError = useCallback(
     (error: string | null) => dispatch(setGenerateError(error)),
     [dispatch],
   );
   const onSetSiteUrl = useCallback(
+    (value: string | null) => dispatch(setSiteUrl(normalizeSiteUrl(value))),
+    [dispatch],
+  );
+  const onSetSessionId = useCallback(
+    (value: string | null) => dispatch(setSessionId(value)),
+    [dispatch],
+  );
+  const onSetPreviewUrl = useCallback(
     (value: string | null) => dispatch(setSiteUrl(normalizeSiteUrl(value))),
     [dispatch],
   );
@@ -92,6 +104,8 @@ export const useGenerateContext = () => {
         appendStatusLog: onAppendStatusLog,
         clearStatusState: onClearStatusState,
         setGenerateError: onSetGenerateError,
+        setSessionId: onSetSessionId,
+        setPreviewUrl: onSetPreviewUrl,
       }) as const,
     [
       generateState,
@@ -105,6 +119,8 @@ export const useGenerateContext = () => {
       onAppendStatusLog,
       onClearStatusState,
       onSetGenerateError,
+      onSetSessionId,
+      onSetPreviewUrl,
     ],
   );
 };

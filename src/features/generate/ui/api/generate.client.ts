@@ -1,10 +1,10 @@
 import {
-  HttpClient,
-  FetchUtilHttpClient,
-  toClientErrorMessage,
-  ensureNonEmptyString,
   buildUrl,
+  ensureNonEmptyString,
+  FetchUtilHttpClient,
+  HttpClient,
   isAbortError,
+  toClientErrorMessage,
 } from "../../../shared/ui/api/client.shared";
 
 export class GenerateClientError extends Error {
@@ -29,17 +29,59 @@ export class GenerateClientError extends Error {
   }
 }
 
-export interface ApprovePlanParams {
+export interface TriggerResult {
+  success: boolean;
+  messageId: string;
+  sessionId: string;
+  approvalMessageId: string;
+}
+
+export interface BaseChatParams {
   chatId: string;
-  planId: string;
   signal?: AbortSignal;
 }
 
-export interface ApprovePlanResult {
-  success: true;
-  messageId: string;
-  approvalMessageId: string;
+export interface SessionParams extends BaseChatParams {
+  sessionId: string;
 }
+
+export interface PlanParams extends BaseChatParams {
+  planId: string;
+}
+
+export type TriggerAction =
+  | "approve_plan"
+  | "deploy_app"
+  | "retry_generate"
+  | "retry_deploy";
+
+export interface TriggerActionMap {
+  approve_plan: {
+    params: PlanParams;
+    result: TriggerResult;
+  };
+
+  deploy_app: {
+    params: SessionParams;
+    result: TriggerResult;
+  };
+
+  retry_generate: {
+    params: SessionParams;
+    result: TriggerResult;
+  };
+
+  retry_deploy: {
+    params: SessionParams;
+    result: TriggerResult;
+  };
+}
+
+export type TriggerParams<TAction extends TriggerAction> =
+  TriggerActionMap[TAction]["params"];
+
+export type TriggerActionResult<TAction extends TriggerAction> =
+  TriggerActionMap[TAction]["result"];
 
 export interface GenerationStatusHistoryEvent {
   event_type: string;
@@ -50,8 +92,10 @@ export interface GenerationStatusHistoryEvent {
 }
 
 export type GenerationSummary = {
+  genSessionId: string;
   status: string;
   messages: string[];
+  sessionType: "generate" | "deploy";
 };
 
 export type GenerationRealtimeStatusEvent = {
@@ -80,6 +124,7 @@ export type GenerationStreamEvent =
 export interface StreamGenerationStatusParams {
   chatId: string;
   onEvent: (event: GenerationStreamEvent) => void;
+  sessionId?: string;
   signal?: AbortSignal;
 }
 
@@ -89,7 +134,18 @@ export interface FetchGenerationSummaryParams {
 }
 
 export interface GenerateClientContract {
-  approvePlan(params: ApprovePlanParams): Promise<ApprovePlanResult>;
+  approvePlan(
+    params: TriggerParams<"approve_plan">,
+  ): Promise<TriggerActionResult<"approve_plan">>;
+  deployApp(
+    params: TriggerParams<"deploy_app">,
+  ): Promise<TriggerActionResult<"deploy_app">>;
+  retryGenerate(
+    params: TriggerParams<"retry_generate">,
+  ): Promise<TriggerActionResult<"retry_generate">>;
+  retryDeploy(
+    params: TriggerParams<"retry_deploy">,
+  ): Promise<TriggerActionResult<"retry_deploy">>;
   streamGenerationStatus(params: StreamGenerationStatusParams): Promise<void>;
   fetchGenerationSummary(
     params: FetchGenerationSummaryParams,
@@ -98,8 +154,11 @@ export interface GenerateClientContract {
 
 const GENERATE_ENDPOINTS = {
   APPROVE_PLAN: "/api/generate/approve-plan",
-  FETCH_STATUS: "/api/generate/fetch-status",
+  DEPLOY_APP: "/api/generate/deploy-app",
   FETCH_GEN_SUMMARY: "/api/generate/fetch-gen-summary",
+  FETCH_STATUS: "/api/generate/fetch-status",
+  RETRY_DEPLOY: "/api/generate/retry-deploy",
+  RETRY_GENERATE: "/api/generate/retry-generate",
 } as const;
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
@@ -172,7 +231,9 @@ export class GenerateClient implements GenerateClientContract {
     Promise<GenerationSummary>
   >();
 
-  async approvePlan(params: ApprovePlanParams): Promise<ApprovePlanResult> {
+  async approvePlan(
+    params: TriggerParams<"approve_plan">,
+  ): Promise<TriggerActionResult<"approve_plan">> {
     const chatId = ensureNonEmptyString(params.chatId, "chatId");
     const planId = ensureNonEmptyString(params.planId, "planId");
 
@@ -180,7 +241,9 @@ export class GenerateClient implements GenerateClientContract {
       "approvePlan",
       GENERATE_ENDPOINTS.APPROVE_PLAN,
       async () => {
-        const data = await this.httpClient.post<ApprovePlanResult>(
+        const data = await this.httpClient.post<
+          TriggerActionResult<"approve_plan">
+        >(
           GENERATE_ENDPOINTS.APPROVE_PLAN,
           {
             chatId,
@@ -190,13 +253,113 @@ export class GenerateClient implements GenerateClientContract {
         );
 
         if (!data?.success) {
-          throw new Error(
-            "Generation trigger was not acknowledged by the server",
-          );
+          throw new Error("Generation trigger failed");
         }
 
         ensureNonEmptyString(data.messageId, "messageId");
         ensureNonEmptyString(data.approvalMessageId, "approvalMessageId");
+        ensureNonEmptyString(data.sessionId, "sessionId");
+
+        return data;
+      },
+    );
+  }
+
+  async deployApp(
+    params: TriggerParams<"deploy_app">,
+  ): Promise<TriggerActionResult<"deploy_app">> {
+    const chatId = ensureNonEmptyString(params.chatId, "chatId");
+    const sessionId = ensureNonEmptyString(params.sessionId, "sessionId");
+    return this.execute(
+      "deployApp",
+      GENERATE_ENDPOINTS.DEPLOY_APP,
+      async () => {
+        const data = await this.httpClient.post<
+          TriggerActionResult<"deploy_app">
+        >(
+          GENERATE_ENDPOINTS.DEPLOY_APP,
+          {
+            chatId,
+            sessionId,
+          },
+          params.signal,
+        );
+
+        if (!data?.success) {
+          throw new Error("Deployment trigger failed");
+        }
+
+        ensureNonEmptyString(data.messageId, "messageId");
+        ensureNonEmptyString(data.approvalMessageId, "approvalMessageId");
+        ensureNonEmptyString(data.sessionId, "sessionId");
+
+        return data;
+      },
+    );
+  }
+
+  async retryGenerate(
+    params: TriggerParams<"retry_generate">,
+  ): Promise<TriggerActionResult<"retry_generate">> {
+    const chatId = ensureNonEmptyString(params.chatId, "chatId");
+    const sessionId = ensureNonEmptyString(params.sessionId, "sessionId");
+
+    return this.execute(
+      "retryGenerate",
+      GENERATE_ENDPOINTS.RETRY_GENERATE,
+      async () => {
+        const data = await this.httpClient.post<
+          TriggerActionResult<"retry_generate">
+        >(
+          GENERATE_ENDPOINTS.RETRY_GENERATE,
+          {
+            chatId,
+            sessionId,
+          },
+          params.signal,
+        );
+
+        if (!data?.success) {
+          throw new Error("Retry generate trigger failed");
+        }
+
+        ensureNonEmptyString(data.messageId, "messageId");
+        ensureNonEmptyString(data.approvalMessageId, "approvalMessageId");
+        ensureNonEmptyString(data.sessionId, "sessionId");
+
+        return data;
+      },
+    );
+  }
+
+  async retryDeploy(
+    params: TriggerParams<"retry_deploy">,
+  ): Promise<TriggerActionResult<"retry_deploy">> {
+    const chatId = ensureNonEmptyString(params.chatId, "chatId");
+    const sessionId = ensureNonEmptyString(params.sessionId, "sessionId");
+
+    return this.execute(
+      "retryDeploy",
+      GENERATE_ENDPOINTS.RETRY_DEPLOY,
+      async () => {
+        const data = await this.httpClient.post<
+          TriggerActionResult<"retry_deploy">
+        >(
+          GENERATE_ENDPOINTS.RETRY_DEPLOY,
+          {
+            chatId,
+            sessionId,
+          },
+          params.signal,
+        );
+
+        if (!data?.success) {
+          throw new Error("Retry deploy trigger failed");
+        }
+
+        ensureNonEmptyString(data.messageId, "messageId");
+        ensureNonEmptyString(data.approvalMessageId, "approvalMessageId");
+        ensureNonEmptyString(data.sessionId, "sessionId");
 
         return data;
       },
@@ -263,7 +426,10 @@ export class GenerateClient implements GenerateClientContract {
               const event = toGenerationStreamEvent(parsedPayload);
               if (!event) return;
 
-              if (sseId && (event.type === "event" || event.type === "current")) {
+              if (
+                sseId &&
+                (event.type === "event" || event.type === "current")
+              ) {
                 event.payload = { ...event.payload, sse_id: sseId };
               }
 
@@ -296,8 +462,14 @@ export class GenerateClient implements GenerateClientContract {
         );
 
         return {
+          genSessionId:
+            typeof data?.genSessionId === "string" ? data.genSessionId : "",
           status: typeof data?.status === "string" ? data.status : "",
           messages: Array.isArray(data?.messages) ? data.messages : [],
+          sessionType:
+            typeof data?.sessionType === "string"
+              ? data.sessionType
+              : "generate",
         };
       },
     ).catch((error) => {
@@ -322,7 +494,8 @@ export class GenerateClient implements GenerateClientContract {
       }
 
       const statusCode =
-        typeof (error as Error & { statusCode?: number })?.statusCode === "number"
+        typeof (error as Error & { statusCode?: number })?.statusCode ===
+        "number"
           ? (error as Error & { statusCode?: number }).statusCode
           : undefined;
 
