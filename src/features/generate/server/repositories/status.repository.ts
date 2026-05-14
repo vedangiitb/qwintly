@@ -9,8 +9,10 @@ export type GenerationStatusHistoryEvent = {
 };
 
 export type GenerationSummary = {
+  genSessionId: string;
   status: string;
   messages: string[];
+  sessionType?: "generate" | "deploy";
 };
 
 export class StatusRepository extends DBRepository {
@@ -42,21 +44,28 @@ export class StatusRepository extends DBRepository {
     if (error) throw new Error(error.message);
 
     const rows = Array.isArray(data) ? data : [];
-    const payload = (rows[0] ?? null) as
-      | {
-          genStatus?: unknown;
-          messages?: unknown;
-        }
-      | null;
+    const payload = (rows[0] ?? null) as {
+      id?: unknown;
+      genStatus?: unknown;
+      messages?: unknown;
+      session_type?: unknown;
+    } | null;
+
+    const genSessionId = typeof payload?.id === "string" ? payload.id : "";
 
     const status =
       typeof payload?.genStatus === "string" ? payload.genStatus : "";
 
     const messages = Array.isArray(payload?.messages)
-      ? payload.messages.filter((item): item is string => typeof item === "string")
+      ? payload.messages.filter(
+          (item): item is string => typeof item === "string",
+        )
       : [];
 
-    return { status, messages };
+    const sessionType =
+      payload.session_type == "deploy" ? "deploy" : "generate";
+
+    return { genSessionId, status, messages, sessionType };
   }
 
   async getGenSession(chatId: string): Promise<string> {

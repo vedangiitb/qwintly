@@ -1,9 +1,9 @@
 import { supabaseServer } from "@/lib/supabase-server";
 import { executeTrigger } from "./executeTrigger.service";
 
-export const generationTrigger = async (
+export const deploymentTrigger = async (
   chatId: string,
-  planId: string,
+  gen_session_id: string,
   token: string,
 ) => {
   const supabase = supabaseServer(token);
@@ -12,18 +12,18 @@ export const generationTrigger = async (
     chatId,
     token,
 
-    topicName: process.env.PUBSUB_TOPIC_WEB_GEN,
+    topicName: process.env.PUBSUB_TOPIC_WEB_DEPLOY,
 
-    successMessage: "Plan approved.",
+    successMessage: "Deployment started.",
 
     startRpc: () =>
-      supabase.rpc("start_generation", {
+      supabase.rpc("start_deployment", {
         p_chat_id: chatId,
-        p_plan_id: planId,
+        p_generation_session_id: gen_session_id,
       }),
 
     finishRpc: async (sessionId) => {
-      const { error } = await supabase.rpc("finish_generation", {
+      const { error } = await supabase.rpc("finish_deployment", {
         p_gen_id: sessionId,
         p_success: false,
       });
@@ -32,23 +32,21 @@ export const generationTrigger = async (
     },
 
     getSessionId: (row: {
-      prev_session_id: string;
-      request_type: string;
       model: string;
       provider: string;
       user_id: string;
       session_id: string;
+      plan_id: string;
     }) => row.session_id,
 
     buildJwtPayload: (row) => ({
       chatId,
-      planId,
+      planId: row.plan_id,
       userId: row.user_id,
-      requestType: row.request_type,
       provider: row.provider,
       model: row.model,
-      prevSessionId: row.prev_session_id,
       sessionId: row.session_id,
+      snapshotId: gen_session_id,
     }),
   });
 };
