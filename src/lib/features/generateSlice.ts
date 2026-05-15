@@ -6,6 +6,8 @@ interface GenerateState {
   isGenerating: boolean;
   currentLog: GenerationStatusLog | null;
   statusLogs: GenerationStatusLog[];
+  sessionId: string | null;
+  previewUrl: string | null;
   url: string | null;
   error: string | null;
 }
@@ -15,7 +17,9 @@ const initialState: GenerateState = {
   isGenerating: false,
   currentLog: null,
   statusLogs: [],
+  sessionId: null,
   url: null,
+  previewUrl: null,
   error: null,
 };
 
@@ -31,6 +35,12 @@ const generateSlice = createSlice({
     },
     setCurrentLog(state, action: PayloadAction<GenerationStatusLog | null>) {
       state.currentLog = action.payload;
+    },
+    setSessionId(state, action: PayloadAction<string | null>) {
+      state.sessionId = action.payload;
+    },
+    setPreviewUrl(state, action: PayloadAction<string | null>) {
+      state.previewUrl = action.payload;
     },
     applyHistoryLogs(state, action: PayloadAction<GenerationStatusLog[]>) {
       const logs = action.payload;
@@ -74,6 +84,7 @@ export const {
   setGenerating,
   setCurrentLog,
   applyHistoryLogs,
+  setSessionId,
   applyRealtimeLog,
   setStatusLogs,
   appendStatusLog,
