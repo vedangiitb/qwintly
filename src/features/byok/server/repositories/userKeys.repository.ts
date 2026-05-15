@@ -17,12 +17,13 @@ export class UserKeysRepository extends DBRepository {
    * Returns true when the user has at least one saved key.
    * Uses safe view.
    */
-  async hasAnyKey(): Promise<boolean> {
+  async hasAnyKey(provider: string): Promise<boolean> {
     const supabase = this.client;
 
     const { data, error } = await supabase
       .from("user_api_keys_safe")
       .select("id")
+      .eq("provider", provider)
       .limit(1);
 
     if (error) {
