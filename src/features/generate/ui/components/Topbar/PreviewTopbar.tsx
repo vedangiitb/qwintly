@@ -14,11 +14,16 @@ export default function PreviewTopbar({
 }) {
   const { chatVisible, toggleChatVisible, width, setDeviceMode } =
     useGenerateUi();
-  const { url } = useGenerate();
+  const { url, previewUrl } = useGenerate();
 
   const openInNewWindow = () => {
     if (displayUrl) window.open(displayUrl, "_blank");
   };
+
+  const canShowDeployed = Boolean(url?.trim());
+  const canShowPreview = Boolean(previewUrl?.trim());
+  const showingDeployed = Boolean(url && displayUrl === url);
+  const showingPreview = Boolean(previewUrl && displayUrl === previewUrl);
 
   return (
     <div className="flex items-center justify-between px-2 py-1 mb-3 select-none bg-background/50 border border-border/40 backdrop-blur-sm rounded-xl shadow-sm">
@@ -38,13 +43,21 @@ export default function PreviewTopbar({
         Preview
       </h3>
 
-      {url && url != displayUrl ? (
+      {displayUrl && canShowDeployed && showingPreview ? (
         <button
-          aria-label="Open in new window"
-          onClick={() => updateDisplayUrl(url)}
+          aria-label="Show deployed version"
+          onClick={() => updateDisplayUrl(url!)}
           className="p-1.5 rounded-lg transition-all duration-150 ease-in-out hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring outline-none"
         >
           Show deployed version
+        </button>
+      ) : displayUrl && canShowPreview && showingDeployed ? (
+        <button
+          aria-label="Show preview version"
+          onClick={() => updateDisplayUrl(previewUrl!)}
+          className="p-1.5 rounded-lg transition-all duration-150 ease-in-out hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring outline-none"
+        >
+          Show preview version
         </button>
       ) : (
         <div />

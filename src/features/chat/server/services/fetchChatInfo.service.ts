@@ -46,7 +46,7 @@ export const fetchChatInfo = async (
       plansRepo.fetchPlansByChatId(validChatId),
       sitesRepo.fetchSite(validChatId),
       snapshotsRepo.getGenIdFromChatId(chatId).then((genId) => {
-        return genId ? genId + process.env.PREVIEW_URL_SUFFIX : "";
+        return genId ? genId + '-' + process.env.PREVIEW_URL_SUFFIX : "";
       }),
       chatsRepo.isGenerating(validChatId),
     ]);

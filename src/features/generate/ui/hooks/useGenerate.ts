@@ -63,6 +63,7 @@ export const useGenerate = () => {
   const {
     activeChatId,
     isGenerating,
+    isSessionRunning,
     currentLog,
     statusLogs,
     error,
@@ -343,6 +344,7 @@ export const useGenerate = () => {
   return {
     activeChatId,
     isGenerating,
+    isSessionRunning,
     currentLog,
     currentStatus: resolveStatusTextFromLog(currentLog),
     statusLogs,

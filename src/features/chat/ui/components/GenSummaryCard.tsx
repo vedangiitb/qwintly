@@ -49,7 +49,7 @@ export const GenSummaryCard = ({
   const [loadedForMsgId, setLoadedForMsgId] = useState<string | null>(null);
 
   const { chatId } = useChat();
-  const { setPreviewUrl, deployApp, retryGenerate, retryDeploy } =
+  const { isSessionRunning, setPreviewUrl, deployApp, retryGenerate, retryDeploy } =
     useGenerate();
 
   const canFetch = Boolean(messageId?.trim());
@@ -77,8 +77,10 @@ export const GenSummaryCard = ({
   };
 
   const updatePreviewUrl = (genId: string) => {
-    const previewSuffix = process.env.PREVIEW_URL_SUFFIX;
+    // TODO: Having env vars to set this based on the environment
+    const previewSuffix = 'devpreviews.qwintly.com';
     if (!previewSuffix) return;
+    console.log("Preview url", `${genId}-${previewSuffix}`);
     setPreviewUrl(`${genId}-${previewSuffix}`);
   };
 
@@ -188,9 +190,7 @@ export const GenSummaryCard = ({
                           size="sm"
                           variant="secondary"
                           className="h-8 rounded-full px-3 text-xs"
-                          onClick={() =>
-                            updatePreviewUrl(summary.genSessionId)
-                          }
+                          onClick={() => updatePreviewUrl(summary.genSessionId)}
                         >
                           <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
                           Preview
@@ -202,10 +202,11 @@ export const GenSummaryCard = ({
                           size="sm"
                           variant="default"
                           className="h-8 rounded-full px-3 text-xs"
-                          disabled={!canTrigger || isTriggering}
+                          disabled={!canTrigger || isTriggering || isSessionRunning}
                           onClick={() => {
                             if (!chatId?.trim()) return;
                             if (isTriggering) return;
+                            if (isSessionRunning) return;
                             setIsTriggering(true);
                             const task =
                               summary.sessionType === "generate"
@@ -231,14 +232,16 @@ export const GenSummaryCard = ({
                           size="sm"
                           variant="default"
                           className="h-8 rounded-full px-3 text-xs"
-                          disabled={!canTrigger || isTriggering}
+                          disabled={!canTrigger || isTriggering || isSessionRunning}
                           onClick={() => {
                             if (!chatId?.trim()) return;
                             if (isTriggering) return;
+                            if (isSessionRunning) return;
                             setIsTriggering(true);
-                            void deployApp(chatId, summary.genSessionId).finally(
-                              () => setIsTriggering(false),
-                            );
+                            void deployApp(
+                              chatId,
+                              summary.genSessionId,
+                            ).finally(() => setIsTriggering(false));
                           }}
                         >
                           <Rocket className="mr-1.5 h-3.5 w-3.5" />
@@ -288,4 +291,3 @@ export const GenSummaryCard = ({
     </div>
   );
 };
-

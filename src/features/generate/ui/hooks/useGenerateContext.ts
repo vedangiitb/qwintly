@@ -12,6 +12,7 @@ import {
   setCurrentLog,
   setGenerateError,
   setGenerating,
+  setPreviewUrl,
   setSiteUrl,
   setStatusLogs,
   setSessionId,
@@ -86,7 +87,7 @@ export const useGenerateContext = () => {
     [dispatch],
   );
   const onSetPreviewUrl = useCallback(
-    (value: string | null) => dispatch(setSiteUrl(normalizeSiteUrl(value))),
+    (value: string | null) => dispatch(setPreviewUrl(normalizeSiteUrl(value))),
     [dispatch],
   );
 

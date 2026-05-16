@@ -28,11 +28,11 @@ export default function PreviewPanel() {
         displayUrl={displayUrl}
       />
 
-      {url || previewUrl ? (
+      {displayUrl ? (
         <iframe
           id="preview-frame"
-          key={url || previewUrl}
-          src={url || previewUrl}
+          key={displayUrl}
+          src={displayUrl}
           style={{
             margin: "auto",
             height: "800px",

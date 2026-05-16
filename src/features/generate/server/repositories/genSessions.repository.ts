@@ -7,6 +7,8 @@ export class GenSnapshotsRepository extends DBRepository {
       .from("generation_sessions")
       .select("id")
       .eq("conv_id", chatId)
+      .eq("status", "implemented")
+      .eq("session_type","generate")
       .order("last_modified", { ascending: false })
       .limit(1)
       .maybeSingle();

@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useChat } from "../hooks/useChat";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useGenerate } from "@/features/generate/ui/hooks/useGenerate";
 
 const TASK_TYPE_LABEL: Record<Plan["tasks"][number]["task_type"], string> = {
   ui_task: "UI",
@@ -39,6 +40,7 @@ export function PlanReview({
   fallbackText?: string;
 }) {
   const { approvePlan: onApprove } = useChat();
+  const { isSessionRunning } = useGenerate();
   const router = useRouter();
   const isUpdatedPlan = plan?.status === PLAN_STATUS.UPDATED;
   const [isExpanded, setIsExpanded] = useState(!isUpdatedPlan);
@@ -66,6 +68,7 @@ export function PlanReview({
   const shouldShowApprove = plan?.status === PLAN_STATUS.PENDING;
 
   const handleApprove = async () => {
+    if (isSessionRunning) return;
     try {
       await onApprove(plan.id);
     } catch (error) {
@@ -205,7 +208,7 @@ export function PlanReview({
        {shouldShowApprove ? (
          <Card>
            <CardContent className="flex justify-end px-4">
-             <Button size="sm" onClick={handleApprove}>
+             <Button size="sm" onClick={handleApprove} disabled={isSessionRunning}>
                Approve Plan
              </Button>
            </CardContent>
