@@ -1,39 +1,35 @@
+import { ToolCall } from "@/features/ai/types/tools.types";
 import { BaseMessage } from "@langchain/core/messages";
 import { ChatGoogleGenerativeAI as ChatGoogle } from "@langchain/google-genai";
-import { ToolCall } from "@/features/ai/types/tools.types";
+import { looksLikeLeakedToolText } from "../flows/aiChatAgent/nodes/generateResponse";
 import { toolCallMap } from "../tools/tools";
 import { parseToolCall } from "./toolCall.service";
 
-const TOOL_RESPONSE_FALLBACKS: Record<string, string> = {
+const TOOL_RESPONSE_TEXTS: Record<string, string> = {
   [toolCallMap.UPDATE_PLAN]: "I updated the plan.",
-  [toolCallMap.ASK_QUESTIONS]: "I need a few clarifications before I can continue.",
+  [toolCallMap.ASK_QUESTIONS]:
+    "I need a few clarifications before I can continue.",
 };
-
-const TOOL_CALL_TEXT_PATTERNS = [
-  /\bdefault_api\./i,
-  /\bupdate_plan\s*\(/i,
-  /\bask_questions\s*\(/i,
-  /\btool_code\b/i,
-  /\bprint\s*\(/i,
-];
 
 const extractUserFacingText = (
   responseText: string | undefined,
   toolNames: string[],
 ): string => {
+  if (toolNames.length > 0) {
+    return TOOL_RESPONSE_TEXTS[toolNames[0]];
+  }
   const trimmedText = responseText?.trim() ?? "";
   if (!trimmedText) {
-    return toolNames.length > 0
-      ? TOOL_RESPONSE_FALLBACKS[toolNames[0]] ?? "Working on that."
-      : "";
+    return "Failed to generate response. Please try again";
   }
 
-  const looksLikeSerializedToolCall =
-    toolNames.length > 0 &&
-    TOOL_CALL_TEXT_PATTERNS.some((pattern) => pattern.test(trimmedText));
+  const looksLikeSerializedToolCall = looksLikeLeakedToolText(responseText);
 
   if (looksLikeSerializedToolCall) {
-    return TOOL_RESPONSE_FALLBACKS[toolNames[0]] ?? "Working on that.";
+    return (
+      TOOL_RESPONSE_TEXTS[toolNames[0]] ??
+      "Something went wrong. Please try again"
+    );
   }
 
   return trimmedText;

@@ -29,6 +29,7 @@ function resolveModelGroup(provider: string) {
 
 export default function PrefDialog() {
   const [open, setOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { preferences, isLoading, error, selectedModel, selectedProvider, saveModel, saveProvider } =
     usePreferences({ enabled: open });
 
@@ -54,6 +55,7 @@ export default function PrefDialog() {
 
   useEffect(() => {
     if (!open) return;
+    if (isSaving) return;
     if (isLoading && !preferences) return;
 
     const provider = preferences?.pref_provider ?? DEFAULT_PROVIDER;
@@ -67,7 +69,7 @@ export default function PrefDialog() {
 
     setDraftProvider(provider);
     setDraftModel(resolvedModel);
-  }, [open, preferences, isLoading]);
+  }, [open, preferences, isLoading, isSaving]);
 
   useEffect(() => {
     if (!open) return;
@@ -82,6 +84,7 @@ export default function PrefDialog() {
 
   const handleSave = async () => {
     try {
+      setIsSaving(true);
       const updates: Promise<unknown>[] = [];
 
       if (draftProvider && draftProvider !== selectedProvider) {
@@ -104,6 +107,8 @@ export default function PrefDialog() {
     } catch (e) {
       console.error("Failed to save preferences", e);
       toast.error(e instanceof Error ? e.message : "Failed to update preferences");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -188,16 +193,16 @@ export default function PrefDialog() {
 
           </div>
 
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline" type="button">
-                Cancel
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline" type="button">
+                  Cancel
+                </Button>
+              </DialogClose>
+              <Button type="button" onClick={handleSave} disabled={isLoading || isSaving}>
+                Save changes
               </Button>
-            </DialogClose>
-            <Button type="button" onClick={handleSave} disabled={isLoading}>
-              Save changes
-            </Button>
-          </DialogFooter>
+            </DialogFooter>
         </DialogContent>
       </form>
     </Dialog>

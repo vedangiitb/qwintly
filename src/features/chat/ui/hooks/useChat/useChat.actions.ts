@@ -202,6 +202,7 @@ export const useChatActions = ({
         clearStatusState();
       }
       setChatId(targetChatId);
+      setReduxActiveChatId(targetChatId);
 
       try {
         const [messagesResult] = await Promise.all([
@@ -226,6 +227,7 @@ export const useChatActions = ({
       setChatId,
       resetActiveChatState,
       clearStatusState,
+      setReduxActiveChatId,
       hydrateChatInfo,
       setMessages,
       setMessagesCursor,

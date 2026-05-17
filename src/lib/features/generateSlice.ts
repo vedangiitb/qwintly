@@ -30,6 +30,10 @@ const generateSlice = createSlice({
   initialState,
   reducers: {
     setActiveChatId(state, action: PayloadAction<string | null>) {
+      if (state.activeChatId !== action.payload) {
+        state.url = null;
+        state.previewUrl = null;
+      }
       state.activeChatId = action.payload;
     },
     setGenerating(state, action: PayloadAction<boolean>) {

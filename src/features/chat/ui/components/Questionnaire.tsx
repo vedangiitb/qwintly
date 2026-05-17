@@ -2,6 +2,12 @@
 
 import { QuestionAnswers, UserResponse } from "@/features/ai/types/askQuestions.types";
 import { Button } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useEffect, useMemo, useState } from "react";
@@ -17,6 +23,7 @@ export function Questionnaire({ questionSet, fallbackText }: QuestionnaireProps)
   const [submitting, setSubmitting] = useState(false);
   const [responses, setResponses] = useState<Record<string, string | string[]>>({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [showSubmittedDetails, setShowSubmittedDetails] = useState(false);
 
   const hasSubmitted = questionSet?.status === "answered" || questionSet?.status === "skipped";
 
@@ -39,8 +46,14 @@ export function Questionnaire({ questionSet, fallbackText }: QuestionnaireProps)
     [initialResponses, responses],
   );
 
+  const submittedResponses = useMemo(() => {
+    if (Object.keys(initialResponses).length > 0) return initialResponses;
+    return effectiveResponses;
+  }, [effectiveResponses, initialResponses]);
+
   useEffect(() => {
     setCurrentQuestionIndex(0);
+    setShowSubmittedDetails(false);
   }, [questionSet?.id, questionSet?.messageId]);
 
   const setQuestionResponse = (questionId: string, value: string | string[]) => {
@@ -91,6 +104,12 @@ export function Questionnaire({ questionSet, fallbackText }: QuestionnaireProps)
     return "";
   };
 
+  const formatResponse = (value: string | string[] | undefined): string => {
+    if (Array.isArray(value)) return value.filter(Boolean).join(", ") || "—";
+    if (typeof value === "string") return value.trim() || "—";
+    return "—";
+  };
+
   const onSubmit = async () => {
     if (!questionSet) return;
     setSubmitting(true);
@@ -137,6 +156,7 @@ export function Questionnaire({ questionSet, fallbackText }: QuestionnaireProps)
   }
 
   if (hasSubmitted) {
+    const hasAnySubmittedAnswers = Object.keys(submittedResponses).length > 0;
     return (
       <div className="w-full md:max-w-[85%] space-y-4">
         <Card className="rounded-2xl">
@@ -148,6 +168,39 @@ export function Questionnaire({ questionSet, fallbackText }: QuestionnaireProps)
               Thanks! Your full questionnaire has already been submitted, so no
               more changes are needed here.
             </p>
+
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowSubmittedDetails((v) => !v)}
+                disabled={!hasAnySubmittedAnswers}
+              >
+                {showSubmittedDetails ? "Hide answers" : "View answers"}
+              </Button>
+              {!hasAnySubmittedAnswers ? (
+                <p className="text-xs text-muted-foreground">
+                  Answers are not available for this questionnaire.
+                </p>
+              ) : null}
+            </div>
+
+            {showSubmittedDetails && hasAnySubmittedAnswers ? (
+              <Accordion type="single" collapsible className="pt-2">
+                {questionSet.questions.map((question) => (
+                  <AccordionItem key={question.id} value={question.id}>
+                    <AccordionTrigger>
+                      <span className="text-sm">{question.question}</span>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="text-sm text-foreground/90">
+                        {formatResponse(submittedResponses[question.id])}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            ) : null}
           </CardContent>
         </Card>
         <Button variant="outline" disabled>
