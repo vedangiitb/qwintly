@@ -49,8 +49,13 @@ export const GenSummaryCard = ({
   const [loadedForMsgId, setLoadedForMsgId] = useState<string | null>(null);
 
   const { chatId } = useChat();
-  const { isSessionRunning, setPreviewUrl, deployApp, retryGenerate, retryDeploy } =
-    useGenerate();
+  const {
+    isSessionRunning,
+    setPreviewUrl,
+    deployApp,
+    retryGenerate,
+    retryDeploy,
+  } = useGenerate();
 
   const canFetch = Boolean(messageId?.trim());
   const canTrigger = Boolean(chatId?.trim());
@@ -77,10 +82,8 @@ export const GenSummaryCard = ({
   };
 
   const updatePreviewUrl = (genId: string) => {
-    // TODO: Having env vars to set this based on the environment
-    const previewSuffix = 'devpreviews.qwintly.com';
+    const previewSuffix = process.env.NEXT_PUBLIC_PREVIEW_URL_SUFFIX ?? "";
     if (!previewSuffix) return;
-    console.log("Preview url", `${genId}-${previewSuffix}`);
     setPreviewUrl(`${genId}-${previewSuffix}`);
   };
 
@@ -202,7 +205,9 @@ export const GenSummaryCard = ({
                           size="sm"
                           variant="default"
                           className="h-8 rounded-full px-3 text-xs"
-                          disabled={!canTrigger || isTriggering || isSessionRunning}
+                          disabled={
+                            !canTrigger || isTriggering || isSessionRunning
+                          }
                           onClick={() => {
                             if (!chatId?.trim()) return;
                             if (isTriggering) return;
@@ -232,7 +237,9 @@ export const GenSummaryCard = ({
                           size="sm"
                           variant="default"
                           className="h-8 rounded-full px-3 text-xs"
-                          disabled={!canTrigger || isTriggering || isSessionRunning}
+                          disabled={
+                            !canTrigger || isTriggering || isSessionRunning
+                          }
                           onClick={() => {
                             if (!chatId?.trim()) return;
                             if (isTriggering) return;
