@@ -29,7 +29,8 @@ export default function Generate({ params }: Props) {
     loadChat,
     isGeneratingResponse,
   } = useChat();
-  const { isGenerating } = useGenerate();
+  const { isGenerating, setGenerating, setSiteUrl, setPreviewUrl } =
+    useGenerate();
   const { chatVisible } = useGenerateUi();
   const [isMobile, setIsMobile] = useState(false);
 
@@ -40,11 +41,18 @@ export default function Generate({ params }: Props) {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  const resetChatState = () => {
+    setGenerating(false);
+    setSiteUrl(null);
+    setPreviewUrl(null);
+  };
+
   useEffect(() => {
     // useEffect for loading chat messages and chat info
     const run = async () => {
       if (!id) return;
       try {
+        resetChatState();
         await loadChat(id);
       } catch (err) {
         console.error("Failed to load chat", err);

@@ -1,15 +1,14 @@
 ﻿"use client";
-import { useAuth } from "@/features/auth/ui/hooks/useAuth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useAuth } from "@/features/auth/ui/hooks/useAuth";
 import { CircleUser, HelpCircle, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import PrefDialog from "./prefDialog";
-import SettingsDialog from "./settingsDialog";
 
 export default function UserPopover() {
   const router = useRouter();
@@ -52,7 +51,6 @@ export default function UserPopover() {
         </button>
         <div className="flex flex-col gap-1 text-foreground/90 mb-2">
           <PrefDialog />
-          <SettingsDialog />
         </div>
         <div className="pt-2 flex flex-col gap-1 text-foreground/80 border-t border-white/5">
           <button

@@ -21,10 +21,13 @@ const TOOL_LEAK_PATTERNS: RegExp[] = [
   /\btool_code\b/i,
   /\bdefault_api\b/i,
   /\bdefault_api\./i,
+  /\bprint\s*\(/i,
   /\b(update_plan|ask_questions|update_context)\b/i,
 ];
 
-const looksLikeLeakedToolText = (text: string | null | undefined): boolean => {
+export const looksLikeLeakedToolText = (
+  text: string | null | undefined,
+): boolean => {
   const trimmed = text?.trim();
   if (!trimmed) return false;
   return TOOL_LEAK_PATTERNS.some((pattern) => pattern.test(trimmed));
@@ -56,10 +59,7 @@ export const generateAiResponse = async (
     const attemptContext =
       attempt === 0
         ? context
-        : [
-            ...context,
-            new HumanMessage(buildRetryPrompt(lastResponseToUser)),
-          ];
+        : [...context, new HumanMessage(buildRetryPrompt(lastResponseToUser))];
 
     const { responseToUser, toolCalls } = await invokeAgentOnce(
       llm,
@@ -70,7 +70,8 @@ export const generateAiResponse = async (
     lastResponseToUser = responseToUser;
     lastToolCalls = toolCalls;
 
-    const shouldRetry = looksLikeLeakedToolText(responseToUser) && !toolCalls.length;
+    const shouldRetry =
+      looksLikeLeakedToolText(responseToUser) && !toolCalls.length;
 
     if (!shouldRetry) break;
 

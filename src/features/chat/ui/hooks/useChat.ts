@@ -25,14 +25,25 @@ export const useChat = () => {
     clearError,
     resetActiveChatState: resetChatContextState,
   } = context;
-  const { clearStatusState, setGenerating } = useGenerate();
+  const { clearStatusState, setGenerating, setActiveChatId, setSiteUrl, setPreviewUrl } =
+    useGenerate();
   const actions = useChatActions({ context, abortControllerRef });
 
   const resetActiveChatState = useCallback(() => {
     resetChatContextState();
     clearStatusState();
     setGenerating(false);
-  }, [resetChatContextState, clearStatusState, setGenerating]);
+    setActiveChatId(null);
+    setSiteUrl(null);
+    setPreviewUrl(null);
+  }, [
+    resetChatContextState,
+    clearStatusState,
+    setGenerating,
+    setActiveChatId,
+    setSiteUrl,
+    setPreviewUrl,
+  ]);
 
   return {
     chatId,
