@@ -1,5 +1,3 @@
-// app/api/generation/status/route.ts
-
 import { createGenerationStatusStream } from "@/features/generate/server/services/generationStatus.service";
 import { verifyToken } from "@/lib/verifyToken";
 import { NextRequest } from "next/server";
@@ -10,6 +8,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const chatId = searchParams.get("chatId");
+  const sessionId = searchParams.get("sessionId");
   const token = req.headers.get("authorization")?.replace("Bearer ", "") ?? "";
 
   if (!chatId?.trim()) {
@@ -22,7 +21,7 @@ export async function GET(req: NextRequest) {
 
   await verifyToken(token);
 
-  const stream = createGenerationStatusStream(chatId.trim(), token, req.signal);
+  const stream = createGenerationStatusStream(chatId.trim(), token,sessionId, req.signal);
 
   return new Response(stream, {
     headers: {

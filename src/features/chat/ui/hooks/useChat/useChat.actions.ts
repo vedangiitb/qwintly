@@ -89,18 +89,20 @@ export const useChatActions = ({
     setGenerating: setReduxGenerating,
     setActiveChatId: setReduxActiveChatId,
     setSiteUrl: setReduxSiteUrl,
+    setPreviewUrl,
   } = useGenerate();
 
   const terminalHydrationInFlightRef = useRef<Set<string>>(new Set());
 
   const hydrateChatInfo = useCallback(
     async (targetChatId: string) => {
-      const { questionAnswers, plans, siteUrl, isGenerating } =
+      const { questionAnswers, plans, siteUrl, previewUrl, isGenerating } =
         await fetchChatInfo(targetChatId);
       setQuestionAnswersByMessageId(toQuestionAnswerMap(questionAnswers));
       setPlansByMessageId(toPlanMap(plans));
       setLatestQuestionSetId(questionAnswers[0]?.id ?? null);
       setLatestPlanMessageId(resolveLatestPlanMessageId(plans));
+      setPreviewUrl(previewUrl);
       setUrl(siteUrl);
       setReduxSiteUrl(siteUrl?.trim() ? siteUrl : null);
       setIsGenerating(isGenerating);
@@ -128,11 +130,15 @@ export const useChatActions = ({
         limit: DEFAULT_MESSAGES_PAGE_SIZE,
       });
 
-      setMessages((prev) => dedupeAndSortMessages([...prev, ...result.messages]));
+      setMessages((prev) =>
+        dedupeAndSortMessages([...prev, ...result.messages]),
+      );
 
       // Only initialize pagination state if we don't have it yet.
       setMessagesCursor((prevCursor) =>
-        prevCursor === null || prevCursor === undefined ? result.nextCursor : prevCursor,
+        prevCursor === null || prevCursor === undefined
+          ? result.nextCursor
+          : prevCursor,
       );
       setHasMoreMessages((prevHasMore) =>
         prevHasMore === false ? Boolean(result.nextCursor) : prevHasMore,
@@ -147,7 +153,10 @@ export const useChatActions = ({
       if (terminalHydrationInFlightRef.current.has(targetChatId)) return;
 
       terminalHydrationInFlightRef.current.add(targetChatId);
-      void Promise.all([hydrateChatInfo(targetChatId), refreshLatestMessages(targetChatId)])
+      void Promise.all([
+        hydrateChatInfo(targetChatId),
+        refreshLatestMessages(targetChatId),
+      ])
         .catch((err) => {
           const message = toErrorMessage(
             err,

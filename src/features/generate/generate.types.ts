@@ -5,3 +5,5 @@ export interface GenerationStatusLog {
   seqNum: number | null;
   createdAt: string;
 }
+
+export type SessionType = "generate" | "deploy";

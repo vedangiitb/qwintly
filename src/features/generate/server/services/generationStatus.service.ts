@@ -12,6 +12,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export const createGenerationStatusStream = (
   chatId: string,
   token: string,
+  sessionId?: string,
   signal?: AbortSignal,
 ): ReadableStream => {
   const statusRepository = new StatusRepository(token);
@@ -85,7 +86,7 @@ export const createGenerationStatusStream = (
           payload: { status: "initializing", chatId },
         });
 
-        let genId = "";
+        let genId = sessionId;
         const startTime = Date.now();
         const timeout = 120000; // 2 minutes
 

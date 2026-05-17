@@ -4,8 +4,11 @@ import { GenerationStatusLog } from "@/features/generate/generate.types";
 interface GenerateState {
   activeChatId: string | null;
   isGenerating: boolean;
+  isSessionRunning: boolean;
   currentLog: GenerationStatusLog | null;
   statusLogs: GenerationStatusLog[];
+  sessionId: string | null;
+  previewUrl: string | null;
   url: string | null;
   error: string | null;
 }
@@ -13,9 +16,12 @@ interface GenerateState {
 const initialState: GenerateState = {
   activeChatId: null,
   isGenerating: false,
+  isSessionRunning: false,
   currentLog: null,
   statusLogs: [],
+  sessionId: null,
   url: null,
+  previewUrl: null,
   error: null,
 };
 
@@ -28,9 +34,16 @@ const generateSlice = createSlice({
     },
     setGenerating(state, action: PayloadAction<boolean>) {
       state.isGenerating = action.payload;
+      state.isSessionRunning = action.payload;
     },
     setCurrentLog(state, action: PayloadAction<GenerationStatusLog | null>) {
       state.currentLog = action.payload;
+    },
+    setSessionId(state, action: PayloadAction<string | null>) {
+      state.sessionId = action.payload;
+    },
+    setPreviewUrl(state, action: PayloadAction<string | null>) {
+      state.previewUrl = action.payload;
     },
     applyHistoryLogs(state, action: PayloadAction<GenerationStatusLog[]>) {
       const logs = action.payload;
@@ -59,6 +72,8 @@ const generateSlice = createSlice({
       state.currentLog = null;
       state.statusLogs = [];
       state.error = null;
+      state.isGenerating = false;
+      state.isSessionRunning = false;
     },
     setGenerateError(state, action: PayloadAction<string | null>) {
       state.error = action.payload;
@@ -74,6 +89,8 @@ export const {
   setGenerating,
   setCurrentLog,
   applyHistoryLogs,
+  setSessionId,
+  setPreviewUrl,
   applyRealtimeLog,
   setStatusLogs,
   appendStatusLog,
