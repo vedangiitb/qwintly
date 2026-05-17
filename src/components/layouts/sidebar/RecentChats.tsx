@@ -10,7 +10,7 @@ export default function RecentChats({
   isExpanded: boolean;
   setSidebarExpanded: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const { recentChats, loadRecentChats } = useChat();
+  const { recentChats, loadRecentChats, resetActiveChatState } = useChat();
   const router = useRouter();
 
   useEffect(() => {
@@ -39,6 +39,7 @@ export default function RecentChats({
                   ) {
                     setSidebarExpanded(false);
                   }
+                  resetActiveChatState();
                   router.push(`/generate/${item.id}`);
                 }}
                 className="text-left px-2 py-2 rounded-md hover:bg-muted transition cursor-pointer overflow-hidden whitespace-nowrap text-ellipsis"

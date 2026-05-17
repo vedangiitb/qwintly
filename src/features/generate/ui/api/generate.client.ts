@@ -448,7 +448,7 @@ export class GenerateClient implements GenerateClientContract {
   ): Promise<GenerationSummary> {
     const msgId = ensureNonEmptyString(params.msgId, "msgId");
 
-    const cached = this.generationSummaryCache.get(msgId);
+    const cached = await this.generationSummaryCache.get(msgId);
     if (cached) return cached;
 
     const task = this.execute(
