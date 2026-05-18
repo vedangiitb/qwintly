@@ -345,6 +345,7 @@ export const useGenerate = () => {
     activeChatId,
     isGenerating,
     isSessionRunning,
+    sessionId,
     currentLog,
     currentStatus: resolveStatusTextFromLog(currentLog),
     statusLogs,

@@ -1,16 +1,42 @@
 "use client";
 
 import { useGenerateUi } from "@/features/generate/ui/hooks/useGenerateUi";
-import { ExternalLink, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import {
+  ExternalLink,
+  PanelLeftClose,
+  PanelLeftOpen,
+  PencilLine,
+  Redo2,
+  Save,
+  Undo2,
+} from "lucide-react";
 import { useGenerate } from "../../hooks/useGenerate";
 import WidthSetting from "./widthSetting";
 
 export default function PreviewTopbar({
   updateDisplayUrl,
   displayUrl,
+  editMode,
+  editingAvailable,
+  onToggleEditMode,
+  onSaveEdits,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
+  pendingEditsLabel,
 }: {
   updateDisplayUrl: (url: string) => void;
   displayUrl: string;
+  editMode: boolean;
+  editingAvailable: boolean;
+  onToggleEditMode: () => void;
+  onSaveEdits: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  pendingEditsLabel: string | null;
 }) {
   const { chatVisible, toggleChatVisible, width, setDeviceMode } =
     useGenerateUi();
@@ -64,8 +90,66 @@ export default function PreviewTopbar({
       )}
 
       {displayUrl ? (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5">
           <WidthSetting width={width} setWidth={setDeviceMode} />
+
+          <button
+            aria-label={editMode ? "Disable edit mode" : "Enable edit mode"}
+            onClick={onToggleEditMode}
+            disabled={!editingAvailable}
+            className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all duration-150 ease-in-out focus-visible:ring-2 focus-visible:ring-ring outline-none ${
+              editMode
+                ? "bg-accent text-foreground"
+                : "hover:bg-accent text-muted-foreground"
+            } ${!editingAvailable ? "opacity-50 cursor-not-allowed" : ""}`}
+            title={
+              editingAvailable
+                ? "Toggle edit mode"
+                : "Editing unavailable for this preview (likely cross-origin)"
+            }
+          >
+            <PencilLine className="w-4 h-4" />
+            <span className="text-[12px] font-medium">
+              {editMode ? "Editing" : "Edit"}
+            </span>
+          </button>
+
+          <button
+            aria-label="Undo"
+            onClick={onUndo}
+            disabled={!canUndo}
+            className={`p-1.5 rounded-lg transition-all duration-150 ease-in-out hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring outline-none ${
+              !canUndo ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            title="Undo"
+          >
+            <Undo2 className="w-4 h-4 text-muted-foreground" />
+          </button>
+
+          <button
+            aria-label="Redo"
+            onClick={onRedo}
+            disabled={!canRedo}
+            className={`p-1.5 rounded-lg transition-all duration-150 ease-in-out hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring outline-none ${
+              !canRedo ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            title="Redo"
+          >
+            <Redo2 className="w-4 h-4 text-muted-foreground" />
+          </button>
+
+          <button
+            aria-label="Save edits"
+            onClick={onSaveEdits}
+            className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all duration-150 ease-in-out hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring outline-none"
+            title="Save edits"
+          >
+            <Save className="w-4 h-4 text-muted-foreground" />
+            <span className="text-[12px] font-medium text-muted-foreground">
+              Save{pendingEditsLabel ? ` (${pendingEditsLabel})` : ""}
+            </span>
+          </button>
+
           <button
             aria-label="Open in new window"
             onClick={openInNewWindow}
