@@ -49,12 +49,13 @@ export function usePreviewDomEdits(params: {
   genId: string | null;
   chatId: string | null;
 }) {
-  const { displayUrl, iframeRef, genId, chatId } = params;
+  const { displayUrl, iframeRef, chatId } = params;
 
   const [editMode, setEditMode] = useState(false);
   const [editingAvailable, setEditingAvailable] = useState(false);
   const [appliedOps, setAppliedOps] = useState<PreviewDomOp[]>([]);
   const [undoneOps, setUndoneOps] = useState<PreviewDomOp[]>([]);
+  const [genId, setGenId] = useState("");
   const [currentRoute, setCurrentRoute] = useState(() =>
     tryGetPathFromUrl(displayUrl),
   );
@@ -71,6 +72,14 @@ export function usePreviewDomEdits(params: {
     return `${appliedOps.length} change${appliedOps.length === 1 ? "" : "s"}`;
   }, [appliedOps.length]);
 
+  const getGenIdFromUrl = (url: string): string | null => {
+    const match = url.match(
+      /^(?:https?:\/\/)?([0-9a-fA-F-]{36})-(?:dev)?previews\.qwintly\.com\/?$/,
+    );
+
+    return match?.[1] ?? null;
+  };
+
   const postToIframe = (payload: Record<string, unknown>) => {
     const win = iframeRef.current?.contentWindow;
     if (!win) return;
@@ -81,6 +90,7 @@ export function usePreviewDomEdits(params: {
   };
 
   useEffect(() => {
+    setGenId(getGenIdFromUrl(displayUrl));
     setCurrentRoute(tryGetPathFromUrl(displayUrl));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [displayUrl]);
@@ -169,6 +179,11 @@ export function usePreviewDomEdits(params: {
     postToIframe({ type: "APPLY_OP", op });
   };
 
+  const onClearEdits = () => {
+    setAppliedOps([]);
+    setUndoneOps([]);
+  };
+
   const onSaveEdits = async () => {
     if (!appliedOps.length) {
       toast("No changes to save");
@@ -182,15 +197,11 @@ export function usePreviewDomEdits(params: {
         chatId,
         operations: appliedOps,
       });
+      onClearEdits();
       toast.success("Saved edits");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to save edits");
     }
-  };
-
-  const onClearEdits = () => {
-    setAppliedOps([]);
-    setUndoneOps([]);
   };
 
   return {

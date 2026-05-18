@@ -9,7 +9,7 @@ import {
   TriggerActionResult,
 } from "../api/generate.client";
 import { useGenerateContext } from "./useGenerateContext";
-import { GenerationStatusLog } from "../../generate.types";
+import { GenerationStatusLog } from "../../types/generate.types";
 import { fetchChatInfo } from "@/features/chat/ui/services/fetchChatInfo.service";
 import { emitGenerationTerminalEvent } from "./generationTerminalEvents";
 
