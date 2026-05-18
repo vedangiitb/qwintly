@@ -133,6 +133,18 @@ export interface FetchGenerationSummaryParams {
   signal?: AbortSignal;
 }
 
+export interface SaveEditsParams {
+  route: string;
+  genId: string | null;
+  chatId: string | null;
+  operations: unknown[];
+  signal?: AbortSignal;
+}
+
+export interface SaveEditsResult {
+  ok: boolean;
+}
+
 export interface GenerateClientContract {
   approvePlan(
     params: TriggerParams<"approve_plan">,
@@ -150,6 +162,7 @@ export interface GenerateClientContract {
   fetchGenerationSummary(
     params: FetchGenerationSummaryParams,
   ): Promise<GenerationSummary>;
+  saveEdits(params: SaveEditsParams): Promise<SaveEditsResult>;
 }
 
 const GENERATE_ENDPOINTS = {
@@ -159,6 +172,7 @@ const GENERATE_ENDPOINTS = {
   FETCH_STATUS: "/api/generate/fetch-status",
   RETRY_DEPLOY: "/api/generate/retry-deploy",
   RETRY_GENERATE: "/api/generate/retry-generate",
+  SAVE_EDITS: "/api/generate/save-edits",
 } as const;
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
@@ -479,6 +493,34 @@ export class GenerateClient implements GenerateClientContract {
 
     this.generationSummaryCache.set(msgId, task);
     return task;
+  }
+
+  async saveEdits(params: SaveEditsParams): Promise<SaveEditsResult> {
+    const route = ensureNonEmptyString(params.route, "route");
+    if (!Array.isArray(params.operations)) {
+      throw new GenerateClientError({
+        message: "Missing or invalid operations list",
+        endpoint: GENERATE_ENDPOINTS.SAVE_EDITS,
+        operation: "saveEdits",
+      });
+    }
+
+    return this.execute("saveEdits", GENERATE_ENDPOINTS.SAVE_EDITS, async () => {
+      const data = await this.httpClient.post<SaveEditsResult>(
+        GENERATE_ENDPOINTS.SAVE_EDITS,
+        {
+          route,
+          genId: params.genId ?? null,
+          chatId: params.chatId ?? null,
+          operations: params.operations,
+        },
+        params.signal,
+      );
+
+      return {
+        ok: Boolean(data?.ok ?? true),
+      };
+    });
   }
 
   private async execute<T>(
