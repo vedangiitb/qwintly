@@ -31,6 +31,7 @@ export default function PreviewPanel() {
     canUndo,
     canRedo,
     pendingEditsLabel,
+    currentRoute,
     onIframeLoad,
     onToggleEditMode,
     onUndo,
@@ -63,6 +64,11 @@ export default function PreviewPanel() {
         <div className="mb-2 px-2 py-1 text-[12px] text-muted-foreground border border-border/40 rounded-lg bg-background/40 backdrop-blur-sm">
           Pending edits:{" "}
           <span className="text-foreground/80 font-medium">{appliedOps.length}</span>
+          {currentRoute ? (
+            <span className="ml-2 text-muted-foreground/70">
+              • Route: <span className="font-medium text-foreground/70">{currentRoute}</span>
+            </span>
+          ) : null}
         </div>
       ) : null}
 

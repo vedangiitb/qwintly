@@ -30,6 +30,19 @@ const tryGetOrigin = (url: string | null | undefined) => {
   }
 };
 
+const tryGetPathFromUrl = (url: string | null | undefined) => {
+  if (!url) return "/";
+  try {
+    const parsed = new URL(url);
+    const path = parsed.pathname || "/";
+    const search = parsed.search || "";
+    const hash = parsed.hash || "";
+    return `${path}${search}${hash}`;
+  } catch {
+    return "/";
+  }
+};
+
 export function usePreviewDomEdits(params: {
   displayUrl: string;
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
@@ -42,6 +55,9 @@ export function usePreviewDomEdits(params: {
   const [editingAvailable, setEditingAvailable] = useState(false);
   const [appliedOps, setAppliedOps] = useState<PreviewDomOp[]>([]);
   const [undoneOps, setUndoneOps] = useState<PreviewDomOp[]>([]);
+  const [currentRoute, setCurrentRoute] = useState(() =>
+    tryGetPathFromUrl(displayUrl),
+  );
 
   const readyTimeoutRef = useRef<number | null>(null);
 
@@ -63,6 +79,11 @@ export function usePreviewDomEdits(params: {
       iframeOrigin ?? "*",
     );
   };
+
+  useEffect(() => {
+    setCurrentRoute(tryGetPathFromUrl(displayUrl));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayUrl]);
 
   useEffect(() => {
     return () => {
@@ -87,7 +108,17 @@ export function usePreviewDomEdits(params: {
           window.clearTimeout(readyTimeoutRef.current);
           readyTimeoutRef.current = null;
         }
+        if (typeof data.route === "string" && data.route.trim()) {
+          setCurrentRoute(data.route);
+        }
         postToIframe({ type: "SET_EDIT_MODE", enabled: editMode });
+        return;
+      }
+
+      if (data.type === "ROUTE") {
+        if (typeof data.route === "string" && data.route.trim()) {
+          setCurrentRoute(data.route);
+        }
         return;
       }
 
@@ -146,7 +177,7 @@ export function usePreviewDomEdits(params: {
 
     try {
       await generateClient.saveEdits({
-        route: displayUrl,
+        route: currentRoute || "/",
         genId,
         chatId,
         operations: appliedOps,
@@ -169,6 +200,7 @@ export function usePreviewDomEdits(params: {
     canUndo,
     canRedo,
     pendingEditsLabel,
+    currentRoute,
     onIframeLoad,
     onToggleEditMode,
     onUndo,
@@ -177,4 +209,3 @@ export function usePreviewDomEdits(params: {
     onClearEdits,
   } as const;
 }
-
