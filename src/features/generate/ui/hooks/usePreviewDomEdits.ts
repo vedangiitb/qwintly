@@ -43,6 +43,15 @@ const tryGetPathFromUrl = (url: string | null | undefined) => {
   }
 };
 
+export const getGenIdFromUrl = (url: string): string | null => {
+  if (!url) return null;
+  const match = url.match(
+    /^(?:https?:\/\/)?([0-9a-fA-F-]{36})-(?:dev)?previews\.qwintly\.com\/?$/,
+  );
+
+  return match?.[1] ?? null;
+};
+
 export function usePreviewDomEdits(params: {
   displayUrl: string;
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
@@ -71,15 +80,6 @@ export function usePreviewDomEdits(params: {
     if (!appliedOps.length) return null;
     return `${appliedOps.length} change${appliedOps.length === 1 ? "" : "s"}`;
   }, [appliedOps.length]);
-
-  const getGenIdFromUrl = (url: string): string | null => {
-    if (!url) return null;
-    const match = url.match(
-      /^(?:https?:\/\/)?([0-9a-fA-F-]{36})-(?:dev)?previews\.qwintly\.com\/?$/,
-    );
-
-    return match?.[1] ?? null;
-  };
 
   const postToIframe = (payload: Record<string, unknown>) => {
     const win = iframeRef.current?.contentWindow;
