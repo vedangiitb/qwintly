@@ -73,6 +73,7 @@ export function usePreviewDomEdits(params: {
   }, [appliedOps.length]);
 
   const getGenIdFromUrl = (url: string): string | null => {
+    if (!url) return null;
     const match = url.match(
       /^(?:https?:\/\/)?([0-9a-fA-F-]{36})-(?:dev)?previews\.qwintly\.com\/?$/,
     );
