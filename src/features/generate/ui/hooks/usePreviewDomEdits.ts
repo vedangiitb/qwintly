@@ -3,21 +3,7 @@
 import { generateClient } from "@/features/generate/ui/api/generate.client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-
-export type PreviewDomOp =
-  | {
-      kind: "text";
-      id: string;
-      oldText: string;
-      newText: string;
-    }
-  | {
-      kind: "delete";
-      id: string;
-      parentId: string;
-      nextSiblingId: string | null;
-      oldOuterHTML: string;
-    };
+import { PreviewDomOp } from "../../types/previewDon.types";
 
 const IFRAME_EDITOR_SOURCE = "qwintly-preview-editor";
 

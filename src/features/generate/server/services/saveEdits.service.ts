@@ -1,6 +1,7 @@
 import { PageConfig } from "../../types/snapshot";
 import { GenSnapshotsRepository } from "../repositories/genSessions.repository";
 import { ProjectOperationsRepository } from "../repositories/projectOperations.repository";
+import { assertOperationsAreSafe } from "./verifyOps.service";
 
 type TextOp = {
   kind: "text";
@@ -25,6 +26,8 @@ export const saveEdits = async (
   operations: any,
   token: string,
 ) => {
+  assertOperationsAreSafe(operations);
+
   const projectOperationsRepository = new ProjectOperationsRepository(token);
   const genSnapshotsRepository = new GenSnapshotsRepository(token);
   await projectOperationsRepository.addProjectOperation(
@@ -76,11 +79,14 @@ const updateSnapshot = async (
     }
 
     if (op.kind === "delete") {
-      if (typeof op.id !== "string" || typeof op.parentId !== "string") continue;
+      if (typeof op.id !== "string" || typeof op.parentId !== "string")
+        continue;
 
       const parent = findElementById(config.elements, op.parentId)?.element;
       if (parent?.children && Array.isArray(parent.children)) {
-        parent.children = parent.children.filter((child) => child?.id !== op.id);
+        parent.children = parent.children.filter(
+          (child) => child?.id !== op.id,
+        );
       } else {
         // Fallback: allow deleting a top-level element (or handle missing parentId)
         config.elements = config.elements.filter((el) => el?.id !== op.id);
