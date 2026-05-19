@@ -1,16 +1,19 @@
 "use client";
 
 import { useGenerateUi } from "@/features/generate/ui/hooks/useGenerateUi";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGenerate } from "../hooks/useGenerate";
+import { usePreviewDomEdits } from "../hooks/usePreviewDomEdits";
 import PreviewFrame from "./PreviewFrame";
 import PreviewTopbar from "./Topbar/PreviewTopbar";
 
 export default function PreviewPanel() {
-  const { url, previewUrl } = useGenerate();
+  const { url, previewUrl, sessionId, activeChatId } = useGenerate();
   const { width } = useGenerateUi();
 
   const [displayUrl, setDisplayUrl] = useState(url || previewUrl);
+
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   const updateDisplayUrl = (dispUrl: string) => {
     if (!dispUrl || dispUrl === displayUrl) return;
@@ -21,18 +24,61 @@ export default function PreviewPanel() {
     updateDisplayUrl(previewUrl);
   }, [previewUrl]);
 
+  const {
+    editMode,
+    editingAvailable,
+    appliedOps,
+    canUndo,
+    canRedo,
+    pendingEditsLabel,
+    currentRoute,
+    onIframeLoad,
+    onToggleEditMode,
+    onUndo,
+    onRedo,
+    onSaveEdits,
+  } = usePreviewDomEdits({
+    displayUrl,
+    iframeRef,
+    genId: sessionId ?? null,
+    chatId: activeChatId ?? null,
+  });
+
   return (
     <div className="h-full flex flex-col p-2">
       <PreviewTopbar
         updateDisplayUrl={updateDisplayUrl}
         displayUrl={displayUrl}
+        editMode={editMode}
+        editingAvailable={editingAvailable}
+        onToggleEditMode={onToggleEditMode}
+        onSaveEdits={onSaveEdits}
+        onUndo={onUndo}
+        onRedo={onRedo}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        pendingEditsLabel={pendingEditsLabel}
       />
+
+      {appliedOps.length ? (
+        <div className="mb-2 px-2 py-1 text-[12px] text-muted-foreground border border-border/40 rounded-lg bg-background/40 backdrop-blur-sm">
+          Pending edits:{" "}
+          <span className="text-foreground/80 font-medium">{appliedOps.length}</span>
+          {currentRoute ? (
+            <span className="ml-2 text-muted-foreground/70">
+              • Route: <span className="font-medium text-foreground/70">{currentRoute}</span>
+            </span>
+          ) : null}
+        </div>
+      ) : null}
 
       {displayUrl ? (
         <iframe
           id="preview-frame"
           key={displayUrl}
           src={displayUrl}
+          ref={iframeRef}
+          onLoad={onIframeLoad}
           style={{
             margin: "auto",
             height: "800px",

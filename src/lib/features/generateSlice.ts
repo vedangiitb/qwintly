@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { GenerationStatusLog } from "@/features/generate/generate.types";
+import { GenerationStatusLog } from "@/features/generate/types/generate.types";
 
 interface GenerateState {
   activeChatId: string | null;

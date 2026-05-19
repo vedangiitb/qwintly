@@ -8,7 +8,7 @@ export class GenSnapshotsRepository extends DBRepository {
       .select("id")
       .eq("conv_id", chatId)
       .eq("status", "implemented")
-      .eq("session_type","generate")
+      .eq("session_type", "generate")
       .order("last_modified", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -57,5 +57,30 @@ export class GenSnapshotsRepository extends DBRepository {
     if (error) throw error;
     if (!data) return null;
     return data.generation_session_id;
+  }
+
+  async getSnapshotByGenId(genId: string): Promise<any> {
+    const supabase = this.client;
+    const { data, error } = await supabase
+      .from("generation_snapshots")
+      .select("page_config")
+      .eq("id", genId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    return data.page_config;
+  }
+
+  async updateSnapshotByGenId(genId: string, snapshot: any): Promise<string> {
+    const supabase = this.client;
+    const { data, error } = await supabase
+      .from("generation_snapshots")
+      .update({ page_config: snapshot })
+      .eq("id", genId)
+      .select("id")
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error("Failed to update snapshot by genId");
+    return data.id;
   }
 }

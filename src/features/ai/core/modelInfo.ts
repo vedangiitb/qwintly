@@ -3,6 +3,7 @@ export const AI_MODELS = {
     DEFAULT: "gemini-2.5-flash-lite",
     GEMINI_2_5_FLASH: "gemini-2.5-flash",
     GEMINI_2_5_FLASH_LITE: "gemini-2.5-flash-lite",
+    GEMINI_3_1_FLASH_LITE:"gemini-3.1-flash-lite"
   },
   OPENAI: {
     DEFAULT: "gpt-4.1-nano",

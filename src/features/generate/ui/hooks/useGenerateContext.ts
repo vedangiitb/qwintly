@@ -17,7 +17,7 @@ import {
   setStatusLogs,
   setSessionId,
 } from "@/lib/features/generateSlice";
-import { GenerationStatusLog } from "../../generate.types";
+import { GenerationStatusLog } from "../../types/generate.types";
 
 const normalizeSiteUrl = (value: string | null): string | null => {
   if (!value) return null;
