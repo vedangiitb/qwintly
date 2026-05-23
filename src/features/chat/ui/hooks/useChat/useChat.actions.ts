@@ -5,6 +5,7 @@ import {
   MESSAGE_TYPES,
   ROLES,
 } from "@/features/chat/types/messages.types";
+import { Chat } from "@/features/chat/types/chat.types";
 import { MutableRefObject, useCallback, useEffect, useRef } from "react";
 import { ChatContextValue } from "../chatContext";
 import { createChat } from "../../services/createChat.service";
@@ -43,6 +44,9 @@ type ChatActionContext = Pick<
   | "setLatestPlanMessageId"
   | "setIsGeneratingResponse"
   | "setRecentChats"
+  | "setRecentChatsCursor"
+  | "setHasMoreRecentChats"
+  | "setIsLoadingRecentChats"
   | "setMessagesCursor"
   | "setHasMoreMessages"
   | "setError"
@@ -75,6 +79,9 @@ export const useChatActions = ({
     setLatestPlanMessageId,
     setIsGeneratingResponse,
     setRecentChats,
+    setRecentChatsCursor,
+    setHasMoreRecentChats,
+    setIsLoadingRecentChats,
     setMessagesCursor,
     setHasMoreMessages,
     setError,
@@ -170,19 +177,57 @@ export const useChatActions = ({
     });
   }, [chatId, hydrateChatInfo, refreshLatestMessages, setError]);
 
+  const mergeChatsById = useCallback((prev: Chat[], next: Chat[]) => {
+    if (!prev.length) return next;
+    if (!next.length) return prev;
+
+    const seen = new Set<string>();
+    const merged: Chat[] = [];
+
+    for (const chat of [...prev, ...next]) {
+      if (!chat?.id) continue;
+      if (seen.has(chat.id)) continue;
+      seen.add(chat.id);
+      merged.push(chat);
+    }
+
+    return merged;
+  }, []);
+
   const loadRecentChats = useCallback(
     async (params?: { limit?: number; cursor?: string }) => {
       clearError();
+      setIsLoadingRecentChats(true);
       try {
         const result = await fetchChats(params);
-        setRecentChats(result.chats);
+        const isLoadMore = Boolean(params?.cursor?.trim());
+
+        if (isLoadMore) {
+          setRecentChats((prev) => mergeChatsById(prev, result.chats));
+        } else {
+          setRecentChats(result.chats);
+        }
+
+        const nextCursor = result.nextCursor ?? null;
+        setRecentChatsCursor(nextCursor);
+        setHasMoreRecentChats(Boolean(nextCursor));
       } catch (err) {
         const message = toErrorMessage(err, "Failed to load recent chats.");
         setError(message);
         throw err;
+      } finally {
+        setIsLoadingRecentChats(false);
       }
     },
-    [clearError, setError, setRecentChats],
+    [
+      clearError,
+      mergeChatsById,
+      setError,
+      setHasMoreRecentChats,
+      setIsLoadingRecentChats,
+      setRecentChats,
+      setRecentChatsCursor,
+    ],
   );
 
   const loadChat = useCallback(

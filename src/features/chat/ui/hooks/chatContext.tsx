@@ -25,6 +25,9 @@ export interface ChatContextValue {
   generationStatus: string | null;
   url: string | null;
   recentChats: Chat[];
+  recentChatsCursor: string | null;
+  hasMoreRecentChats: boolean;
+  isLoadingRecentChats: boolean;
   messagesCursor: string | null;
   hasMoreMessages: boolean;
   error: string | null;
@@ -42,6 +45,9 @@ export interface ChatContextValue {
   setGenerationStatus: React.Dispatch<React.SetStateAction<string | null>>;
   setUrl: React.Dispatch<React.SetStateAction<string | null>>;
   setRecentChats: React.Dispatch<React.SetStateAction<Chat[]>>;
+  setRecentChatsCursor: React.Dispatch<React.SetStateAction<string | null>>;
+  setHasMoreRecentChats: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsLoadingRecentChats: React.Dispatch<React.SetStateAction<boolean>>;
   setMessagesCursor: React.Dispatch<React.SetStateAction<string | null>>;
   setHasMoreMessages: React.Dispatch<React.SetStateAction<boolean>>;
   setError: React.Dispatch<React.SetStateAction<string | null>>;
@@ -72,6 +78,11 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const [generationStatus, setGenerationStatus] = useState<string | null>(null);
   const [url, setUrl] = useState<string | null>(null);
   const [recentChats, setRecentChats] = useState<Chat[]>([]);
+  const [recentChatsCursor, setRecentChatsCursor] = useState<string | null>(
+    null,
+  );
+  const [hasMoreRecentChats, setHasMoreRecentChats] = useState(false);
+  const [isLoadingRecentChats, setIsLoadingRecentChats] = useState(false);
   const [messagesCursor, setMessagesCursor] = useState<string | null>(null);
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -104,6 +115,9 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       generationStatus,
       url,
       recentChats,
+      recentChatsCursor,
+      hasMoreRecentChats,
+      isLoadingRecentChats,
       messagesCursor,
       hasMoreMessages,
       error,
@@ -119,6 +133,9 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       setGenerationStatus,
       setUrl,
       setRecentChats,
+      setRecentChatsCursor,
+      setHasMoreRecentChats,
+      setIsLoadingRecentChats,
       setMessagesCursor,
       setHasMoreMessages,
       setError,
@@ -138,6 +155,9 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       generationStatus,
       url,
       recentChats,
+      recentChatsCursor,
+      hasMoreRecentChats,
+      isLoadingRecentChats,
       messagesCursor,
       hasMoreMessages,
       error,

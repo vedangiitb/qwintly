@@ -1,7 +1,7 @@
 "use client";
 import { useChat } from "@/features/chat/ui/hooks/useChat";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 export default function RecentChats({
   isExpanded,
@@ -10,14 +10,55 @@ export default function RecentChats({
   isExpanded: boolean;
   setSidebarExpanded: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const { recentChats, loadRecentChats, resetActiveChatState } = useChat();
+  const {
+    recentChats,
+    recentChatsCursor,
+    hasMoreRecentChats,
+    isLoadingRecentChats,
+    error,
+    loadRecentChats,
+    resetActiveChatState,
+  } = useChat();
   const router = useRouter();
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    loadRecentChats().catch((err) =>
-      console.error("Failed to load recent chats", err),
+    if (!isExpanded) return;
+
+    loadRecentChats({ limit: 10 }).catch((err) => {
+      console.error("Failed to load recent chats", err);
+    });
+  }, [isExpanded, loadRecentChats]);
+
+  const maybeLoadMore = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    if (isLoadingRecentChats) return;
+    if (!hasMoreRecentChats) return;
+    if (!recentChatsCursor) return;
+
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    if (distanceFromBottom > 80) return;
+
+    void loadRecentChats({ limit: 10, cursor: recentChatsCursor }).catch(
+      (err) => {
+        console.error("Failed to load more recent chats", err);
+      },
     );
-  }, [loadRecentChats]);
+  }, [
+    hasMoreRecentChats,
+    isLoadingRecentChats,
+    loadRecentChats,
+    recentChatsCursor,
+  ]);
+
+  useEffect(() => {
+    if (!isExpanded) return;
+    if (!recentChats.length) return;
+
+    // If the list doesn't overflow yet, try fetching the next page so the user can scroll.
+    maybeLoadMore();
+  }, [isExpanded, maybeLoadMore, recentChats.length]);
 
   if (!isExpanded) return null;
 
@@ -26,7 +67,11 @@ export default function RecentChats({
       <p className="text-xs font-semibold text-chart-2 uppercase tracking-wide mb-2 px-1">
         Recent Chats
       </p>{" "}
-      <div className="h-[50vh] overflow-y-auto">
+      <div
+        ref={scrollContainerRef}
+        onScroll={maybeLoadMore}
+        className="h-[50vh] overflow-y-auto"
+      >
         {recentChats.length ? (
           <div className="flex flex-col gap-1 text-sm">
             {recentChats.map((item) => (
@@ -47,10 +92,22 @@ export default function RecentChats({
                 {item.title}
               </button>
             ))}
+            {isLoadingRecentChats ? (
+              <p className="text-muted-foreground text-xs px-2 py-2">
+                Loading more…
+              </p>
+            ) : null}
+            {error?.toLowerCase().includes("recent chats") ? (
+              <p className="text-destructive text-xs px-2 py-2">{error}</p>
+            ) : null}
           </div>
         ) : (
           <p className="text-muted-foreground text-xs px-1">
-            Your recent chats will be shown here.
+            {error?.toLowerCase().includes("recent chats")
+              ? error
+              : isLoadingRecentChats
+                ? "Loading recent chats…"
+                : "Your recent chats will be shown here."}
           </p>
         )}
       </div>
