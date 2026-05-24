@@ -13,6 +13,10 @@ export type GenerationSummary = {
   status: string;
   messages: string[];
   sessionType?: "generate" | "deploy";
+  inputTokens: number;
+  outputTokens: number;
+  inputCost: number;
+  outputCost: number;
 };
 
 export class StatusRepository extends DBRepository {
@@ -49,6 +53,10 @@ export class StatusRepository extends DBRepository {
       genStatus?: unknown;
       messages?: unknown;
       session_type?: unknown;
+      input_tokens?: unknown;
+      output_tokens?: unknown;
+      input_cost?: unknown;
+      output_cost?: unknown;
     } | null;
 
     const genSessionId = typeof payload?.id === "string" ? payload.id : "";
@@ -65,7 +73,31 @@ export class StatusRepository extends DBRepository {
     const sessionType =
       payload.session_type == "deploy" ? "deploy" : "generate";
 
-    return { genSessionId, status, messages, sessionType };
+    const toNumber = (value: unknown): number => {
+      if (typeof value === "number" && Number.isFinite(value)) return value;
+      if (typeof value === "bigint") return Number(value);
+      if (typeof value === "string") {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+      return 0;
+    };
+
+    const inputTokens = toNumber(payload?.input_tokens);
+    const outputTokens = toNumber(payload?.output_tokens);
+    const inputCost = toNumber(payload?.input_cost);
+    const outputCost = toNumber(payload?.output_cost);
+
+    return {
+      genSessionId,
+      status,
+      messages,
+      sessionType,
+      inputTokens,
+      outputTokens,
+      inputCost,
+      outputCost,
+    };
   }
 
   async getGenSession(chatId: string): Promise<string> {
