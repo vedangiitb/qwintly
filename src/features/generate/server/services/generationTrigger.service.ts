@@ -38,6 +38,7 @@ export const generationTrigger = async (
       provider: string;
       user_id: string;
       session_id: string;
+      byok_enabled: boolean;
     }) => row.session_id,
 
     buildJwtPayload: (row) => ({
@@ -49,6 +50,7 @@ export const generationTrigger = async (
       model: row.model,
       prevSessionId: row.prev_session_id,
       sessionId: row.session_id,
+      byokEnabled: row.byok_enabled,
     }),
   });
 };

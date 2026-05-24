@@ -37,6 +37,7 @@ export const deploymentTrigger = async (
       user_id: string;
       session_id: string;
       plan_id: string;
+      byok_enabled: boolean;
     }) => row.session_id,
 
     buildJwtPayload: (row) => ({
@@ -47,6 +48,7 @@ export const deploymentTrigger = async (
       model: row.model,
       sessionId: row.session_id,
       snapshotId: gen_session_id,
+      byokEnabled: row.byok_enabled,
     }),
   });
 };

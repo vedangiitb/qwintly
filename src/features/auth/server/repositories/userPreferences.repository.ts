@@ -11,7 +11,7 @@ export class UserPreferencesRepository extends DBRepository {
       .from("user_preferences")
       .update({ pref_provider: provider })
       .eq("id", userId)
-      .select("id, pref_provider, pref_model");
+      .select("id, pref_provider, pref_model, byok_enabled");
     if (error) throw new Error(error.message);
 
     return data?.[0] ?? null;
@@ -27,7 +27,7 @@ export class UserPreferencesRepository extends DBRepository {
       .from("user_preferences")
       .update({ pref_model: model })
       .eq("id", userId)
-      .select("id, pref_provider, pref_model");
+      .select("id, pref_provider, pref_model, byok_enabled");
     if (error) throw new Error(error.message);
 
     return data?.[0] ?? null;
@@ -41,9 +41,25 @@ export class UserPreferencesRepository extends DBRepository {
 
     const { data, error } = await supabase
       .from("user_preferences")
-      .select("id, pref_provider, pref_model")
+      .select("id, pref_provider, pref_model, byok_enabled")
       .eq("id", userId)
       .limit(1);
+    if (error) throw new Error(error.message);
+
+    return data?.[0] ?? null;
+  }
+
+  /*
+  * Toggle byokEnabled flag
+  */
+  async toggleByokEnabled(userId: string, byokEnabled: boolean) {
+    const supabase = this.client;
+
+    const { data, error } = await supabase
+      .from("user_preferences")
+      .update({ byok_enabled: byokEnabled })
+      .eq("id", userId)
+      .select("id, pref_provider, pref_model, byok_enabled");
     if (error) throw new Error(error.message);
 
     return data?.[0] ?? null;
