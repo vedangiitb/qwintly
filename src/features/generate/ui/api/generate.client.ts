@@ -96,6 +96,10 @@ export type GenerationSummary = {
   status: string;
   messages: string[];
   sessionType: "generate" | "deploy";
+  inputTokens: number;
+  outputTokens: number;
+  inputCost: number;
+  outputCost: number;
 };
 
 export type GenerationRealtimeStatusEvent = {
@@ -475,6 +479,17 @@ export class GenerateClient implements GenerateClientContract {
           params.signal,
         );
 
+        const raw = (data ?? null) as unknown as Record<string, unknown> | null;
+
+        const toNumber = (value: unknown): number => {
+          if (typeof value === "number" && Number.isFinite(value)) return value;
+          if (typeof value === "string") {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? parsed : 0;
+          }
+          return 0;
+        };
+
         return {
           genSessionId:
             typeof data?.genSessionId === "string" ? data.genSessionId : "",
@@ -484,6 +499,10 @@ export class GenerateClient implements GenerateClientContract {
             typeof data?.sessionType === "string"
               ? data.sessionType
               : "generate",
+          inputTokens: toNumber(raw?.inputTokens),
+          outputTokens: toNumber(raw?.outputTokens),
+          inputCost: toNumber(raw?.inputCost),
+          outputCost: toNumber(raw?.outputCost),
         };
       },
     ).catch((error) => {

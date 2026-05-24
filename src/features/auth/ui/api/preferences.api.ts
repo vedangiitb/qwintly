@@ -4,6 +4,7 @@ export type UserPreferences = {
   id: string;
   pref_provider: string | null;
   pref_model: string | null;
+  byok_enabled: boolean;
 };
 
 export async function getPreferences() {
@@ -36,3 +37,11 @@ export async function updatePreferredModel(input: { model: string }) {
   return response.data;
 }
 
+export async function toggleByokEnabled(input: { byokEnabled: boolean }) {
+  const response = await fetchUtil<UserPreferences>("/api/preferences/byok-toggle", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+
+  return response.data;
+}

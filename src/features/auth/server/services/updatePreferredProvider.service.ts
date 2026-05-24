@@ -29,5 +29,9 @@ export async function updatePreferredProviderService(
     normalized === MODEL_PROVIDERS.OPENAI ? "openai" : normalized;
 
   const repo = new UserPreferencesRepository(token);
-  return repo.updatePreferredProvider(userId, persistedProvider);
+  const updated = await repo.updatePreferredProvider(userId, persistedProvider);
+  if (updated) {
+    updated.byok_enabled = Boolean(updated.byok_enabled);
+  }
+  return updated;
 }

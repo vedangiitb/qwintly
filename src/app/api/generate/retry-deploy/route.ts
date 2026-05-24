@@ -1,6 +1,7 @@
 import { GenSnapshotsRepository } from "@/features/generate/server/repositories/genSessions.repository";
 import { deploymentTrigger } from "@/features/generate/server/services/deploymentTrigger.service";
 import { postHandler } from "@/lib/apiHandler";
+import { createHttpError } from "@/lib/httpError";
 import { requireNonEmptyString } from "@/lib/require";
 
 export const POST = postHandler(async ({ body, token }) => {
@@ -13,7 +14,8 @@ export const POST = postHandler(async ({ body, token }) => {
   const repo = new GenSnapshotsRepository(token);
   const sessionId = await repo.getGenIdbyDeploymentId(retrySessionId);
 
-  if (!sessionId) throw new Error("No session found");
+  if (!sessionId)
+    throw createHttpError(404, "No generation session found for that deployment");
 
   return deploymentTrigger(chatId, sessionId, token);
 });

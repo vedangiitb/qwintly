@@ -16,6 +16,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
 import { AI_MODELS, DEFAULT_MODEL, DEFAULT_PROVIDER } from "@/features/ai/core/modelInfo";
 import { usePreferences } from "@/features/auth/ui/hooks/usePreferences";
 import { Settings2 } from "lucide-react";
@@ -30,19 +31,30 @@ function resolveModelGroup(provider: string) {
 export default function PrefDialog() {
   const [open, setOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const { preferences, isLoading, error, selectedModel, selectedProvider, saveModel, saveProvider } =
-    usePreferences({ enabled: open });
+  const {
+    preferences,
+    isLoading,
+    error,
+    selectedModel,
+    selectedProvider,
+    byokEnabled,
+    saveModel,
+    saveProvider,
+    saveByokEnabled,
+  } = usePreferences({ enabled: open });
 
   const providerOptions = useMemo(
     () =>
       [
         { id: "gemini", label: "Gemini" },
+        { id: "openai", label: "OpenAI" },
       ] as const,
     [],
   );
 
   const [draftProvider, setDraftProvider] = useState<string>("");
   const [draftModel, setDraftModel] = useState<string>("");
+  const [draftByokEnabled, setDraftByokEnabled] = useState(false);
 
   const effectiveProvider = draftProvider || selectedProvider || DEFAULT_PROVIDER;
 
@@ -69,6 +81,7 @@ export default function PrefDialog() {
 
     setDraftProvider(provider);
     setDraftModel(resolvedModel);
+    setDraftByokEnabled(preferences?.byok_enabled ?? false);
   }, [open, preferences, isLoading, isSaving]);
 
   useEffect(() => {
@@ -93,6 +106,10 @@ export default function PrefDialog() {
 
       if (draftModel && draftModel !== selectedModel) {
         updates.push(saveModel(draftModel));
+      }
+
+      if (draftByokEnabled !== byokEnabled) {
+        updates.push(saveByokEnabled(draftByokEnabled));
       }
 
       if (updates.length === 0) {
@@ -140,6 +157,10 @@ export default function PrefDialog() {
                   <p className="text-sm">Model</p>
                   <div className="h-8 w-56 rounded-md bg-muted animate-pulse" />
                 </div>
+                <div className="flex items-center justify-between border-b py-3">
+                  <p className="text-sm">BYOK</p>
+                  <div className="h-5 w-8 rounded-full bg-muted animate-pulse" />
+                </div>
               </>
             ) : (
               <>
@@ -183,6 +204,21 @@ export default function PrefDialog() {
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
+                </div>
+
+                <div className="flex items-center justify-between border-b py-3">
+                  <div className="flex flex-col">
+                    <p className="text-sm">BYOK</p>
+                    <p className="text-xs text-muted-foreground">
+                      Use your own provider keys for billing.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={draftByokEnabled}
+                    onCheckedChange={setDraftByokEnabled}
+                    disabled={isLoading || isSaving}
+                    aria-label="Toggle BYOK"
+                  />
                 </div>
               </>
             )}

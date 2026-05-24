@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   getPreferences,
+  toggleByokEnabled,
   updatePreferredModel,
   updatePreferredProvider,
   UserPreferences,
@@ -71,29 +72,49 @@ export function usePreferences(options?: { enabled?: boolean }) {
 
   const selectedProvider = preferences?.pref_provider ?? null;
   const selectedModel = preferences?.pref_model ?? null;
+  const byokEnabled = preferences?.byok_enabled ?? false;
+
+  const saveByokEnabled = useCallback(async (byokEnabled: boolean) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const updated = await toggleByokEnabled({ byokEnabled });
+      setPreferences(updated ?? null);
+      return updated ?? null;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Failed to update BYOK";
+      setError(message);
+      throw e;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   return useMemo(
     () => ({
       preferences,
       selectedProvider,
       selectedModel,
+      byokEnabled,
       isLoading,
       error,
       loadPreferences,
       saveProvider,
       saveModel,
+      saveByokEnabled,
       setPreferences,
     }),
     [
       preferences,
       selectedProvider,
       selectedModel,
+      byokEnabled,
       isLoading,
       error,
       loadPreferences,
       saveProvider,
       saveModel,
+      saveByokEnabled,
     ],
   );
 }
-

@@ -25,5 +25,9 @@ export async function updatePreferredModelService(
   }
 
   const repo = new UserPreferencesRepository(token);
-  return repo.updatePreferredModel(userId, candidate);
+  const updated = await repo.updatePreferredModel(userId, candidate);
+  if (updated) {
+    updated.byok_enabled = Boolean(updated.byok_enabled);
+  }
+  return updated;
 }

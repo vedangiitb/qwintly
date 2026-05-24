@@ -2,7 +2,17 @@
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
+import { AI_MODELS, DEFAULT_MODEL, DEFAULT_PROVIDER } from "@/features/ai/core/modelInfo";
 import { useAuth } from "@/features/auth/ui/hooks/useAuth";
+import { usePreferences } from "@/features/auth/ui/hooks/usePreferences";
 import { cn } from "@/lib/utils";
 import {
   ArrowRight,
@@ -15,11 +25,17 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   type DailyMessagesResponse,
   fetchDailyMessages,
 } from "@/features/auth/ui/services/accountMetrics.service";
 import { getLocalTimeStringForNextUTCMidnight } from "@/features/auth/ui/helpers/dailyUsage.helpers";
+
+function resolveModelGroup(provider: string) {
+  if (provider === "openai") return AI_MODELS.OPENAI;
+  return AI_MODELS.GEMINI;
+}
 
 export default function Account() {
   const { user, loading, logout } = useAuth();
@@ -27,12 +43,101 @@ export default function Account() {
   const [dailyMessages, setDailyMessages] =
     useState<DailyMessagesResponse | null>(null);
   const [dailyMessagesLoading, setDailyMessagesLoading] = useState(false);
+  const [isSavingPreferences, setIsSavingPreferences] = useState(false);
+
+  const {
+    preferences,
+    isLoading: preferencesLoading,
+    error: preferencesError,
+    selectedProvider,
+    selectedModel,
+    byokEnabled,
+    saveProvider,
+    saveModel,
+    saveByokEnabled,
+  } = usePreferences({ enabled: !loading && Boolean(user) });
+
+  const [prefsInitialized, setPrefsInitialized] = useState(false);
+  const [draftProvider, setDraftProvider] = useState<string>("");
+  const [draftModel, setDraftModel] = useState<string>("");
+  const [draftByokEnabled, setDraftByokEnabled] = useState(false);
+
+  const effectiveProvider =
+    draftProvider || selectedProvider || preferences?.pref_provider || DEFAULT_PROVIDER;
+
+  const modelOptions = (() => {
+    const group = resolveModelGroup(effectiveProvider);
+    const values = Object.values(group);
+    const unique = Array.from(new Set(values));
+    return unique.map((model) => ({ id: model, label: model }));
+  })();
 
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
     }
   }, [loading, router, user]);
+
+  useEffect(() => {
+    if (prefsInitialized) return;
+    if (!preferences) return;
+
+    const provider = preferences.pref_provider ?? DEFAULT_PROVIDER;
+    const group = resolveModelGroup(provider);
+    const allowedModels = new Set<string>(Object.values(group) as string[]);
+
+    const modelCandidate = preferences.pref_model ?? DEFAULT_MODEL;
+    const resolvedModel = allowedModels.has(modelCandidate)
+      ? modelCandidate
+      : group.DEFAULT;
+
+    setDraftProvider(provider);
+    setDraftModel(resolvedModel);
+    setDraftByokEnabled(preferences.byok_enabled ?? false);
+    setPrefsInitialized(true);
+  }, [preferences, prefsInitialized]);
+
+  useEffect(() => {
+    if (!draftProvider) return;
+
+    const group = resolveModelGroup(draftProvider);
+    const allowedModels = new Set<string>(Object.values(group) as string[]);
+
+    if (draftModel && allowedModels.has(draftModel)) return;
+    setDraftModel(group.DEFAULT);
+  }, [draftModel, draftProvider]);
+
+  const handleSavePreferences = async () => {
+    try {
+      setIsSavingPreferences(true);
+      const updates: Promise<unknown>[] = [];
+
+      if (draftProvider && draftProvider !== selectedProvider) {
+        updates.push(saveProvider(draftProvider));
+      }
+
+      if (draftModel && draftModel !== selectedModel) {
+        updates.push(saveModel(draftModel));
+      }
+
+      if (draftByokEnabled !== byokEnabled) {
+        updates.push(saveByokEnabled(draftByokEnabled));
+      }
+
+      if (updates.length === 0) {
+        toast("No changes to save");
+        return;
+      }
+
+      await Promise.all(updates);
+      toast.success("Preferences updated");
+    } catch (e) {
+      console.error("Failed to save preferences", e);
+      toast.error(e instanceof Error ? e.message : "Failed to update preferences");
+    } finally {
+      setIsSavingPreferences(false);
+    }
+  };
 
   useEffect(() => {
     async function loadDailyMessages() {
@@ -188,6 +293,89 @@ export default function Account() {
                 <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
                   Manage provider keys via BYOK.
                 </p>
+              </div>
+            </div>
+
+            <div className="rounded-4xl border border-stone-200/80 bg-white/55 p-6 shadow-sm backdrop-blur-sm dark:border-stone-800/70 dark:bg-stone-950/30">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2 className="text-base font-semibold tracking-tight">
+                    User preferences
+                  </h2>
+                  <p className="mt-1 text-sm leading-6 text-stone-600 dark:text-stone-300">
+                    Update provider, model, and BYOK.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  onClick={handleSavePreferences}
+                  disabled={preferencesLoading || isSavingPreferences}
+                  className="mt-3 h-10 rounded-2xl bg-stone-900 px-5 text-white hover:bg-stone-800 sm:mt-0 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
+                >
+                  Save changes
+                </Button>
+              </div>
+
+              <div className="mt-5 grid gap-3">
+                <div className="flex items-center justify-between border-b border-stone-200/70 py-3 dark:border-stone-800/70">
+                  <p className="text-sm">Provider</p>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex gap-2 rounded-md px-2 py-1 hover:bg-accent">
+                      <p className="text-sm">
+                        {(draftProvider || selectedProvider || DEFAULT_PROVIDER) === "openai"
+                          ? "OpenAI"
+                          : "Gemini"}
+                      </p>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Providers</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => setDraftProvider("gemini")}>
+                        Gemini
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setDraftProvider("openai")}>
+                        OpenAI
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                <div className="flex items-center justify-between border-b border-stone-200/70 py-3 dark:border-stone-800/70">
+                  <p className="text-sm">Model</p>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex max-w-80 justify-end gap-2 rounded-md px-2 py-1 hover:bg-accent">
+                      <p className="truncate text-sm">
+                        {draftModel || selectedModel || DEFAULT_MODEL}
+                      </p>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="max-h-72 overflow-auto">
+                      <DropdownMenuLabel>Models</DropdownMenuLabel>
+                      {modelOptions.map((m) => (
+                        <DropdownMenuItem key={m.id} onClick={() => setDraftModel(m.id)}>
+                          {m.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                <div className="flex items-center justify-between border-b border-stone-200/70 py-3 dark:border-stone-800/70">
+                  <div className="flex flex-col">
+                    <p className="text-sm">BYOK</p>
+                    <p className="text-xs text-stone-500 dark:text-stone-400">
+                      Use your own provider keys for billing.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={draftByokEnabled}
+                    onCheckedChange={setDraftByokEnabled}
+                    disabled={preferencesLoading || isSavingPreferences}
+                    aria-label="Toggle BYOK"
+                  />
+                </div>
+
+                {preferencesError ? (
+                  <p className="text-sm text-destructive">{preferencesError}</p>
+                ) : null}
               </div>
             </div>
 

@@ -88,6 +88,12 @@ export function PlanReview({
         return;
       }
 
+      if (statusCode === 429) {
+        toast.error("Weekly limit exhausted. Redirecting to BYOK...");
+        router.push("/byok");
+        return;
+      }
+
       toast.error(message);
     }
   };

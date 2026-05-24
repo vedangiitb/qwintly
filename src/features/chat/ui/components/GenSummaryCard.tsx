@@ -33,6 +33,16 @@ const statusBadgeVariant = (
   return "secondary";
 };
 
+const formatInteger = (value: number) =>
+  new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
+
+const formatUsd = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 4,
+  }).format(value);
+
 export const GenSummaryCard = ({
   displayMessage,
   messageId,
@@ -186,6 +196,44 @@ export const GenSummaryCard = ({
                   </div>
                 ) : summary ? (
                   <div className="space-y-3">
+                    <div
+                      className={cn(
+                        "grid grid-cols-2 gap-2 rounded-xl border p-3",
+                        "bg-background/30",
+                      )}
+                    >
+                      <div className="space-y-0.5">
+                        <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                          Tokens
+                        </div>
+                        <div className="text-xs">
+                          {formatInteger(
+                            (summary.inputTokens ?? 0) +
+                              (summary.outputTokens ?? 0),
+                          )}
+                          <span className="ml-1 text-[10px] text-muted-foreground">
+                            in {formatInteger(summary.inputTokens ?? 0)} / out{" "}
+                            {formatInteger(summary.outputTokens ?? 0)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-0.5 text-right">
+                        <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                          Cost
+                        </div>
+                        <div className="text-xs">
+                          {formatUsd(
+                            (summary.inputCost ?? 0) + (summary.outputCost ?? 0),
+                          )}
+                          <span className="ml-1 text-[10px] text-muted-foreground">
+                            in {formatUsd(summary.inputCost ?? 0)} / out{" "}
+                            {formatUsd(summary.outputCost ?? 0)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="flex flex-wrap items-center gap-2 pt-2">
                       {summary.sessionType === "generate" &&
                       summary.status !== "failed" ? (

@@ -1,10 +1,6 @@
 import { MessagesRepository } from "@/features/chat/server/repositories/messages.repository";
 import { persistMessage } from "@/features/chat/server/services/persistMessage.service";
-import {
-  MESSAGE_TYPES,
-  MessageType,
-  ROLES,
-} from "@/features/chat/types/messages.types";
+import { MESSAGE_TYPES, ROLES } from "@/features/chat/types/messages.types";
 import { createHttpError, wrapHttpError } from "@/lib/httpError";
 import { requireEnv } from "@/lib/require";
 import { PubSub } from "@google-cloud/pubsub";
@@ -13,6 +9,84 @@ type StartRpcResult<T> = {
   data: T[] | null;
   error: unknown;
 };
+
+type SupabaseRpcErrorShape = {
+  code?: string;
+  message?: string;
+  details?: string;
+  hint?: string;
+};
+
+function isSupabaseRpcErrorShape(
+  error: unknown,
+): error is SupabaseRpcErrorShape {
+  return typeof error === "object" && error !== null;
+}
+
+function toStartRpcHttpError(error: unknown) {
+  if (!isSupabaseRpcErrorShape(error)) {
+    return wrapHttpError(error, "Failed to start workflow.");
+  }
+
+  const code = typeof error.code === "string" ? error.code : undefined;
+  const message = typeof error.message === "string" ? error.message.trim() : "";
+  const normalized = message.toLowerCase();
+
+  if (code === "42501") {
+    // insufficient_privilege (Postgres) used for authz failures in our RPCs
+    const statusCode = normalized.includes("does not belong") ? 403 : 401;
+    return createHttpError(statusCode, message || "Unauthorized");
+  }
+
+  if (code === "P0001" || !code) {
+    // P0001 = raise_exception, also used for "raise exception '...'" without errcode
+    if (normalized === "weekly limit exhausted") {
+      return createHttpError(
+        429,
+        "Weekly limit exhausted. Add an API key (BYOK) or try again next week.",
+      );
+    }
+
+    if (normalized === "chat not found") {
+      return createHttpError(404, "Chat not found");
+    }
+
+    if (normalized === "task not found") {
+      return createHttpError(404, "Plan task not found");
+    }
+
+    if (normalized === "generation session not found") {
+      return createHttpError(404, "Generation session not found");
+    }
+
+    if (normalized === "generation session has no plan_id") {
+      return createHttpError(400, "Generation session is missing plan id");
+    }
+
+    if (normalized === "cannot deploy from a deployment session") {
+      return createHttpError(400, "Cannot deploy from a deployment session");
+    }
+
+    if (normalized === "chat is already generating") {
+      return createHttpError(409, "Chat is already generating");
+    }
+
+    if (normalized === "chat is already deploying") {
+      return createHttpError(409, "Chat is already deploying");
+    }
+
+    if (normalized.startsWith("task is not startable")) {
+      return createHttpError(409, message || "Task is not startable");
+    }
+
+    // Default: treat raised exceptions as a user-facing request problem.
+    if (message) {
+      return createHttpError(400, message);
+    }
+  }
+
+  return wrapHttpError(error, "Failed to start workflow.");
+}
 
 type TriggerConfig<TStartRow> = {
   startRpc: () => PromiseLike<StartRpcResult<TStartRow>>;
@@ -79,7 +153,7 @@ export async function executeTrigger<TStartRow>({
   const { data, error } = await startRpc();
 
   if (error) {
-    throw error;
+    throw toStartRpcHttpError(error);
   }
 
   const row = data?.[0];
