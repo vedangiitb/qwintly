@@ -55,21 +55,21 @@ export const Features: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         {features.map((feature, index) => (
           <div
             key={index}
-            className="group rounded-3xl border border-stone-200/80 bg-white/55 p-6 shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-md dark:border-stone-800/70 dark:bg-stone-950/30"
+            className="group rounded-[2rem] border border-stone-200/30 bg-white/35 p-8 shadow-[0_8px_30px_rgba(0,0,0,0.01)] transition-all duration-500 ease-out hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(0,0,0,0.03)] dark:border-stone-800/30 dark:bg-stone-900/35 dark:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.18)]"
           >
             <div
-              className={`mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/70 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110 dark:border-stone-800/70 dark:bg-stone-900/60 ${feature.color}`}
+              className={`mb-6 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/60 bg-white/65 shadow-xs backdrop-blur-md transition-all duration-500 ease-out group-hover:scale-110 group-hover:rotate-3 dark:border-stone-800/60 dark:bg-stone-900/65 ${feature.color}`}
             >
-              <feature.icon className="h-6 w-6" />
+              <feature.icon className="h-5 w-5" />
             </div>
-            <h3 className="text-lg font-semibold tracking-tight text-stone-900 dark:text-stone-50">
+            <h3 className="text-lg font-semibold tracking-tight text-stone-900 dark:text-stone-50 select-none">
               {feature.title}
             </h3>
-            <p className="mt-2 text-sm leading-7 text-stone-600 dark:text-stone-300">
+            <p className="mt-2.5 text-sm leading-relaxed text-stone-600 dark:text-stone-300/90 select-none">
               {feature.description}
             </p>
           </div>

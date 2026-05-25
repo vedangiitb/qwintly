@@ -11,7 +11,6 @@ type UpdateContextArgs = {
     projectIdentity?: Partial<CollectedContext["projectIdentity"]>;
     targetBusinessContext?: Partial<CollectedContext["targetBusinessContext"]>;
     branding?: Partial<CollectedContext["branding"]>;
-    functionalRequirements?: Partial<CollectedContext["functionalRequirements"]>;
     constraints?: Partial<CollectedContext["constraints"]>;
     otherInfo?: unknown;
   };
@@ -45,10 +44,8 @@ export class UpdateContextToolHelper {
     const targetBusinessContext: Partial<
       CollectedContext["targetBusinessContext"]
     > = context.targetBusinessContext ?? {};
-    const branding: Partial<CollectedContext["branding"]> = context.branding ?? {};
-    const functionalRequirements: Partial<
-      CollectedContext["functionalRequirements"]
-    > = context.functionalRequirements ?? {};
+    const branding: Partial<CollectedContext["branding"]> =
+      context.branding ?? {};
     const constraints: Partial<CollectedContext["constraints"]> =
       context.constraints ?? {};
 
@@ -96,29 +93,6 @@ export class UpdateContextToolHelper {
             ? branding.designStyle
             : defaultCollectedContext.branding.designStyle,
       },
-      functionalRequirements: {
-        authenticationRequired:
-          typeof functionalRequirements.authenticationRequired === "boolean"
-            ? functionalRequirements.authenticationRequired
-            : defaultCollectedContext.functionalRequirements
-                .authenticationRequired,
-        roles: this.getStringArray(
-          functionalRequirements.roles,
-          defaultCollectedContext.functionalRequirements.roles,
-        ),
-        paymentRequired:
-          typeof functionalRequirements.paymentRequired === "boolean"
-            ? functionalRequirements.paymentRequired
-            : defaultCollectedContext.functionalRequirements.paymentRequired,
-        integrations: this.getStringArray(
-          functionalRequirements.integrations,
-          defaultCollectedContext.functionalRequirements.integrations,
-        ),
-        dashboardRequired:
-          typeof functionalRequirements.dashboardRequired === "boolean"
-            ? functionalRequirements.dashboardRequired
-            : defaultCollectedContext.functionalRequirements.dashboardRequired,
-      },
       constraints: {
         budgetConstraints:
           typeof constraints.budgetConstraints === "string"
@@ -157,7 +131,9 @@ export class UpdateContextToolHelper {
     }
 
     if (context.targetBusinessContext.targetAudience) {
-      summaryParts.push(`Audience: ${context.targetBusinessContext.targetAudience}`);
+      summaryParts.push(
+        `Audience: ${context.targetBusinessContext.targetAudience}`,
+      );
     }
 
     if (!summaryParts.length) return "Context updated";
@@ -181,7 +157,9 @@ export class UpdateContextToolHelper {
     return value.filter((entry): entry is string => typeof entry === "string");
   }
 
-  private normalizeProjectType(value: unknown): CollectedContext["projectIdentity"]["projectType"] {
+  private normalizeProjectType(
+    value: unknown,
+  ): CollectedContext["projectIdentity"]["projectType"] {
     return UpdateContextToolHelper.VALID_PROJECT_TYPES.includes(
       value as CollectedContext["projectIdentity"]["projectType"],
     )

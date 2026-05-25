@@ -49,14 +49,6 @@ export interface Branding {
   designStyle: string;
 }
 
-export interface FunctionalRequirements {
-  authenticationRequired: boolean;
-  roles: string[];
-  paymentRequired: boolean;
-  integrations: string[];
-  dashboardRequired: boolean;
-}
-
 export interface Constraints {
   budgetConstraints: string;
   timeline: string;
@@ -68,7 +60,6 @@ export interface CollectedContext {
   projectIdentity: ProjectIdentity;
   targetBusinessContext: TargetBusinessContext;
   branding: Branding;
-  functionalRequirements: FunctionalRequirements;
   constraints: Constraints;
   otherInfo: string[];
 }
@@ -76,7 +67,7 @@ export interface CollectedContext {
 export const defaultCollectedContext: CollectedContext = {
   projectIdentity: {
     projectName: "",
-    projectType: "landing_page",
+    projectType: "",
     description: "",
   },
   targetBusinessContext: {
@@ -90,13 +81,6 @@ export const defaultCollectedContext: CollectedContext = {
     brandKeywords: [],
     colorPreference: [],
     designStyle: "",
-  },
-  functionalRequirements: {
-    authenticationRequired: false,
-    roles: [],
-    paymentRequired: false,
-    integrations: [],
-    dashboardRequired: false,
   },
   constraints: {
     budgetConstraints: "",

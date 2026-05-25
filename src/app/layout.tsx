@@ -130,7 +130,7 @@ export default function RootLayout({
         {" "}
         <ChatProvider>
           <Providers>
-            <div className="flex flex-col h-screen">
+            <div className="flex flex-col h-screen w-full bg-[linear-gradient(180deg,#f7f3ea_0%,#f2efe6_55%,#ece8df_100%)] dark:bg-[linear-gradient(180deg,#111111_0%,#171717_55%,#1c1917_100%)] transition-colors duration-500">
               <NavBar />
               {children}
             </div>

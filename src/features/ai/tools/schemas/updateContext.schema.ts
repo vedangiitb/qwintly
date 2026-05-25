@@ -38,20 +38,6 @@ export const BrandingSchema = z.object({
   designStyle: z.string().describe("Preferred design style direction."),
 });
 
-export const FunctionalRequirementsSchema = z.object({
-  authenticationRequired: z
-    .boolean()
-    .describe("Whether user authentication is required."),
-  roles: z.array(z.string()).describe("User roles required by the product."),
-  paymentRequired: z.boolean().describe("Whether payment flow is required."),
-  integrations: z
-    .array(z.string())
-    .describe("Third-party integrations needed."),
-  dashboardRequired: z
-    .boolean()
-    .describe("Whether an internal/admin dashboard is required."),
-});
-
 export const ConstraintsSchema = z.object({
   budgetConstraints: z
     .string()
@@ -67,7 +53,6 @@ export const CollectedContextSchema = z.object({
   projectIdentity: ProjectIdentitySchema,
   targetBusinessContext: TargetBusinessContextSchema,
   branding: BrandingSchema,
-  functionalRequirements: FunctionalRequirementsSchema,
   constraints: ConstraintsSchema,
   otherInfo: z
     .array(z.string())

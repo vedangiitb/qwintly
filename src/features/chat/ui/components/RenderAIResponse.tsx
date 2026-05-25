@@ -20,26 +20,31 @@ export default function RenderAIResponse({
   messageId?: string;
 }) {
   const { questionAnswersByMessageId, plansByMessageId } = useChat();
+  const mappedMessageId = messageId ?? "";
+  const plan = plansByMessageId[mappedMessageId];
+  const questionSet = questionAnswersByMessageId[mappedMessageId];
+
+  // If no textual content is loaded yet and no tool payloads are present in state, render nothing
+  if (!data?.trim() && !plan && !questionSet) {
+    return null;
+  }
+
   const displayMessage: string = data || "Something went wrong";
 
   const aiCard = (messageType: string) => {
-    const mappedMessageId = messageId ?? "";
-
     if (messageType === MESSAGE_TYPES.PLAN) {
-      const plan = plansByMessageId[mappedMessageId];
       return (
         <div className="w-full space-y-2">
-          {defaultCard(displayMessage)}
+          {data?.trim() ? defaultCard(data) : null}
           <PlanReview plan={plan} fallbackText={displayMessage} />
         </div>
       );
     }
 
     if (messageType === MESSAGE_TYPES.QUESTIONS) {
-      const questionSet = questionAnswersByMessageId[mappedMessageId];
       return (
         <div className="w-full space-y-2">
-          {defaultCard(displayMessage)}
+          {data?.trim() ? defaultCard(data) : null}
           <Questionnaire
             questionSet={questionSet}
             fallbackText={displayMessage}
@@ -66,9 +71,9 @@ export default function RenderAIResponse({
 
   return (
     <div className="flex items-start gap-3 my-4">
-      <Avatar className="hidden sm:flex h-8 w-8 bg-zinc-900/80">
-        <AvatarFallback className="text-zinc-300 text-sm font-medium">
-          ⚡
+      <Avatar className="hidden sm:flex h-8 w-8 bg-stone-900 dark:bg-stone-100 shadow-xs">
+        <AvatarFallback className="bg-transparent text-white dark:text-stone-950 text-xs font-medium">
+          ✨
         </AvatarFallback>
       </Avatar>
 
@@ -79,15 +84,15 @@ export default function RenderAIResponse({
 
 const defaultCard = (displayMessage: string) => {
   return (
-    <Card
+    <div
       className={cn(
-        "w-full md:max-w-[75%] px-4 py-2 rounded-2xl",
-        "bg-muted/40 text-primary text-sm md:text-base",
-        "border transition-all",
+        "w-full md:max-w-[75%] px-5 py-3.5 rounded-[1.25rem] select-text",
+        "bg-white/35 dark:bg-stone-900/35 text-stone-800 dark:text-stone-200 text-sm leading-relaxed",
+        "border border-stone-200/35 dark:border-stone-800/35 shadow-[0_8px_30px_rgba(0,0,0,0.01)] transition-all",
       )}
     >
       <MarkdownBody displayMessage={displayMessage} />
-    </Card>
+    </div>
   );
 };
 
@@ -99,7 +104,7 @@ const MarkdownBody = ({ displayMessage }: { displayMessage: string }) => {
           return (
             <code
               className={cn(
-                "rounded bg-muted px-1.5 py-0.5 text-xs font-mono text-indigo-300",
+                "rounded bg-stone-200/60 dark:bg-stone-800/60 px-1.5 py-0.5 text-xs font-mono text-teal-650 dark:text-teal-350 font-semibold",
                 className,
               )}
               {...props}
@@ -111,7 +116,7 @@ const MarkdownBody = ({ displayMessage }: { displayMessage: string }) => {
         pre({ children, ...props }) {
           return (
             <pre
-              className="rounded-lg bg-zinc-900/80 p-3 overflow-x-auto text-xs text-blue-100"
+              className="rounded-xl bg-stone-950 p-4 overflow-x-auto text-xs text-stone-200 font-mono shadow-md border border-stone-800/50 my-2.5"
               {...props}
             >
               {children}

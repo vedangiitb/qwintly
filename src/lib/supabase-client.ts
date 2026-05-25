@@ -11,7 +11,17 @@ export function getSupabaseClient() {
     return null;
   }
 
-  const supabase = createClient(url, anonKey);
+  const supabase = createClient(url, anonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      // Disable LockManager to avoid browser lock acquisition timeouts in nested iframes/dev server setups
+      lock: async (name, acquireTimeout, fn) => {
+        return fn();
+      },
+    },
+  });
 
   return supabase;
 }

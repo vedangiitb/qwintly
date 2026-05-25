@@ -10,9 +10,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-import { AI_MODELS, DEFAULT_MODEL, DEFAULT_PROVIDER } from "@/features/ai/core/modelInfo";
 import { useAuth } from "@/features/auth/ui/hooks/useAuth";
 import { usePreferences } from "@/features/auth/ui/hooks/usePreferences";
+import {
+  fetchValidModels,
+  type ValidModelsByProviderResponse,
+} from "@/features/byok/ui/api/byok.api";
 import { cn } from "@/lib/utils";
 import {
   ArrowRight,
@@ -24,7 +27,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   type DailyMessagesResponse,
@@ -32,9 +35,10 @@ import {
 } from "@/features/auth/ui/services/accountMetrics.service";
 import { getLocalTimeStringForNextUTCMidnight } from "@/features/auth/ui/helpers/dailyUsage.helpers";
 
-function resolveModelGroup(provider: string) {
-  if (provider === "openai") return AI_MODELS.OPENAI;
-  return AI_MODELS.GEMINI;
+function formatProviderLabel(provider: string) {
+  if (!provider) return "Select";
+  if (provider.toLowerCase() === "openai") return "OpenAI";
+  return provider.charAt(0).toUpperCase() + provider.slice(1);
 }
 
 export default function Account() {
@@ -44,6 +48,9 @@ export default function Account() {
     useState<DailyMessagesResponse | null>(null);
   const [dailyMessagesLoading, setDailyMessagesLoading] = useState(false);
   const [isSavingPreferences, setIsSavingPreferences] = useState(false);
+  const [validModels, setValidModels] = useState<ValidModelsByProviderResponse>([]);
+  const [modelsLoading, setModelsLoading] = useState(false);
+  const [modelsError, setModelsError] = useState<string | null>(null);
 
   const {
     preferences,
@@ -62,15 +69,50 @@ export default function Account() {
   const [draftModel, setDraftModel] = useState<string>("");
   const [draftByokEnabled, setDraftByokEnabled] = useState(false);
 
-  const effectiveProvider =
-    draftProvider || selectedProvider || preferences?.pref_provider || DEFAULT_PROVIDER;
+  useEffect(() => {
+    if (loading || !user) return;
 
-  const modelOptions = (() => {
-    const group = resolveModelGroup(effectiveProvider);
-    const values = Object.values(group);
-    const unique = Array.from(new Set(values));
-    return unique.map((model) => ({ id: model, label: model }));
-  })();
+    let cancelled = false;
+    async function loadValidModels() {
+      setModelsLoading(true);
+      setModelsError(null);
+      try {
+        const data = await fetchValidModels();
+        if (cancelled) return;
+        setValidModels(data);
+      } catch (e) {
+        if (cancelled) return;
+        setValidModels([]);
+        setModelsError(e instanceof Error ? e.message : "Failed to load models");
+      } finally {
+        if (!cancelled) setModelsLoading(false);
+      }
+    }
+
+    loadValidModels();
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, user]);
+
+  const providerOptions = useMemo(() => {
+    return validModels.map((p) => ({
+      id: p.provider,
+      label: formatProviderLabel(p.provider),
+    }));
+  }, [validModels]);
+
+  const effectiveProvider =
+    draftProvider ||
+    selectedProvider ||
+    preferences?.pref_provider ||
+    validModels[0]?.provider ||
+    "";
+
+  const modelOptions = useMemo(() => {
+    const providerGroup = validModels.find((p) => p.provider === effectiveProvider);
+    return (providerGroup?.models ?? []).map((m) => ({ id: m.modelName, label: m.modelName }));
+  }, [effectiveProvider, validModels]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -81,47 +123,55 @@ export default function Account() {
   useEffect(() => {
     if (prefsInitialized) return;
     if (!preferences) return;
+    if (modelsLoading && validModels.length === 0) return;
 
-    const provider = preferences.pref_provider ?? DEFAULT_PROVIDER;
-    const group = resolveModelGroup(provider);
-    const allowedModels = new Set<string>(Object.values(group) as string[]);
+    const availableProviders = new Set<string>(validModels.map((p) => p.provider));
+    const providerCandidate = preferences.pref_provider ?? "";
+    const resolvedProvider = availableProviders.has(providerCandidate)
+      ? providerCandidate
+      : validModels[0]?.provider ?? "";
 
-    const modelCandidate = preferences.pref_model ?? DEFAULT_MODEL;
+    const providerGroup = validModels.find((p) => p.provider === resolvedProvider);
+    const allowedModels = new Set<string>(providerGroup?.models.map((m) => m.modelName) ?? []);
+
+    const modelCandidate = preferences.pref_model ?? "";
     const resolvedModel = allowedModels.has(modelCandidate)
       ? modelCandidate
-      : group.DEFAULT;
+      : providerGroup?.models[0]?.modelName ?? "";
 
-    setDraftProvider(provider);
+    setDraftProvider(resolvedProvider);
     setDraftModel(resolvedModel);
     setDraftByokEnabled(preferences.byok_enabled ?? false);
     setPrefsInitialized(true);
-  }, [preferences, prefsInitialized]);
+  }, [preferences, prefsInitialized, modelsLoading, validModels]);
 
   useEffect(() => {
     if (!draftProvider) return;
 
-    const group = resolveModelGroup(draftProvider);
-    const allowedModels = new Set<string>(Object.values(group) as string[]);
+    const providerGroup = validModels.find((p) => p.provider === draftProvider);
+    const allowedModels = new Set<string>(providerGroup?.models.map((m) => m.modelName) ?? []);
 
     if (draftModel && allowedModels.has(draftModel)) return;
-    setDraftModel(group.DEFAULT);
-  }, [draftModel, draftProvider]);
+    setDraftModel(providerGroup?.models[0]?.modelName ?? "");
+  }, [draftModel, draftProvider, validModels]);
 
   const handleSavePreferences = async () => {
     try {
       setIsSavingPreferences(true);
       const updates: Promise<unknown>[] = [];
 
-      if (draftProvider && draftProvider !== selectedProvider) {
-        updates.push(saveProvider(draftProvider));
-      }
-
-      if (draftModel && draftModel !== selectedModel) {
-        updates.push(saveModel(draftModel));
-      }
-
       if (draftByokEnabled !== byokEnabled) {
         updates.push(saveByokEnabled(draftByokEnabled));
+      }
+
+      if (draftByokEnabled) {
+        if (draftProvider && draftProvider !== selectedProvider) {
+          updates.push(saveProvider(draftProvider));
+        }
+
+        if (draftModel && draftModel !== selectedModel) {
+          updates.push(saveModel(draftModel));
+        }
       }
 
       if (updates.length === 0) {
@@ -159,11 +209,11 @@ export default function Account() {
 
   if (loading) {
     return (
-      <div className="flex-1 min-h-0 overflow-y-auto bg-[linear-gradient(180deg,#f7f3ea_0%,#f2efe6_55%,#ece8df_100%)] px-4 py-10 dark:bg-[linear-gradient(180deg,#111111_0%,#171717_55%,#1c1917_100%)]">
+      <div className="flex-1 min-h-0 overflow-y-auto bg-transparent px-4 py-10">
         <div className="mx-auto max-w-6xl animate-pulse space-y-6">
-          <div className="h-48 rounded-4xl bg-white/70 dark:bg-stone-900/70" />
-          <div className="h-56 rounded-4xl bg-white/70 dark:bg-stone-900/70" />
-          <div className="h-56 rounded-4xl bg-white/70 dark:bg-stone-900/70" />
+          <div className="h-48 rounded-[2rem] bg-white/35 dark:bg-stone-900/35" />
+          <div className="h-56 rounded-[2rem] bg-white/35 dark:bg-stone-900/35" />
+          <div className="h-56 rounded-[2rem] bg-white/35 dark:bg-stone-900/35" />
         </div>
       </div>
     );
@@ -178,10 +228,10 @@ export default function Account() {
   const shortId = user.id ? `${user.id.slice(0, 8)}…` : "";
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto bg-[linear-gradient(180deg,#f7f3ea_0%,#f2efe6_55%,#ece8df_100%)] px-4 py-8 text-stone-900 dark:bg-[linear-gradient(180deg,#111111_0%,#171717_55%,#1c1917_100%)] dark:text-stone-100">
+    <div className="flex-1 min-h-0 overflow-y-auto bg-transparent px-4 py-8 text-stone-900 dark:text-stone-100">
       <div className="mx-auto max-w-6xl">
-        <div className="relative overflow-hidden rounded-[2.25rem] border border-white/70 bg-[linear-gradient(145deg,rgba(255,255,255,0.88),rgba(255,250,245,0.7))] p-6 shadow-[0_24px_80px_rgba(28,25,23,0.12)] backdrop-blur-xl sm:p-8 dark:border-stone-800/80 dark:bg-[linear-gradient(145deg,rgba(28,25,23,0.88),rgba(17,17,17,0.84))]">
-          <div className="absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_top,rgba(45,212,191,0.18),transparent_55%)] dark:bg-[radial-gradient(circle_at_top,rgba(45,212,191,0.12),transparent_55%)]" />
+        <div className="relative overflow-hidden rounded-[2rem] border border-stone-200/35 bg-white/35 p-6 shadow-[0_24px_70px_rgba(28,25,23,0.03)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:p-8 dark:border-stone-800/35 dark:bg-stone-900/35">
+          <div className="absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_top,rgba(45,212,191,0.12),transparent_55%)] dark:bg-[radial-gradient(circle_at_top,rgba(45,212,191,0.08),transparent_55%)]" />
 
           <div className="relative space-y-8">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -229,7 +279,7 @@ export default function Account() {
                   <Button
                     variant="outline"
                     onClick={() => router.push("/login/verify")}
-                    className="h-11 rounded-2xl border-stone-300 bg-white/70 px-5 hover:bg-white dark:border-stone-700 dark:bg-stone-900/70 dark:hover:bg-stone-900"
+                    className="h-10 rounded-full border-stone-200/40 bg-white/45 px-5 hover:bg-white/80 dark:border-stone-800/40 dark:bg-stone-900/45 dark:hover:bg-stone-900/80 active:scale-[0.98] transition-all"
                   >
                     Verify email
                     <ArrowRight className="size-4" />
@@ -238,7 +288,7 @@ export default function Account() {
                 <Button
                   asChild
                   variant="outline"
-                  className="h-11 rounded-2xl border-stone-300 bg-white/70 px-5 hover:bg-white dark:border-stone-700 dark:bg-stone-900/70 dark:hover:bg-stone-900"
+                  className="h-10 rounded-full border-stone-200/40 bg-white/45 px-5 hover:bg-white/80 dark:border-stone-800/40 dark:bg-stone-900/45 dark:hover:bg-stone-900/80 active:scale-[0.98] transition-all"
                 >
                   <Link href="/byok">
                     <KeyRound className="size-4" />
@@ -247,7 +297,7 @@ export default function Account() {
                 </Button>
                 <Button
                   onClick={logout}
-                  className="h-11 rounded-2xl bg-stone-900 px-5 text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
+                  className="h-10 rounded-full bg-stone-900 px-5 text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200 active:scale-[0.98] transition-all"
                 >
                   <LogOut className="size-4" />
                   Sign out
@@ -255,48 +305,48 @@ export default function Account() {
               </div>
             </div>
 
-            <div className="grid gap-4 rounded-4xl border border-stone-200/80 bg-white/45 p-4 backdrop-blur-sm sm:grid-cols-3 dark:border-stone-800/70 dark:bg-stone-950/30">
-              <div className="rounded-2xl border border-white/80 bg-white/65 p-4 dark:border-stone-800 dark:bg-stone-900/70">
-                <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
+            <div className="grid gap-4 rounded-[1.75rem] border border-stone-200/35 bg-white/20 p-4 backdrop-blur-md sm:grid-cols-3 dark:border-stone-800/35 dark:bg-stone-900/20 shadow-[0_8px_30px_rgba(0,0,0,0.01)]">
+              <div className="rounded-[1.25rem] border border-stone-200/20 bg-white/45 p-5 dark:border-stone-800/20 dark:bg-stone-900/45">
+                <p className="text-xs uppercase tracking-[0.18em] text-stone-500 font-medium">
                   Email status
                 </p>
-                <p className="mt-2 text-2xl font-semibold">
+                <p className="mt-2 text-2xl font-semibold tracking-tight">
                   {user.emailVerified ? "Verified" : "Unverified"}
                 </p>
-                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                <p className="mt-1.5 text-xs text-stone-500 dark:text-stone-400">
                   {user.emailVerified
                     ? "All set for secure sign-ins."
                     : "Verify to unlock all features."}
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/80 bg-white/65 p-4 dark:border-stone-800 dark:bg-stone-900/70">
-                <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
+              <div className="rounded-[1.25rem] border border-stone-200/20 bg-white/45 p-5 dark:border-stone-800/20 dark:bg-stone-900/45">
+                <p className="text-xs uppercase tracking-[0.18em] text-stone-500 font-medium">
                   Messages today (UTC)
                 </p>
-                <p className="mt-2 text-2xl font-semibold">
+                <p className="mt-2 text-2xl font-semibold tracking-tight">
                   {dailyMessagesLoading
                     ? "Loading…"
                     : `${dailyMessages?.count ?? 0}/${dailyMessages?.limit ?? 50}`}
                 </p>
-                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                <p className="mt-1.5 text-xs text-stone-500 dark:text-stone-400">
                   Resets at {getLocalTimeStringForNextUTCMidnight()}.
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/80 bg-white/65 p-4 dark:border-stone-800 dark:bg-stone-900/70">
-                <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
+              <div className="rounded-[1.25rem] border border-stone-200/20 bg-white/45 p-5 dark:border-stone-800/20 dark:bg-stone-900/45">
+                <p className="text-xs uppercase tracking-[0.18em] text-stone-500 font-medium">
                   Security
                 </p>
-                <p className="mt-2 inline-flex items-center gap-2 text-2xl font-semibold">
+                <p className="mt-2 inline-flex items-center gap-2 text-2xl font-semibold tracking-tight">
                   <ShieldCheck className="size-5 text-emerald-600 dark:text-emerald-300" />
                   Protected
                 </p>
-                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                <p className="mt-1.5 text-xs text-stone-500 dark:text-stone-400">
                   Manage provider keys via BYOK.
                 </p>
               </div>
             </div>
 
-            <div className="rounded-4xl border border-stone-200/80 bg-white/55 p-6 shadow-sm backdrop-blur-sm dark:border-stone-800/70 dark:bg-stone-950/30">
+            <div className="rounded-[1.75rem] border border-stone-200/35 bg-white/35 p-6 shadow-[0_8px_30px_rgba(0,0,0,0.01)] backdrop-blur-md dark:border-stone-800/35 dark:bg-stone-900/35">
               <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <h2 className="text-base font-semibold tracking-tight">
@@ -318,47 +368,6 @@ export default function Account() {
 
               <div className="mt-5 grid gap-3">
                 <div className="flex items-center justify-between border-b border-stone-200/70 py-3 dark:border-stone-800/70">
-                  <p className="text-sm">Provider</p>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="flex gap-2 rounded-md px-2 py-1 hover:bg-accent">
-                      <p className="text-sm">
-                        {(draftProvider || selectedProvider || DEFAULT_PROVIDER) === "openai"
-                          ? "OpenAI"
-                          : "Gemini"}
-                      </p>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Providers</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => setDraftProvider("gemini")}>
-                        Gemini
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setDraftProvider("openai")}>
-                        OpenAI
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-
-                <div className="flex items-center justify-between border-b border-stone-200/70 py-3 dark:border-stone-800/70">
-                  <p className="text-sm">Model</p>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="flex max-w-80 justify-end gap-2 rounded-md px-2 py-1 hover:bg-accent">
-                      <p className="truncate text-sm">
-                        {draftModel || selectedModel || DEFAULT_MODEL}
-                      </p>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="max-h-72 overflow-auto">
-                      <DropdownMenuLabel>Models</DropdownMenuLabel>
-                      {modelOptions.map((m) => (
-                        <DropdownMenuItem key={m.id} onClick={() => setDraftModel(m.id)}>
-                          {m.label}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-
-                <div className="flex items-center justify-between border-b border-stone-200/70 py-3 dark:border-stone-800/70">
                   <div className="flex flex-col">
                     <p className="text-sm">BYOK</p>
                     <p className="text-xs text-stone-500 dark:text-stone-400">
@@ -373,9 +382,63 @@ export default function Account() {
                   />
                 </div>
 
+                {draftByokEnabled ? (
+                  <>
+                    <div className="flex items-center justify-between border-b border-stone-200/70 py-3 dark:border-stone-800/70">
+                      <p className="text-sm">Provider</p>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="flex gap-2 rounded-md px-2 py-1 hover:bg-accent">
+                          <p className="text-sm">
+                            {providerOptions.find(
+                              (p) => p.id === (draftProvider || selectedProvider),
+                            )?.label ?? formatProviderLabel(effectiveProvider)}
+                          </p>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Providers</DropdownMenuLabel>
+                          {providerOptions.map((p) => (
+                            <DropdownMenuItem
+                              key={p.id}
+                              onClick={() => setDraftProvider(p.id)}
+                            >
+                              {p.label}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    <div className="flex items-center justify-between border-b border-stone-200/70 py-3 dark:border-stone-800/70">
+                      <p className="text-sm">Model</p>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="flex max-w-80 justify-end gap-2 rounded-md px-2 py-1 hover:bg-accent">
+                          <p className="truncate text-sm">
+                            {draftModel || selectedModel || modelOptions[0]?.id || "Select"}
+                          </p>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          className="max-h-72 overflow-auto"
+                        >
+                          <DropdownMenuLabel>Models</DropdownMenuLabel>
+                          {modelOptions.map((m) => (
+                            <DropdownMenuItem
+                              key={m.id}
+                              onClick={() => setDraftModel(m.id)}
+                            >
+                              {m.label}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </>
+                ) : null}
+
                 {preferencesError ? (
                   <p className="text-sm text-destructive">{preferencesError}</p>
                 ) : null}
+                {modelsError ? <p className="text-sm text-destructive">{modelsError}</p> : null}
               </div>
             </div>
 

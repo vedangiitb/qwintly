@@ -71,7 +71,7 @@ export const LandingPage: React.FC = () => {
         setSidebarExpanded={setShowSidebar}
       />
 
-      <div className="w-full flex flex-col h-full min-h-0 overflow-y-auto custom-scrollbar bg-[linear-gradient(180deg,#f7f3ea_0%,#f2efe6_55%,#ece8df_100%)] dark:bg-[linear-gradient(180deg,#111111_0%,#171717_55%,#1c1917_100%)]">
+      <div className="w-full flex flex-col h-full min-h-0 overflow-y-auto custom-scrollbar bg-transparent">
         <main className="flex-1 min-h-0">
           <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14 space-y-16">
             <Hero

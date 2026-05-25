@@ -52,9 +52,10 @@ export default function ChatBox({
       }}
       className={cn(
         "sticky bottom-2 left-0 right-0 mx-auto flex w-full max-w-3xl items-end gap-2",
-        "rounded-2xl border border-border/60",
-        "bg-muted/80 backdrop-blur-md",
-        "p-2 md:px-3 md:py-4 shadow-sm",
+        "rounded-3xl border border-stone-200/40 dark:border-stone-800/40",
+        "bg-white/40 dark:bg-stone-900/40 backdrop-blur-xl",
+        "p-1.5 shadow-[0_12px_40px_rgba(28,25,23,0.03)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.18)]",
+        "transition-all duration-300 focus-within:border-teal-500/50 focus-within:ring-4 focus-within:ring-teal-500/10",
       )}
     >
       <textarea
@@ -71,9 +72,9 @@ export default function ChatBox({
         rows={1}
         aria-label="Prompt"
         className={cn(
-          "flex-1 resize-none bg-transparent px-3 py-2 pb-2 text-sm",
+          "flex-1 resize-none bg-transparent px-4 py-2.5 text-sm",
           "border-0 outline-none ring-0 focus:outline-none focus:ring-0",
-          "max-h-48 text-foreground placeholder:text-muted-foreground/70",
+          "max-h-48 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500",
           "appearance-none",
           isLoading && "opacity-70",
         )}
@@ -84,14 +85,16 @@ export default function ChatBox({
         disabled={!canSubmit}
         aria-label="Send"
         className={cn(
-          "h-10 w-10 shrink-0 rounded-full p-0 shadow-sm transition-all",
-          canSubmit ? "hover:bg-accent" : "cursor-not-allowed opacity-60",
+          "h-9 w-9 shrink-0 rounded-full p-0 shadow-xs transition-all duration-300",
+          canSubmit 
+            ? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:scale-105 active:scale-[0.95]" 
+            : "bg-stone-200/60 dark:bg-stone-800/60 text-stone-450 dark:text-stone-550 cursor-not-allowed opacity-60",
         )}
       >
         {isLoading ? (
-          <Loader2 className="animate-spin" size={18} />
+          <Loader2 className="animate-spin" size={16} />
         ) : (
-          <ArrowUp size={18} />
+          <ArrowUp size={16} />
         )}
         <span className="sr-only">Send</span>
       </Button>

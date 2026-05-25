@@ -13,7 +13,7 @@ export default function SideBar({
   return (
     <div className="h-full flex flex-col min-h-0">
       <aside
-        className={`will-change-transform fixed md:static bg-background/95 backdrop-blur-md left-0 top-0 md:top-auto transform transition-all duration-300 ease-in-out z-30 border-r border-border/50 flex flex-col justify-between h-full min-h-0 p-2.5
+        className={`will-change-transform fixed md:static bg-white/20 dark:bg-stone-900/20 backdrop-blur-xl left-0 top-0 md:top-auto transform transition-all duration-300 ease-in-out z-30 border-r border-stone-200/30 dark:border-stone-800/30 flex flex-col justify-between h-full min-h-0 p-3
          ${sidebarExpanded ? "translate-x-0 w-full md:w-56" : "-translate-x-full md:translate-x-0 md:w-16"}
       `}
       >

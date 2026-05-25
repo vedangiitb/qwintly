@@ -117,13 +117,13 @@ export const GenSummaryCard = ({
     normalizedStatus === "failed" || normalizedStatus === "error";
 
   return (
-    <div className="w-full md:max-w-[75%] space-y-2">
+    <div className="w-full md:max-w-[85%] space-y-2.5 select-none">
       {renderMessageBody(displayMessage)}
 
-      <Card
+      <div
         className={cn(
-          "overflow-hidden rounded-2xl border py-0 shadow-sm",
-          "bg-muted/20",
+          "overflow-hidden rounded-[1.5rem] border border-stone-200/35 dark:border-stone-800/35 py-0 shadow-[0_8px_30px_rgba(0,0,0,0.01)] backdrop-blur-md",
+          "bg-white/35 dark:bg-stone-900/35 transition-all duration-300",
         )}
       >
         <Accordion
@@ -140,20 +140,20 @@ export const GenSummaryCard = ({
           <AccordionItem value="details" className="border-0">
             <AccordionTrigger
               className={cn(
-                "px-4 py-3 hover:no-underline",
-                "transition-colors hover:bg-muted/30",
+                "px-4 py-3 hover:no-underline border-b border-transparent [&[data-state=open]]:border-stone-200/20 [&[data-state=open]]:bg-stone-900/5 dark:[&[data-state=open]]:bg-white/5",
+                "transition-all duration-300 hover:bg-stone-900/5 dark:hover:bg-white/5",
               )}
             >
               <div className="flex w-full items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold tracking-wide text-muted-foreground">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
                     Generation details
                   </span>
                   {statusLabel ? (
                     <Badge
                       variant={badgeVariant}
                       className={cn(
-                        "h-5 rounded-full px-2 text-[10px] font-semibold uppercase tracking-wide",
+                        "h-5 rounded-full px-2 text-[9px] font-semibold uppercase tracking-wider",
                         !canFetch && "opacity-60",
                       )}
                     >
@@ -163,7 +163,7 @@ export const GenSummaryCard = ({
                 </div>
 
                 {!canFetch ? (
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[10px] text-stone-550 dark:text-stone-450">
                     Missing message id
                   </span>
                 ) : null}
@@ -171,15 +171,15 @@ export const GenSummaryCard = ({
             </AccordionTrigger>
 
             <AccordionContent className="px-0 pb-0">
-              <CardContent className="px-4 pb-4 pt-0">
+              <CardContent className="px-4 pb-4 pt-4">
                 {isLoading ? (
-                  <div className="flex items-center gap-2 py-2 text-xs text-muted-foreground">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    Loading details…
+                  <div className="flex items-center gap-2 py-2 text-xs text-stone-500 dark:text-stone-400">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-teal-600 dark:text-teal-450" />
+                    Loading build statistics…
                   </div>
                 ) : error ? (
                   <div className="flex items-start justify-between gap-3 py-1">
-                    <div className="flex items-start gap-2 text-xs text-destructive">
+                    <div className="flex items-start gap-2 text-xs text-rose-600 dark:text-rose-450">
                       <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                       <span>{error}</span>
                     </div>
@@ -189,62 +189,62 @@ export const GenSummaryCard = ({
                       variant="secondary"
                       disabled={!canFetch}
                       onClick={() => void loadSummary()}
-                      className="h-7 rounded-full px-3 text-xs"
+                      className="h-8 rounded-full px-4 text-xs font-semibold active:scale-[0.98] transition-all"
                     >
                       Retry
                     </Button>
                   </div>
                 ) : summary ? (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div
                       className={cn(
-                        "grid grid-cols-2 gap-2 rounded-xl border p-3",
-                        "bg-background/30",
+                        "grid grid-cols-2 gap-3 rounded-xl border border-stone-200/25 dark:border-stone-800/25 p-3.5",
+                        "bg-white/20 dark:bg-stone-950/10",
                       )}
                     >
                       <div className="space-y-0.5">
-                        <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                          Tokens
+                        <div className="text-[9px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+                          Tokens utilized
                         </div>
-                        <div className="text-xs">
+                        <div className="text-xs font-medium text-stone-800 dark:text-stone-200">
                           {formatInteger(
                             (summary.inputTokens ?? 0) +
                               (summary.outputTokens ?? 0),
                           )}
-                          <span className="ml-1 text-[10px] text-muted-foreground">
-                            in {formatInteger(summary.inputTokens ?? 0)} / out{" "}
-                            {formatInteger(summary.outputTokens ?? 0)}
+                          <span className="ml-1.5 text-[10px] text-stone-450 font-normal">
+                            (in: {formatInteger(summary.inputTokens ?? 0)} / out:{" "}
+                            {formatInteger(summary.outputTokens ?? 0)})
                           </span>
                         </div>
                       </div>
 
                       <div className="space-y-0.5 text-right">
-                        <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                        <div className="text-[9px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
                           Cost
                         </div>
-                        <div className="text-xs">
+                        <div className="text-xs font-medium text-stone-850 dark:text-stone-150">
                           {formatUsd(
                             (summary.inputCost ?? 0) + (summary.outputCost ?? 0),
                           )}
-                          <span className="ml-1 text-[10px] text-muted-foreground">
-                            in {formatUsd(summary.inputCost ?? 0)} / out{" "}
-                            {formatUsd(summary.outputCost ?? 0)}
+                          <span className="ml-1.5 text-[10px] text-stone-450 font-normal">
+                            (in: {formatUsd(summary.inputCost ?? 0)} / out:{" "}
+                            {formatUsd(summary.outputCost ?? 0)})
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2 pt-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       {summary.sessionType === "generate" &&
                       summary.status !== "failed" ? (
                         <Button
                           size="sm"
                           variant="secondary"
-                          className="h-8 rounded-full px-3 text-xs"
+                          className="h-8 rounded-full px-4 text-xs font-semibold active:scale-[0.98] transition-all cursor-pointer border border-stone-200/40 dark:border-stone-800/40 bg-white/40 dark:bg-stone-900/40"
                           onClick={() => updatePreviewUrl(summary.genSessionId)}
                         >
                           <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-                          Preview
+                          Preview App
                         </Button>
                       ) : null}
 
@@ -252,7 +252,7 @@ export const GenSummaryCard = ({
                         <Button
                           size="sm"
                           variant="default"
-                          className="h-8 rounded-full px-3 text-xs"
+                          className="h-8 rounded-full px-4 text-xs font-semibold active:scale-[0.98] transition-all cursor-pointer bg-stone-900 dark:bg-stone-105"
                           disabled={
                             !canTrigger || isTriggering || isSessionRunning
                           }
@@ -284,7 +284,7 @@ export const GenSummaryCard = ({
                         <Button
                           size="sm"
                           variant="default"
-                          className="h-8 rounded-full px-3 text-xs"
+                          className="h-8 rounded-full px-4 text-xs font-semibold active:scale-[0.98] transition-all cursor-pointer bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-950"
                           disabled={
                             !canTrigger || isTriggering || isSessionRunning
                           }
@@ -305,7 +305,7 @@ export const GenSummaryCard = ({
                       ) : null}
 
                       {!canTrigger ? (
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[10px] text-stone-500">
                           Missing chat id
                         </span>
                       ) : null}
@@ -318,8 +318,8 @@ export const GenSummaryCard = ({
                             <li
                               key={`${idx}-${item}`}
                               className={cn(
-                                "rounded-lg border px-3 py-2",
-                                "bg-background/40",
+                                "rounded-xl border border-stone-200/20 dark:border-stone-850/20 px-3.5 py-2.5",
+                                "bg-white/20 dark:bg-stone-950/10 text-stone-600 dark:text-stone-400 font-mono text-[11px]",
                               )}
                             >
                               {item}
@@ -327,14 +327,14 @@ export const GenSummaryCard = ({
                           ))}
                         </ul>
                       ) : (
-                        <div className="py-2 text-xs text-muted-foreground">
+                        <div className="py-2 text-xs text-stone-500 dark:text-stone-400">
                           No details available.
                         </div>
                       )}
                     </ScrollArea>
                   </div>
                 ) : (
-                  <div className="py-2 text-xs text-muted-foreground">
+                  <div className="py-2 text-xs text-stone-500 dark:text-stone-400">
                     {canFetch ? "No details available." : "Missing message id."}
                   </div>
                 )}
@@ -342,7 +342,7 @@ export const GenSummaryCard = ({
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-      </Card>
+      </div>
     </div>
   );
 };
