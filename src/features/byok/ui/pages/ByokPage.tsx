@@ -90,11 +90,11 @@ export default function ByokPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 min-h-0 overflow-y-auto bg-[linear-gradient(180deg,#f7f3ea_0%,#f2efe6_55%,#ece8df_100%)] px-4 py-10 dark:bg-[linear-gradient(180deg,#111111_0%,#171717_55%,#1c1917_100%)]">
+      <div className="flex-1 min-h-0 overflow-y-auto bg-transparent px-4 py-10">
         <div className="mx-auto max-w-6xl animate-pulse space-y-6">
-          <div className="h-48 rounded-4xl bg-white/70 dark:bg-stone-900/70" />
-          <div className="h-56 rounded-4xl bg-white/70 dark:bg-stone-900/70" />
-          <div className="h-56 rounded-4xl bg-white/70 dark:bg-stone-900/70" />
+          <div className="h-48 rounded-[2rem] bg-white/35 dark:bg-stone-900/35" />
+          <div className="h-56 rounded-[2rem] bg-white/35 dark:bg-stone-900/35" />
+          <div className="h-56 rounded-[2rem] bg-white/35 dark:bg-stone-900/35" />
         </div>
       </div>
     );
@@ -103,15 +103,15 @@ export default function ByokPage() {
   if (!user) return null;
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto bg-[linear-gradient(180deg,#f7f3ea_0%,#f2efe6_55%,#ece8df_100%)] px-4 py-8 text-stone-900 dark:bg-[linear-gradient(180deg,#111111_0%,#171717_55%,#1c1917_100%)] dark:text-stone-100">
+    <div className="flex-1 min-h-0 overflow-y-auto bg-transparent px-4 py-8 text-stone-900 dark:text-stone-100">
       <div className="mx-auto max-w-6xl">
-        <div className="relative overflow-hidden rounded-[2.25rem] border border-white/70 bg-[linear-gradient(145deg,rgba(255,255,255,0.88),rgba(255,250,245,0.7))] p-6 shadow-[0_24px_80px_rgba(28,25,23,0.12)] backdrop-blur-xl sm:p-8 dark:border-stone-800/80 dark:bg-[linear-gradient(145deg,rgba(28,25,23,0.88),rgba(17,17,17,0.84))]">
-          <div className="absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.2),transparent_55%)] dark:bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.12),transparent_55%)]" />
+        <div className="relative overflow-hidden rounded-[2rem] border border-stone-200/35 bg-white/35 p-6 shadow-[0_24px_70px_rgba(28,25,23,0.03)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:p-8 dark:border-stone-800/35 dark:bg-stone-900/35">
+          <div className="absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.12),transparent_55%)] dark:bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.08),transparent_55%)]" />
 
           <div className="relative space-y-8">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-2xl space-y-4">
-                <div className="inline-flex w-fit items-center gap-2 rounded-full border border-stone-300/80 bg-white/70 px-4 py-2 text-xs font-medium uppercase tracking-[0.22em] text-stone-700 dark:border-stone-700 dark:bg-stone-900/70 dark:text-stone-300">
+                <div className="inline-flex w-fit items-center gap-2 rounded-full border border-stone-200/40 bg-white/45 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-stone-650 dark:border-stone-800/40 dark:bg-stone-900/45 dark:text-stone-300">
                   <LockKeyhole className="size-3.5" />
                   Bring your own key
                 </div>
@@ -133,7 +133,7 @@ export default function ByokPage() {
                   variant="outline"
                   onClick={loadKeys}
                   disabled={isLoading}
-                  className="h-11 rounded-2xl border-stone-300 bg-white/70 px-5 hover:bg-white dark:border-stone-700 dark:bg-stone-900/70 dark:hover:bg-stone-900"
+                  className="h-10 rounded-full border-stone-200/40 bg-white/45 px-5 hover:bg-white/80 dark:border-stone-800/40 dark:bg-stone-900/45 dark:hover:bg-stone-900/80 active:scale-[0.98] transition-all"
                 >
                   <RefreshCcw
                     className={cn("size-4", isLoading && "animate-spin")}
@@ -142,7 +142,7 @@ export default function ByokPage() {
                 </Button>
                 <Button
                   onClick={() => openDialog("gemini", "create")}
-                  className="h-11 rounded-2xl bg-stone-900 px-5 text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
+                  className="h-10 rounded-full bg-stone-900 px-5 text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200 active:scale-[0.98] transition-all"
                 >
                   <KeyRound className="size-4" />
                   Add Gemini key
@@ -150,24 +150,24 @@ export default function ByokPage() {
               </div>
             </div>
 
-            <div className="grid gap-4 rounded-4xl border border-stone-200/80 bg-white/45 p-4 backdrop-blur-sm sm:grid-cols-3 dark:border-stone-800/70 dark:bg-stone-950/30">
-              <div className="rounded-2xl border border-white/80 bg-white/65 p-4 dark:border-stone-800 dark:bg-stone-900/70">
-                <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
+            <div className="grid gap-4 rounded-[1.75rem] border border-stone-200/35 bg-white/20 p-4 backdrop-blur-md sm:grid-cols-3 dark:border-stone-800/35 dark:bg-stone-900/20 shadow-[0_8px_30px_rgba(0,0,0,0.01)]">
+              <div className="rounded-[1.25rem] border border-stone-200/20 bg-white/45 p-5 dark:border-stone-800/20 dark:bg-stone-900/45">
+                <p className="text-xs uppercase tracking-[0.18em] text-stone-500 font-medium">
                   Providers
                 </p>
-                <p className="mt-2 text-2xl font-semibold">1 enabled</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight">1 enabled</p>
               </div>
-              <div className="rounded-2xl border border-white/80 bg-white/65 p-4 dark:border-stone-800 dark:bg-stone-900/70">
-                <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
+              <div className="rounded-[1.25rem] border border-stone-200/20 bg-white/45 p-5 dark:border-stone-800/20 dark:bg-stone-900/45">
+                <p className="text-xs uppercase tracking-[0.18em] text-stone-500 font-medium">
                   Stored keys
                 </p>
-                <p className="mt-2 text-2xl font-semibold">{keys.length}</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight">{keys.length}</p>
               </div>
-              <div className="rounded-2xl border border-white/80 bg-white/65 p-4 dark:border-stone-800 dark:bg-stone-900/70">
-                <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
+              <div className="rounded-[1.25rem] border border-stone-200/20 bg-white/45 p-5 dark:border-stone-800/20 dark:bg-stone-900/45">
+                <p className="text-xs uppercase tracking-[0.18em] text-stone-500 font-medium">
                   Security
                 </p>
-                <p className="mt-2 text-2xl font-semibold">KMS encrypted</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight">KMS encrypted</p>
               </div>
             </div>
 

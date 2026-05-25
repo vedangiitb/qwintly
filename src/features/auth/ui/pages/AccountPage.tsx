@@ -209,11 +209,11 @@ export default function Account() {
 
   if (loading) {
     return (
-      <div className="flex-1 min-h-0 overflow-y-auto bg-[linear-gradient(180deg,#f7f3ea_0%,#f2efe6_55%,#ece8df_100%)] px-4 py-10 dark:bg-[linear-gradient(180deg,#111111_0%,#171717_55%,#1c1917_100%)]">
+      <div className="flex-1 min-h-0 overflow-y-auto bg-transparent px-4 py-10">
         <div className="mx-auto max-w-6xl animate-pulse space-y-6">
-          <div className="h-48 rounded-4xl bg-white/70 dark:bg-stone-900/70" />
-          <div className="h-56 rounded-4xl bg-white/70 dark:bg-stone-900/70" />
-          <div className="h-56 rounded-4xl bg-white/70 dark:bg-stone-900/70" />
+          <div className="h-48 rounded-[2rem] bg-white/35 dark:bg-stone-900/35" />
+          <div className="h-56 rounded-[2rem] bg-white/35 dark:bg-stone-900/35" />
+          <div className="h-56 rounded-[2rem] bg-white/35 dark:bg-stone-900/35" />
         </div>
       </div>
     );
@@ -228,10 +228,10 @@ export default function Account() {
   const shortId = user.id ? `${user.id.slice(0, 8)}…` : "";
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto bg-[linear-gradient(180deg,#f7f3ea_0%,#f2efe6_55%,#ece8df_100%)] px-4 py-8 text-stone-900 dark:bg-[linear-gradient(180deg,#111111_0%,#171717_55%,#1c1917_100%)] dark:text-stone-100">
+    <div className="flex-1 min-h-0 overflow-y-auto bg-transparent px-4 py-8 text-stone-900 dark:text-stone-100">
       <div className="mx-auto max-w-6xl">
-        <div className="relative overflow-hidden rounded-[2.25rem] border border-white/70 bg-[linear-gradient(145deg,rgba(255,255,255,0.88),rgba(255,250,245,0.7))] p-6 shadow-[0_24px_80px_rgba(28,25,23,0.12)] backdrop-blur-xl sm:p-8 dark:border-stone-800/80 dark:bg-[linear-gradient(145deg,rgba(28,25,23,0.88),rgba(17,17,17,0.84))]">
-          <div className="absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_top,rgba(45,212,191,0.18),transparent_55%)] dark:bg-[radial-gradient(circle_at_top,rgba(45,212,191,0.12),transparent_55%)]" />
+        <div className="relative overflow-hidden rounded-[2rem] border border-stone-200/35 bg-white/35 p-6 shadow-[0_24px_70px_rgba(28,25,23,0.03)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:p-8 dark:border-stone-800/35 dark:bg-stone-900/35">
+          <div className="absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_top,rgba(45,212,191,0.12),transparent_55%)] dark:bg-[radial-gradient(circle_at_top,rgba(45,212,191,0.08),transparent_55%)]" />
 
           <div className="relative space-y-8">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -279,7 +279,7 @@ export default function Account() {
                   <Button
                     variant="outline"
                     onClick={() => router.push("/login/verify")}
-                    className="h-11 rounded-2xl border-stone-300 bg-white/70 px-5 hover:bg-white dark:border-stone-700 dark:bg-stone-900/70 dark:hover:bg-stone-900"
+                    className="h-10 rounded-full border-stone-200/40 bg-white/45 px-5 hover:bg-white/80 dark:border-stone-800/40 dark:bg-stone-900/45 dark:hover:bg-stone-900/80 active:scale-[0.98] transition-all"
                   >
                     Verify email
                     <ArrowRight className="size-4" />
@@ -288,7 +288,7 @@ export default function Account() {
                 <Button
                   asChild
                   variant="outline"
-                  className="h-11 rounded-2xl border-stone-300 bg-white/70 px-5 hover:bg-white dark:border-stone-700 dark:bg-stone-900/70 dark:hover:bg-stone-900"
+                  className="h-10 rounded-full border-stone-200/40 bg-white/45 px-5 hover:bg-white/80 dark:border-stone-800/40 dark:bg-stone-900/45 dark:hover:bg-stone-900/80 active:scale-[0.98] transition-all"
                 >
                   <Link href="/byok">
                     <KeyRound className="size-4" />
@@ -297,7 +297,7 @@ export default function Account() {
                 </Button>
                 <Button
                   onClick={logout}
-                  className="h-11 rounded-2xl bg-stone-900 px-5 text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
+                  className="h-10 rounded-full bg-stone-900 px-5 text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200 active:scale-[0.98] transition-all"
                 >
                   <LogOut className="size-4" />
                   Sign out
@@ -305,48 +305,48 @@ export default function Account() {
               </div>
             </div>
 
-            <div className="grid gap-4 rounded-4xl border border-stone-200/80 bg-white/45 p-4 backdrop-blur-sm sm:grid-cols-3 dark:border-stone-800/70 dark:bg-stone-950/30">
-              <div className="rounded-2xl border border-white/80 bg-white/65 p-4 dark:border-stone-800 dark:bg-stone-900/70">
-                <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
+            <div className="grid gap-4 rounded-[1.75rem] border border-stone-200/35 bg-white/20 p-4 backdrop-blur-md sm:grid-cols-3 dark:border-stone-800/35 dark:bg-stone-900/20 shadow-[0_8px_30px_rgba(0,0,0,0.01)]">
+              <div className="rounded-[1.25rem] border border-stone-200/20 bg-white/45 p-5 dark:border-stone-800/20 dark:bg-stone-900/45">
+                <p className="text-xs uppercase tracking-[0.18em] text-stone-500 font-medium">
                   Email status
                 </p>
-                <p className="mt-2 text-2xl font-semibold">
+                <p className="mt-2 text-2xl font-semibold tracking-tight">
                   {user.emailVerified ? "Verified" : "Unverified"}
                 </p>
-                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                <p className="mt-1.5 text-xs text-stone-500 dark:text-stone-400">
                   {user.emailVerified
                     ? "All set for secure sign-ins."
                     : "Verify to unlock all features."}
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/80 bg-white/65 p-4 dark:border-stone-800 dark:bg-stone-900/70">
-                <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
+              <div className="rounded-[1.25rem] border border-stone-200/20 bg-white/45 p-5 dark:border-stone-800/20 dark:bg-stone-900/45">
+                <p className="text-xs uppercase tracking-[0.18em] text-stone-500 font-medium">
                   Messages today (UTC)
                 </p>
-                <p className="mt-2 text-2xl font-semibold">
+                <p className="mt-2 text-2xl font-semibold tracking-tight">
                   {dailyMessagesLoading
                     ? "Loading…"
                     : `${dailyMessages?.count ?? 0}/${dailyMessages?.limit ?? 50}`}
                 </p>
-                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                <p className="mt-1.5 text-xs text-stone-500 dark:text-stone-400">
                   Resets at {getLocalTimeStringForNextUTCMidnight()}.
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/80 bg-white/65 p-4 dark:border-stone-800 dark:bg-stone-900/70">
-                <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
+              <div className="rounded-[1.25rem] border border-stone-200/20 bg-white/45 p-5 dark:border-stone-800/20 dark:bg-stone-900/45">
+                <p className="text-xs uppercase tracking-[0.18em] text-stone-500 font-medium">
                   Security
                 </p>
-                <p className="mt-2 inline-flex items-center gap-2 text-2xl font-semibold">
+                <p className="mt-2 inline-flex items-center gap-2 text-2xl font-semibold tracking-tight">
                   <ShieldCheck className="size-5 text-emerald-600 dark:text-emerald-300" />
                   Protected
                 </p>
-                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                <p className="mt-1.5 text-xs text-stone-500 dark:text-stone-400">
                   Manage provider keys via BYOK.
                 </p>
               </div>
             </div>
 
-            <div className="rounded-4xl border border-stone-200/80 bg-white/55 p-6 shadow-sm backdrop-blur-sm dark:border-stone-800/70 dark:bg-stone-950/30">
+            <div className="rounded-[1.75rem] border border-stone-200/35 bg-white/35 p-6 shadow-[0_8px_30px_rgba(0,0,0,0.01)] backdrop-blur-md dark:border-stone-800/35 dark:bg-stone-900/35">
               <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <h2 className="text-base font-semibold tracking-tight">
