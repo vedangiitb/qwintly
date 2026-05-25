@@ -1,5 +1,5 @@
 import { ToolCall } from "@/features/ai/types/tools.types";
-import { BaseMessage } from "@langchain/core/messages";
+import { BaseMessage, AIMessageChunk } from "@langchain/core/messages";
 import { ChatGoogleGenerativeAI as ChatGoogle } from "@langchain/google-genai";
 import { looksLikeLeakedToolText } from "../flows/aiChatAgent/nodes/generateResponse";
 import { toolCallMap } from "../tools/tools";
@@ -75,3 +75,79 @@ export const llmCallwithTools = async (
 
   return { responseToUser, toolCalls };
 };
+
+export interface StreamChunk {
+  type: "text" | "done";
+  content?: string;
+  toolCalls?: ToolCall[];
+  fullText?: string;
+}
+
+const extractTextContent = (content: unknown): string => {
+  if (typeof content === "string") return content;
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => {
+        if (typeof part === "string") return part;
+        if (part && typeof part === "object") {
+          return (part as any).text ?? "";
+        }
+        return "";
+      })
+      .join("");
+  }
+  return "";
+};
+
+export async function* streamLlmCallWithTools(
+  llm: ChatGoogle,
+  context: BaseMessage[],
+  tools: any[],
+): AsyncGenerator<StreamChunk, void, unknown> {
+  const modelWithTools = llm.bindTools(tools);
+  const stream = await modelWithTools.stream(context);
+
+  let message: AIMessageChunk | null = null;
+
+  for await (const chunk of stream) {
+    if (!message) {
+      message = chunk;
+    } else {
+      message = message.concat(chunk);
+    }
+
+    if (chunk.content) {
+      const text = extractTextContent(chunk.content);
+      if (text) {
+        yield {
+          type: "text",
+          content: text,
+        };
+      }
+    }
+  }
+
+  const toolsCalled = message?.tool_calls ?? [];
+  const toolCalls: ToolCall[] = [];
+
+  for (const toolCall of toolsCalled) {
+    const args = await parseToolCall(toolCall.name, toolCall.args);
+    toolCalls.push({
+      id: toolCall.id ?? "",
+      name: toolCall.name,
+      args,
+    });
+  }
+
+  const rawText = message ? extractTextContent(message.content) : "";
+  const responseToUser = extractUserFacingText(
+    rawText,
+    toolCalls.map((toolCall) => toolCall.name),
+  );
+
+  yield {
+    type: "done",
+    fullText: responseToUser,
+    toolCalls,
+  };
+}

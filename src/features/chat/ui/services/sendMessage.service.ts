@@ -10,6 +10,7 @@ export interface SendMessageParams {
   chatId: string;
   message: string;
   signal?: AbortSignal;
+  onChunk?: (textDelta: string) => void;
 }
 
 export interface SendMessageService {
@@ -36,6 +37,7 @@ class SendMessageServiceImpl implements SendMessageService {
         chatId,
         message,
         signal: params.signal,
+        onChunk: params.onChunk,
       });
     } catch (error) {
       throw new ChatUiServiceError({

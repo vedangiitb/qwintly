@@ -10,9 +10,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-import { AI_MODELS, DEFAULT_MODEL, DEFAULT_PROVIDER } from "@/features/ai/core/modelInfo";
 import { useAuth } from "@/features/auth/ui/hooks/useAuth";
 import { usePreferences } from "@/features/auth/ui/hooks/usePreferences";
+import {
+  fetchValidModels,
+  type ValidModelsByProviderResponse,
+} from "@/features/byok/ui/api/byok.api";
 import { cn } from "@/lib/utils";
 import {
   ArrowRight,
@@ -24,7 +27,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   type DailyMessagesResponse,
@@ -32,9 +35,10 @@ import {
 } from "@/features/auth/ui/services/accountMetrics.service";
 import { getLocalTimeStringForNextUTCMidnight } from "@/features/auth/ui/helpers/dailyUsage.helpers";
 
-function resolveModelGroup(provider: string) {
-  if (provider === "openai") return AI_MODELS.OPENAI;
-  return AI_MODELS.GEMINI;
+function formatProviderLabel(provider: string) {
+  if (!provider) return "Select";
+  if (provider.toLowerCase() === "openai") return "OpenAI";
+  return provider.charAt(0).toUpperCase() + provider.slice(1);
 }
 
 export default function Account() {
@@ -44,6 +48,9 @@ export default function Account() {
     useState<DailyMessagesResponse | null>(null);
   const [dailyMessagesLoading, setDailyMessagesLoading] = useState(false);
   const [isSavingPreferences, setIsSavingPreferences] = useState(false);
+  const [validModels, setValidModels] = useState<ValidModelsByProviderResponse>([]);
+  const [modelsLoading, setModelsLoading] = useState(false);
+  const [modelsError, setModelsError] = useState<string | null>(null);
 
   const {
     preferences,
@@ -62,15 +69,50 @@ export default function Account() {
   const [draftModel, setDraftModel] = useState<string>("");
   const [draftByokEnabled, setDraftByokEnabled] = useState(false);
 
-  const effectiveProvider =
-    draftProvider || selectedProvider || preferences?.pref_provider || DEFAULT_PROVIDER;
+  useEffect(() => {
+    if (loading || !user) return;
 
-  const modelOptions = (() => {
-    const group = resolveModelGroup(effectiveProvider);
-    const values = Object.values(group);
-    const unique = Array.from(new Set(values));
-    return unique.map((model) => ({ id: model, label: model }));
-  })();
+    let cancelled = false;
+    async function loadValidModels() {
+      setModelsLoading(true);
+      setModelsError(null);
+      try {
+        const data = await fetchValidModels();
+        if (cancelled) return;
+        setValidModels(data);
+      } catch (e) {
+        if (cancelled) return;
+        setValidModels([]);
+        setModelsError(e instanceof Error ? e.message : "Failed to load models");
+      } finally {
+        if (!cancelled) setModelsLoading(false);
+      }
+    }
+
+    loadValidModels();
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, user]);
+
+  const providerOptions = useMemo(() => {
+    return validModels.map((p) => ({
+      id: p.provider,
+      label: formatProviderLabel(p.provider),
+    }));
+  }, [validModels]);
+
+  const effectiveProvider =
+    draftProvider ||
+    selectedProvider ||
+    preferences?.pref_provider ||
+    validModels[0]?.provider ||
+    "";
+
+  const modelOptions = useMemo(() => {
+    const providerGroup = validModels.find((p) => p.provider === effectiveProvider);
+    return (providerGroup?.models ?? []).map((m) => ({ id: m.modelName, label: m.modelName }));
+  }, [effectiveProvider, validModels]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -81,47 +123,55 @@ export default function Account() {
   useEffect(() => {
     if (prefsInitialized) return;
     if (!preferences) return;
+    if (modelsLoading && validModels.length === 0) return;
 
-    const provider = preferences.pref_provider ?? DEFAULT_PROVIDER;
-    const group = resolveModelGroup(provider);
-    const allowedModels = new Set<string>(Object.values(group) as string[]);
+    const availableProviders = new Set<string>(validModels.map((p) => p.provider));
+    const providerCandidate = preferences.pref_provider ?? "";
+    const resolvedProvider = availableProviders.has(providerCandidate)
+      ? providerCandidate
+      : validModels[0]?.provider ?? "";
 
-    const modelCandidate = preferences.pref_model ?? DEFAULT_MODEL;
+    const providerGroup = validModels.find((p) => p.provider === resolvedProvider);
+    const allowedModels = new Set<string>(providerGroup?.models.map((m) => m.modelName) ?? []);
+
+    const modelCandidate = preferences.pref_model ?? "";
     const resolvedModel = allowedModels.has(modelCandidate)
       ? modelCandidate
-      : group.DEFAULT;
+      : providerGroup?.models[0]?.modelName ?? "";
 
-    setDraftProvider(provider);
+    setDraftProvider(resolvedProvider);
     setDraftModel(resolvedModel);
     setDraftByokEnabled(preferences.byok_enabled ?? false);
     setPrefsInitialized(true);
-  }, [preferences, prefsInitialized]);
+  }, [preferences, prefsInitialized, modelsLoading, validModels]);
 
   useEffect(() => {
     if (!draftProvider) return;
 
-    const group = resolveModelGroup(draftProvider);
-    const allowedModels = new Set<string>(Object.values(group) as string[]);
+    const providerGroup = validModels.find((p) => p.provider === draftProvider);
+    const allowedModels = new Set<string>(providerGroup?.models.map((m) => m.modelName) ?? []);
 
     if (draftModel && allowedModels.has(draftModel)) return;
-    setDraftModel(group.DEFAULT);
-  }, [draftModel, draftProvider]);
+    setDraftModel(providerGroup?.models[0]?.modelName ?? "");
+  }, [draftModel, draftProvider, validModels]);
 
   const handleSavePreferences = async () => {
     try {
       setIsSavingPreferences(true);
       const updates: Promise<unknown>[] = [];
 
-      if (draftProvider && draftProvider !== selectedProvider) {
-        updates.push(saveProvider(draftProvider));
-      }
-
-      if (draftModel && draftModel !== selectedModel) {
-        updates.push(saveModel(draftModel));
-      }
-
       if (draftByokEnabled !== byokEnabled) {
         updates.push(saveByokEnabled(draftByokEnabled));
+      }
+
+      if (draftByokEnabled) {
+        if (draftProvider && draftProvider !== selectedProvider) {
+          updates.push(saveProvider(draftProvider));
+        }
+
+        if (draftModel && draftModel !== selectedModel) {
+          updates.push(saveModel(draftModel));
+        }
       }
 
       if (updates.length === 0) {
@@ -318,47 +368,6 @@ export default function Account() {
 
               <div className="mt-5 grid gap-3">
                 <div className="flex items-center justify-between border-b border-stone-200/70 py-3 dark:border-stone-800/70">
-                  <p className="text-sm">Provider</p>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="flex gap-2 rounded-md px-2 py-1 hover:bg-accent">
-                      <p className="text-sm">
-                        {(draftProvider || selectedProvider || DEFAULT_PROVIDER) === "openai"
-                          ? "OpenAI"
-                          : "Gemini"}
-                      </p>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Providers</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => setDraftProvider("gemini")}>
-                        Gemini
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setDraftProvider("openai")}>
-                        OpenAI
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-
-                <div className="flex items-center justify-between border-b border-stone-200/70 py-3 dark:border-stone-800/70">
-                  <p className="text-sm">Model</p>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="flex max-w-80 justify-end gap-2 rounded-md px-2 py-1 hover:bg-accent">
-                      <p className="truncate text-sm">
-                        {draftModel || selectedModel || DEFAULT_MODEL}
-                      </p>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="max-h-72 overflow-auto">
-                      <DropdownMenuLabel>Models</DropdownMenuLabel>
-                      {modelOptions.map((m) => (
-                        <DropdownMenuItem key={m.id} onClick={() => setDraftModel(m.id)}>
-                          {m.label}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-
-                <div className="flex items-center justify-between border-b border-stone-200/70 py-3 dark:border-stone-800/70">
                   <div className="flex flex-col">
                     <p className="text-sm">BYOK</p>
                     <p className="text-xs text-stone-500 dark:text-stone-400">
@@ -373,9 +382,63 @@ export default function Account() {
                   />
                 </div>
 
+                {draftByokEnabled ? (
+                  <>
+                    <div className="flex items-center justify-between border-b border-stone-200/70 py-3 dark:border-stone-800/70">
+                      <p className="text-sm">Provider</p>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="flex gap-2 rounded-md px-2 py-1 hover:bg-accent">
+                          <p className="text-sm">
+                            {providerOptions.find(
+                              (p) => p.id === (draftProvider || selectedProvider),
+                            )?.label ?? formatProviderLabel(effectiveProvider)}
+                          </p>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Providers</DropdownMenuLabel>
+                          {providerOptions.map((p) => (
+                            <DropdownMenuItem
+                              key={p.id}
+                              onClick={() => setDraftProvider(p.id)}
+                            >
+                              {p.label}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    <div className="flex items-center justify-between border-b border-stone-200/70 py-3 dark:border-stone-800/70">
+                      <p className="text-sm">Model</p>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="flex max-w-80 justify-end gap-2 rounded-md px-2 py-1 hover:bg-accent">
+                          <p className="truncate text-sm">
+                            {draftModel || selectedModel || modelOptions[0]?.id || "Select"}
+                          </p>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          className="max-h-72 overflow-auto"
+                        >
+                          <DropdownMenuLabel>Models</DropdownMenuLabel>
+                          {modelOptions.map((m) => (
+                            <DropdownMenuItem
+                              key={m.id}
+                              onClick={() => setDraftModel(m.id)}
+                            >
+                              {m.label}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </>
+                ) : null}
+
                 {preferencesError ? (
                   <p className="text-sm text-destructive">{preferencesError}</p>
                 ) : null}
+                {modelsError ? <p className="text-sm text-destructive">{modelsError}</p> : null}
               </div>
             </div>
 

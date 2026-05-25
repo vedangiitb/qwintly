@@ -379,13 +379,39 @@ export const useChatActions = ({
           });
         }
 
+        const tempAssistantMessageId = `temp-zz-assistant-${Date.now()}`;
+
         appendUserMessage(MESSAGE_TYPES.MESSAGE, outgoingMessage);
+
+        // Pre-append an empty assistant message block to stream into
+        // We set the timestamp slightly in the future (+100ms) to guarantee it sorts after the user message.
+        const assistantPlaceholder: Message = {
+          id: tempAssistantMessageId,
+          role: ROLES.MODEL,
+          type: MESSAGE_TYPES.MESSAGE,
+          content: "",
+          createdAt: new Date(Date.now() + 100).toISOString(),
+        };
+
+        setMessages((prev) => dedupeAndSortMessages([...prev, assistantPlaceholder]));
 
         const response = await sendMessageRequest({
           chatId: activeChatId,
           message: outgoingMessage,
           signal: controller.signal,
+          onChunk: (delta) => {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === tempAssistantMessageId
+                  ? { ...msg, content: msg.content + delta }
+                  : msg
+              )
+            );
+          },
         });
+
+        // Clean up temporary placeholder before appending final message
+        setMessages((prev) => prev.filter((msg) => msg.id !== tempAssistantMessageId));
 
         await handleAssistantResponse({
           agentMessageId: response.agentMessageId,

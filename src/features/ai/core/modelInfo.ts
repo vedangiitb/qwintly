@@ -1,6 +1,6 @@
 export const AI_MODELS = {
   GEMINI: {
-    DEFAULT: "gemini-2.5-flash-lite",
+    DEFAULT: "gemini-3.1-flash-lite",
     GEMINI_2_5_FLASH: "gemini-2.5-flash",
     GEMINI_2_5_FLASH_LITE: "gemini-2.5-flash-lite",
     GEMINI_3_1_FLASH_LITE:"gemini-3.1-flash-lite"

@@ -20,26 +20,31 @@ export default function RenderAIResponse({
   messageId?: string;
 }) {
   const { questionAnswersByMessageId, plansByMessageId } = useChat();
+  const mappedMessageId = messageId ?? "";
+  const plan = plansByMessageId[mappedMessageId];
+  const questionSet = questionAnswersByMessageId[mappedMessageId];
+
+  // If no textual content is loaded yet and no tool payloads are present in state, render nothing
+  if (!data?.trim() && !plan && !questionSet) {
+    return null;
+  }
+
   const displayMessage: string = data || "Something went wrong";
 
   const aiCard = (messageType: string) => {
-    const mappedMessageId = messageId ?? "";
-
     if (messageType === MESSAGE_TYPES.PLAN) {
-      const plan = plansByMessageId[mappedMessageId];
       return (
         <div className="w-full space-y-2">
-          {defaultCard(displayMessage)}
+          {data?.trim() ? defaultCard(data) : null}
           <PlanReview plan={plan} fallbackText={displayMessage} />
         </div>
       );
     }
 
     if (messageType === MESSAGE_TYPES.QUESTIONS) {
-      const questionSet = questionAnswersByMessageId[mappedMessageId];
       return (
         <div className="w-full space-y-2">
-          {defaultCard(displayMessage)}
+          {data?.trim() ? defaultCard(data) : null}
           <Questionnaire
             questionSet={questionSet}
             fallbackText={displayMessage}

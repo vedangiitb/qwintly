@@ -2,6 +2,15 @@ import { fetchUtil } from "@/utils/fetchUtil";
 
 export type ByokProvider = "gemini" | "openai";
 
+export type ValidModelsByProviderResponse = Array<{
+  providerId: string;
+  provider: string;
+  models: Array<{
+    id: string;
+    modelName: string;
+  }>;
+}>;
+
 export type UserApiKeyDetails = {
   id: string;
   provider: string;
@@ -15,6 +24,17 @@ export type UserApiKeyDetails = {
 export async function fetchKeyDetails() {
   const response = await fetchUtil<UserApiKeyDetails[]>(
     "/api/byok/get-key-details",
+    {
+      method: "GET",
+    },
+  );
+
+  return response.data ?? [];
+}
+
+export async function fetchValidModels() {
+  const response = await fetchUtil<ValidModelsByProviderResponse>(
+    "/api/byok/get-models",
     {
       method: "GET",
     },

@@ -2,10 +2,7 @@ import {
   CollectedContext,
   defaultCollectedContext,
 } from "../../types/collectedContext.types";
-import {
-  defaultProjectInfo,
-  ProjectInfo,
-} from "../../types/projectInfo.types";
+import { defaultProjectInfo, ProjectInfo } from "../../types/projectInfo.types";
 import { DBRepository } from "./repository";
 
 export class CollectedContextRepository extends DBRepository {
@@ -42,10 +39,6 @@ export class CollectedContextRepository extends DBRepository {
       branding: {
         ...defaultCollectedContext.branding,
         ...(raw.branding ?? {}),
-      },
-      functionalRequirements: {
-        ...defaultCollectedContext.functionalRequirements,
-        ...(raw.functionalRequirements ?? {}),
       },
       constraints: {
         ...defaultCollectedContext.constraints,
@@ -105,5 +98,61 @@ export class CollectedContextRepository extends DBRepository {
       ...raw,
       uiPages: raw.uiPages ?? defaultProjectInfo.uiPages,
     };
+  }
+
+  /*
+   * Fetch both collected context and project info in a single DB query
+   */
+  async fetchFullProjectContext(chatId: string): Promise<{
+    collectedContext: CollectedContext;
+    projectInfo: ProjectInfo;
+  }> {
+    const supabase = this.client;
+
+    const { data, error } = await supabase
+      .from("project_context")
+      .select("collected_context, project_info")
+      .eq("id", chatId)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!data) {
+      return {
+        collectedContext: defaultCollectedContext,
+        projectInfo: defaultProjectInfo,
+      };
+    }
+
+    const rawCollected = data.collected_context ?? {};
+    const rawProject = data.project_info ?? {};
+
+    const collectedContext: CollectedContext = {
+      projectIdentity: {
+        ...defaultCollectedContext.projectIdentity,
+        ...(rawCollected.projectIdentity ?? {}),
+      },
+      targetBusinessContext: {
+        ...defaultCollectedContext.targetBusinessContext,
+        ...(rawCollected.targetBusinessContext ?? {}),
+      },
+      branding: {
+        ...defaultCollectedContext.branding,
+        ...(rawCollected.branding ?? {}),
+      },
+      constraints: {
+        ...defaultCollectedContext.constraints,
+        ...(rawCollected.constraints ?? {}),
+      },
+      otherInfo: rawCollected.otherInfo ?? [],
+    };
+
+    const projectInfo: ProjectInfo = {
+      ...defaultProjectInfo,
+      ...rawProject,
+      uiPages: rawProject.uiPages ?? defaultProjectInfo.uiPages,
+    };
+
+    return { collectedContext, projectInfo };
   }
 }

@@ -53,7 +53,7 @@ const mapToBaseMessages = (
   ];
 };
 
-const mapMessageToBaseMessage = (msg: RecentMsgContext): BaseMessage => {
+export const mapMessageToBaseMessage = (msg: RecentMsgContext): BaseMessage => {
   const role = msg.role.toLowerCase();
 
   switch (role) {

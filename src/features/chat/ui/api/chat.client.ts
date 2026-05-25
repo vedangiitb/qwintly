@@ -1,3 +1,4 @@
+import { fetchStreamUtil } from "@/utils/fetchUtil";
 import {
   Chat,
   FetchChatsResult,
@@ -63,6 +64,7 @@ export interface StreamChatParams {
   chatId: string;
   message: string;
   signal?: AbortSignal;
+  onChunk?: (textDelta: string) => void;
 }
 
 export interface StreamChatResult {
@@ -263,25 +265,59 @@ export class ChatClient implements ChatClientContract {
     const message = ensureNonEmptyString(params.message, "message");
 
     return this.execute("streamChat", CHAT_ENDPOINTS.STREAM, async () => {
-      const data = await this.httpClient.post<{
-        agentMessageId: string;
-        response: string;
-        toolCall: ToolCall | null;
-      }>(
-        CHAT_ENDPOINTS.STREAM,
-        {
-          chatId,
-          message,
-        },
-        params.signal,
-      );
+      const reader = await fetchStreamUtil(CHAT_ENDPOINTS.STREAM, {
+        method: "POST",
+        body: JSON.stringify({ chatId, message }),
+        signal: params.signal,
+      });
 
-      const response = ensureNonEmptyString(data.response, "response");
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
+      let agentMessageId = "";
+      let responseText = "";
+      let toolCall: ToolCall | null = null;
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+
+            if (trimmed.startsWith("data: ")) {
+              const dataStr = trimmed.slice(6);
+              try {
+                const parsed = JSON.parse(dataStr);
+                if (parsed.type === "text" && parsed.delta) {
+                  responseText += parsed.delta;
+                  params.onChunk?.(parsed.delta);
+                } else if (parsed.type === "done") {
+                  agentMessageId = parsed.agentMessageId;
+                  responseText = parsed.response;
+                  toolCall = parsed.toolCall;
+                } else if (parsed.type === "error") {
+                  throw new Error(parsed.message || "Streaming error occurred");
+                }
+              } catch (e) {
+                console.error("Failed to parse SSE line:", line, e);
+              }
+            }
+          }
+        }
+      } finally {
+        reader.releaseLock();
+      }
 
       return {
-        agentMessageId: data.agentMessageId,
-        response,
-        toolCall: data.toolCall ?? null,
+        agentMessageId,
+        response: responseText,
+        toolCall,
       };
     });
   }
