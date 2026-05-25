@@ -35,6 +35,7 @@ type ChatActionContext = Pick<
   | "prompt"
   | "messagesCursor"
   | "latestQuestionSetId"
+  | "isGeneratingResponse"
   | "setChatId"
   | "setPrompt"
   | "setMessages"
@@ -54,6 +55,8 @@ type ChatActionContext = Pick<
   | "resetActiveChatState"
   | "setUrl"
   | "setIsGenerating"
+  | "isLoadingOlderMessages"
+  | "setIsLoadingOlderMessages"
 >;
 
 interface UseChatActionsParams {
@@ -70,6 +73,7 @@ export const useChatActions = ({
     prompt,
     messagesCursor,
     latestQuestionSetId,
+    isGeneratingResponse,
     setChatId,
     setPrompt,
     setMessages,
@@ -89,6 +93,8 @@ export const useChatActions = ({
     resetActiveChatState,
     setUrl,
     setIsGenerating,
+    isLoadingOlderMessages,
+    setIsLoadingOlderMessages,
   } = context;
   const {
     approvePlan: approveGenerationPlan,
@@ -521,9 +527,10 @@ export const useChatActions = ({
   );
 
   const loadOlderMessages = useCallback(async () => {
-    if (!chatId || !messagesCursor) return;
+    if (!chatId || !messagesCursor || isLoadingOlderMessages) return;
 
     clearError();
+    setIsLoadingOlderMessages(true);
     try {
       const response = await fetchChatMessages({
         chatId,
@@ -540,15 +547,19 @@ export const useChatActions = ({
       const message = toErrorMessage(err, "Failed to load older messages.");
       setError(message);
       throw err;
+    } finally {
+      setIsLoadingOlderMessages(false);
     }
   }, [
     chatId,
     messagesCursor,
+    isLoadingOlderMessages,
     clearError,
     setMessages,
     setMessagesCursor,
     setHasMoreMessages,
     setError,
+    setIsLoadingOlderMessages,
   ]);
 
   const approvePlan = useCallback(
@@ -596,6 +607,7 @@ export const useChatActions = ({
   );
 
   return {
+    isGeneratingResponse,
     loadRecentChats,
     loadChat,
     loadOlderMessages,

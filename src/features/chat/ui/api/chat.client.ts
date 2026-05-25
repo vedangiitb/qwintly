@@ -173,7 +173,7 @@ export class ChatClient implements ChatClientContract {
 
     const url = buildUrl(CHAT_ENDPOINTS.FETCH_CHAT_MESSAGES, {
       chatId,
-      limit: clampLimit(params.limit, 20),
+      limit: clampLimit(params.limit, 10),
       cursor: params.cursor,
     });
 

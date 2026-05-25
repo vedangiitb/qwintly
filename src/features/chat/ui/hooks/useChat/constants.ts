@@ -1,1 +1,1 @@
-export const DEFAULT_MESSAGES_PAGE_SIZE = 20;
+export const DEFAULT_MESSAGES_PAGE_SIZE = 10;
