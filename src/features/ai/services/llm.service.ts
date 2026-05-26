@@ -1,9 +1,24 @@
 import { ToolCall } from "@/features/ai/types/tools.types";
 import { BaseMessage, AIMessageChunk } from "@langchain/core/messages";
 import { ChatGoogleGenerativeAI as ChatGoogle } from "@langchain/google-genai";
-import { looksLikeLeakedToolText } from "../flows/aiChatAgent/nodes/generateResponse";
 import { toolCallMap } from "../tools/tools";
 import { parseToolCall } from "./toolCall.service";
+
+const TOOL_LEAK_PATTERNS: RegExp[] = [
+  /\btool_code\b/i,
+  /\bdefault_api\b/i,
+  /\bdefault_api\./i,
+  /\bprint\s*\(/i,
+  /\b(update_plan|ask_questions|update_context)\b/i,
+];
+
+export const looksLikeLeakedToolText = (
+  text: string | null | undefined,
+): boolean => {
+  const trimmed = text?.trim();
+  if (!trimmed) return false;
+  return TOOL_LEAK_PATTERNS.some((pattern) => pattern.test(trimmed));
+};
 
 const TOOL_RESPONSE_TEXTS: Record<string, string> = {
   [toolCallMap.UPDATE_PLAN]: "I updated the plan.",

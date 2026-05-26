@@ -5,7 +5,7 @@ import { ProjectInfo } from "@/features/chat/types/projectInfo.types";
 export const websiteAgentPrompt = (
   collectedContext: CollectedContext,
   projectInfo: ProjectInfo,
-  previousPlan: Plan | null,
+  previousPlans: Plan[],
 ) => {
   const json = (value: unknown) => JSON.stringify(value ?? null, null, 2);
 
@@ -20,11 +20,11 @@ ${json(collectedContext)}
 **Project Info** (what has already been implemented in code):
 ${json(projectInfo)}
 
+**Previous Plans** (ordered from newest to oldest, max limit of 8):
 ${
-  previousPlan
-    ? `**Previous Plan** (${previousPlan?.status}):
-${json(previousPlan)}`
-    : ""
+  previousPlans && previousPlans.length > 0
+    ? json(previousPlans)
+    : "No previous plans have been proposed yet."
 }
 
 *Rule*: Treat these inputs and the incoming **User Message** / **Conversation History** as your strict source of truth. Combine the structured collected context with the user's latest messages to understand their requirements. Do not invent details or assume user requirements that are not in these inputs or explicitly stated in the chat history.
@@ -82,9 +82,15 @@ When calling \`ask_questions\`:
 
 ### 2. \`update_plan\` Rubric (PM-grade UI tasks)
 When calling \`update_plan\`:
+- **Core Planning Rules (CRITICAL)**:
+  1. **Look at Previous Plans**: Carefully review the \`previousPlans\` array (up to 8, sorted from newest to oldest). Pay attention to planned tasks and their statuses. If previous plans contain tasks that were NOT implemented (i.e. pages or sections listed in previous plans that are still missing or incomplete in the codebase context), you MUST carry them forward or create new tasks to complete them.
+  2. **Look at Project Info**: Look at \`projectInfo.uiPages\` to see what is already implemented in the code (actual pages and sections).
+     - If a page or section is already present in \`projectInfo.uiPages\` and doesn't require any changes, **avoid redundant work** and do NOT create/propose a task for it.
+     - If a page or section is missing from \`projectInfo.uiPages\`, or requires modifications/extensions based on the latest user request, create or update a task for it.
+  3. **Reconcile State**: Combine unimplemented tasks from previous plans, new requests from the latest user message, and the current codebase state (\`projectInfo\`) to form a coherent, minimal-delta plan.
 - **UI-Only Tasks**: Only create \`ui_task\` tasks. You are a UI agent and are not allowed to create backend tasks. If the user asks for backend tasks, politely inform them via conversational text that you only handle UI generation.
 - **Stable IDs**: Use clear, semantic, and stable \`task_id\`s (e.g., \`page_home\`, \`page_pricing\`, \`section_hero\`, \`flow_auth\`, \`nav_header\`, \`style_system\`).
-- **Plan Continuity**: When modifying a plan that is in editable state (\`pending\` or \`updated\`), you must fetch and **carry forward existing tasks** using the exact same \`task_id\`s. Edit, add, or delete tasks only as requested.
+- **Plan Continuity**: When modifying a plan that is in editable state (\`pending\` or \`updated\`), you must carry forward existing tasks using the exact same \`task_id\`s. Edit, add, or delete tasks only as requested.
 - **Task Structure**:
   - \`task\`: Short, action-oriented title (3-7 words, e.g., "Design Home Page Hero Section").
   - \`description\`: Structured and detailed description containing:
@@ -92,7 +98,6 @@ When calling \`update_plan\`:
     - User goal of the section/page.
     - Core components/features to build.
     - Specific tone or style notes derived from \`collectedContext.branding\`.
-- **Avoid Redundant Work**: If a page or section in \`projectInfo.uiPages\` is already complete and doesn't require modifications, do not create a task for it.
 
 ## Lifecycle Rules for Plans
 - **Editable states**: Plan status is null, \`pending\`, or \`updated\` -> You can modify and update this plan.

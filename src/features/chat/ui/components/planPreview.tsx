@@ -39,14 +39,14 @@ export function PlanReview({
   plan?: Plan;
   fallbackText?: string;
 }) {
-  const { approvePlan: onApprove } = useChat();
+  const { approvePlan: onApprove, isGeneratingResponse } = useChat();
   const { isSessionRunning } = useGenerate();
   const router = useRouter();
   const isUpdatedPlan = plan?.status === PLAN_STATUS.UPDATED;
   const [isExpanded, setIsExpanded] = useState(!isUpdatedPlan);
-  const [expandedTaskMap, setExpandedTaskMap] = useState<Record<string, boolean>>(
-    {},
-  );
+  const [expandedTaskMap, setExpandedTaskMap] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     setIsExpanded(!isUpdatedPlan);
@@ -78,7 +78,8 @@ export function PlanReview({
           : "Failed to approve plan.";
 
       const statusCode =
-        typeof (error as Error & { statusCode?: number })?.statusCode === "number"
+        typeof (error as Error & { statusCode?: number })?.statusCode ===
+        "number"
           ? (error as Error & { statusCode?: number }).statusCode
           : undefined;
 
@@ -103,9 +104,12 @@ export function PlanReview({
       <div className="rounded-[1.5rem] border border-stone-200/35 bg-white/35 dark:border-stone-800/35 dark:bg-stone-900/35 shadow-[0_8px_30px_rgba(0,0,0,0.01)] backdrop-blur-md overflow-hidden p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="space-y-0.5">
-            <h2 className="text-sm font-semibold tracking-tight text-stone-900 dark:text-stone-100">AI Implementation Plan</h2>
+            <h2 className="text-sm font-semibold tracking-tight text-stone-900 dark:text-stone-100">
+              AI Implementation Plan
+            </h2>
             <p className="text-xs text-stone-500 dark:text-stone-400 font-medium">
-              {taskCount} tasks • {intentCount} {intentCount === 1 ? "group" : "groups"}
+              {taskCount} tasks • {intentCount}{" "}
+              {intentCount === 1 ? "group" : "groups"}
             </p>
           </div>
           <span
@@ -114,8 +118,8 @@ export function PlanReview({
               isUpdatedPlan
                 ? "bg-amber-100/80 text-amber-800 dark:bg-amber-950/30 dark:text-amber-300"
                 : plan.status === PLAN_STATUS.IMPLEMENTED
-                ? "bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300"
-                : "bg-teal-100/80 text-teal-800 dark:bg-teal-950/30 dark:text-teal-300",
+                  ? "bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300"
+                  : "bg-teal-100/80 text-teal-800 dark:bg-teal-950/30 dark:text-teal-300",
             )}
           >
             {plan.status}
@@ -162,7 +166,9 @@ export function PlanReview({
                         type="button"
                         className={cn(
                           "w-full px-4 py-3 text-left transition-all duration-300 hover:bg-stone-900/5 dark:hover:bg-white/5",
-                          expandedTaskMap[task.task_id] ? "bg-stone-900/5 dark:bg-white/5" : "",
+                          expandedTaskMap[task.task_id]
+                            ? "bg-stone-900/5 dark:bg-white/5"
+                            : "",
                         )}
                         onClick={() =>
                           setExpandedTaskMap((current) => ({
@@ -208,10 +214,10 @@ export function PlanReview({
 
         {shouldShowApprove ? (
           <div className="flex justify-end pt-4 mt-4 border-t border-stone-200/30 dark:border-stone-800/30">
-            <Button 
-              size="sm" 
-              onClick={handleApprove} 
-              disabled={isSessionRunning}
+            <Button
+              size="sm"
+              onClick={handleApprove}
+              disabled={isSessionRunning || isGeneratingResponse}
               className="rounded-full px-5 h-9 font-medium active:scale-[0.98] transition-all bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200 cursor-pointer"
             >
               Approve Implementation Plan

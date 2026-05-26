@@ -63,7 +63,7 @@ export default function RecentChats({
   if (!isExpanded) return null;
 
   return (
-    <div className="flex flex-col mt-4 border-t pt-4 h-[55vh]">
+    <div className="flex flex-col mt-4 border-t pt-4 h-[55vh] custom-scrollbar">
       <p className="text-xs font-semibold text-chart-2 uppercase tracking-wide mb-2 px-1">
         Recent Chats
       </p>{" "}

@@ -36,6 +36,8 @@ class SubmitAnswersServiceImpl implements SubmitAnswersService {
         chatId,
         answers: params.answers,
         questionSetId: params.questionSetId?.trim() || undefined,
+        signal: params.signal,
+        onChunk: params.onChunk,
       });
     } catch (error) {
       throw new ChatUiServiceError({

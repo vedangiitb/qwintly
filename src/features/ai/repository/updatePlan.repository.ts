@@ -135,4 +135,31 @@ export class UpdatePlanRepository extends DBRepository {
       messageId: data.message_id,
     };
   }
+
+  /*
+   *Table: project_tasks
+   *Use: Fetch previous plans with a limit (Fetch)
+   */
+  async fetchPrevPlans(chatId: string, limit: number = 8): Promise<Plan[]> {
+    if (!chatId) throw new Error("Chat ID is required");
+
+    const supabase = this.client;
+
+    const { data, error } = await supabase
+      .from("project_tasks")
+      .select("id, content, status, message_id")
+      .eq("conv_id", chatId)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    if (!data) return [];
+
+    return data.map((plan: any) => ({
+      id: plan.id,
+      tasks: plan.content,
+      status: plan.status,
+      messageId: plan.message_id,
+    }));
+  }
 }

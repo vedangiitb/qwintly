@@ -30,6 +30,7 @@ export interface ChatContextValue {
   isLoadingRecentChats: boolean;
   messagesCursor: string | null;
   hasMoreMessages: boolean;
+  isLoadingOlderMessages: boolean;
   error: string | null;
   setChatId: React.Dispatch<React.SetStateAction<string | null>>;
   setPrompt: React.Dispatch<React.SetStateAction<string>>;
@@ -50,6 +51,7 @@ export interface ChatContextValue {
   setIsLoadingRecentChats: React.Dispatch<React.SetStateAction<boolean>>;
   setMessagesCursor: React.Dispatch<React.SetStateAction<string | null>>;
   setHasMoreMessages: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsLoadingOlderMessages: React.Dispatch<React.SetStateAction<boolean>>;
   setError: React.Dispatch<React.SetStateAction<string | null>>;
   clearError: () => void;
   resetActiveChatState: () => void;
@@ -85,6 +87,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoadingRecentChats, setIsLoadingRecentChats] = useState(false);
   const [messagesCursor, setMessagesCursor] = useState<string | null>(null);
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
+  const [isLoadingOlderMessages, setIsLoadingOlderMessages] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const clearError = useCallback(() => setError(null), []);
@@ -98,6 +101,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     setLatestPlanMessageId(null);
     setMessagesCursor(null);
     setHasMoreMessages(false);
+    setIsLoadingOlderMessages(false);
     setError(null);
   }, []);
 
@@ -120,6 +124,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       isLoadingRecentChats,
       messagesCursor,
       hasMoreMessages,
+      isLoadingOlderMessages,
       error,
       setChatId,
       setPrompt,
@@ -138,6 +143,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoadingRecentChats,
       setMessagesCursor,
       setHasMoreMessages,
+      setIsLoadingOlderMessages,
       setError,
       clearError,
       resetActiveChatState,
@@ -160,6 +166,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       isLoadingRecentChats,
       messagesCursor,
       hasMoreMessages,
+      isLoadingOlderMessages,
       error,
       clearError,
       resetActiveChatState,

@@ -11,6 +11,7 @@ import { MESSAGE_TYPES, ROLES } from "../../types/messages.types";
 import { validateChatId } from "../helpers/validateChatId";
 import { MessagesRepository } from "../repositories/messages.repository";
 import { persistMessage } from "./persistMessage.service";
+import { StreamChunk } from "@/features/ai/services/llm.service";
 
 interface SubmitAnswersDeps {
   askQuestionsRepo: Pick<
@@ -19,24 +20,18 @@ interface SubmitAnswersDeps {
   >;
   messagesRepo: MessagesRepository;
   aiAgent: {
-    runAgentFlow: (
+    streamAgentFlow: (
       chatId: string,
       userMessage: string,
       userMessageId: string,
-    ) => Promise<{
-      aiResponse: string;
-      uiToolResponse: ToolCall | null;
-      agentMessageId: string;
-    }>;
+    ) => AsyncGenerator<StreamChunk & { agentMessageId?: string }, void, unknown>;
   };
 }
 
 interface SubmitAnswersResult {
-  response: string;
-  toolCall: ToolCall | null;
+  stream: AsyncGenerator<StreamChunk & { agentMessageId?: string }, void, unknown>;
   questionSetId: string;
   status: QuestionStatus;
-  agentMessageId: string;
 }
 
 const createSubmitAnswersDeps = (token: string): SubmitAnswersDeps => ({
@@ -144,18 +139,15 @@ export const submitAnswers = async (
     type: MESSAGE_TYPES.QUESTIONS,
   });
 
-  const { aiResponse, uiToolResponse, agentMessageId } =
-    await deps.aiAgent.runAgentFlow(validChatId, userMessage, userMessageId);
-
-  if (!aiResponse && !uiToolResponse) {
-    throw new Error("AI returned empty response");
-  }
+  const stream = deps.aiAgent.streamAgentFlow(
+    validChatId,
+    userMessage,
+    userMessageId,
+  );
 
   return {
-    response: aiResponse,
-    toolCall: uiToolResponse ?? null,
+    stream,
     questionSetId: resolvedQuestionSetId,
     status,
-    agentMessageId,
   };
 };

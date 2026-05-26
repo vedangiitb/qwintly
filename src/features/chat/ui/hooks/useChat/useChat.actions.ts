@@ -35,6 +35,7 @@ type ChatActionContext = Pick<
   | "prompt"
   | "messagesCursor"
   | "latestQuestionSetId"
+  | "isGeneratingResponse"
   | "setChatId"
   | "setPrompt"
   | "setMessages"
@@ -54,6 +55,8 @@ type ChatActionContext = Pick<
   | "resetActiveChatState"
   | "setUrl"
   | "setIsGenerating"
+  | "isLoadingOlderMessages"
+  | "setIsLoadingOlderMessages"
 >;
 
 interface UseChatActionsParams {
@@ -70,6 +73,7 @@ export const useChatActions = ({
     prompt,
     messagesCursor,
     latestQuestionSetId,
+    isGeneratingResponse,
     setChatId,
     setPrompt,
     setMessages,
@@ -89,6 +93,8 @@ export const useChatActions = ({
     resetActiveChatState,
     setUrl,
     setIsGenerating,
+    isLoadingOlderMessages,
+    setIsLoadingOlderMessages,
   } = context;
   const {
     approvePlan: approveGenerationPlan,
@@ -460,6 +466,9 @@ export const useChatActions = ({
       }
 
       clearError();
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
       setIsGeneratingResponse(true);
 
       const resolvedQuestionSetId =
@@ -468,11 +477,38 @@ export const useChatActions = ({
       try {
         appendUserMessage(MESSAGE_TYPES.QUESTIONS, "Answers Submitted");
 
+        const tempAssistantMessageId = `temp-zz-assistant-${Date.now()}`;
+
+        // Pre-append an empty assistant message block to stream into
+        // We set the timestamp slightly in the future (+100ms) to guarantee it sorts after the user message.
+        const assistantPlaceholder: Message = {
+          id: tempAssistantMessageId,
+          role: ROLES.MODEL,
+          type: MESSAGE_TYPES.MESSAGE,
+          content: "",
+          createdAt: new Date(Date.now() + 100).toISOString(),
+        };
+
+        setMessages((prev) => dedupeAndSortMessages([...prev, assistantPlaceholder]));
+
         const response = await submitAnswersRequest({
           chatId,
           answers: params.answers,
           questionSetId: resolvedQuestionSetId,
+          signal: controller.signal,
+          onChunk: (delta) => {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === tempAssistantMessageId
+                  ? { ...msg, content: msg.content + delta }
+                  : msg
+              )
+            );
+          },
         });
+
+        // Clean up temporary placeholder before appending final message
+        setMessages((prev) => prev.filter((msg) => msg.id !== tempAssistantMessageId));
 
         await handleAssistantResponse({
           agentMessageId: response.agentMessageId,
@@ -500,10 +536,20 @@ export const useChatActions = ({
           };
         });
       } catch (err) {
+        if (
+          err instanceof Error &&
+          (err.name === "AbortError" || err.message.includes("aborted"))
+        ) {
+          return;
+        }
+
         const message = toErrorMessage(err, "Failed to submit answers.");
         setError(message);
         throw err;
       } finally {
+        if (abortControllerRef.current === controller) {
+          abortControllerRef.current = null;
+        }
         setIsGeneratingResponse(false);
       }
     },
@@ -517,13 +563,16 @@ export const useChatActions = ({
       appendUserMessage,
       handleAssistantResponse,
       setError,
+      abortControllerRef,
+      setMessages,
     ],
   );
 
   const loadOlderMessages = useCallback(async () => {
-    if (!chatId || !messagesCursor) return;
+    if (!chatId || !messagesCursor || isLoadingOlderMessages) return;
 
     clearError();
+    setIsLoadingOlderMessages(true);
     try {
       const response = await fetchChatMessages({
         chatId,
@@ -540,15 +589,19 @@ export const useChatActions = ({
       const message = toErrorMessage(err, "Failed to load older messages.");
       setError(message);
       throw err;
+    } finally {
+      setIsLoadingOlderMessages(false);
     }
   }, [
     chatId,
     messagesCursor,
+    isLoadingOlderMessages,
     clearError,
     setMessages,
     setMessagesCursor,
     setHasMoreMessages,
     setError,
+    setIsLoadingOlderMessages,
   ]);
 
   const approvePlan = useCallback(
@@ -596,6 +649,7 @@ export const useChatActions = ({
   );
 
   return {
+    isGeneratingResponse,
     loadRecentChats,
     loadChat,
     loadOlderMessages,
