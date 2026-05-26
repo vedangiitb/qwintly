@@ -4,7 +4,6 @@ import { CollectedContextRepository } from "@/features/chat/server/repositories/
 import { MessagesRepository } from "@/features/chat/server/repositories/messages.repository";
 import { CollectedContext } from "@/features/chat/types/collectedContext.types";
 import { RecentMsgContext } from "@/features/chat/types/messages.types";
-import { Plan } from "@/features/ai/types/updatePlan.types";
 import {
   AIMessage,
   BaseMessage,
@@ -26,16 +25,16 @@ export const buildAiContext = async (
   console.log("Building AI Context");
   const { messagesRepo, collectedContextRepo, updatePlanRepo } = deps;
 
-  const [recentMessages, projectContext, previousPlan] = await Promise.all([
+  const [recentMessages, projectContext, previousPlans] = await Promise.all([
     messagesRepo.fetchRecentContext(convId),
     collectedContextRepo.fetchProjectInfo(convId),
-    updatePlanRepo.fetchPrevPlan(convId),
+    updatePlanRepo.fetchPrevPlans(convId, 8),
   ]);
 
   const systemPrompt = websiteAgentPrompt(
     collectedContext,
     projectContext,
-    previousPlan,
+    previousPlans,
   );
 
   const aiContext = mapToBaseMessages(systemPrompt, recentMessages);

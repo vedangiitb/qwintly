@@ -58,6 +58,8 @@ export interface SubmitAnswersParams {
   chatId: string;
   answers: UserResponse[];
   questionSetId?: string;
+  signal?: AbortSignal;
+  onChunk?: (textDelta: string) => void;
 }
 
 export interface StreamChatParams {
@@ -226,38 +228,75 @@ export class ChatClient implements ChatClientContract {
       });
     }
 
-    return this.execute(
-      "submitAnswers",
-      CHAT_ENDPOINTS.SUBMIT_ANSWERS,
-      async () => {
-        const data = await this.httpClient.post<SubmitAnswersResult>(
-          CHAT_ENDPOINTS.SUBMIT_ANSWERS,
-          {
-            chatId,
-            answers: params.answers,
-            questionSetId: params.questionSetId?.trim(),
-          },
-        );
+    return this.execute("submitAnswers", CHAT_ENDPOINTS.SUBMIT_ANSWERS, async () => {
+      const reader = await fetchStreamUtil(CHAT_ENDPOINTS.SUBMIT_ANSWERS, {
+        method: "POST",
+        body: JSON.stringify({
+          chatId,
+          answers: params.answers,
+          questionSetId: params.questionSetId?.trim() || undefined,
+        }),
+        signal: params.signal,
+      });
 
-        const response = ensureNonEmptyString(data.response, "response");
-        const questionSetId = ensureNonEmptyString(
-          data.questionSetId,
-          "questionSetId",
-        );
-        const agentMessageId = ensureNonEmptyString(
-          data.agentMessageId,
-          "agentMessageId",
-        );
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
+      let agentMessageId = "";
+      let responseText = "";
+      let toolCall: ToolCall | null = null;
+      let status: QuestionStatus = "skipped";
+      let questionSetId = "";
 
-        return {
-          response,
-          toolCall: data.toolCall ?? null,
-          status: data.status,
-          questionSetId,
-          agentMessageId,
-        };
-      },
-    );
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+
+            if (trimmed.startsWith("data: ")) {
+              const dataStr = trimmed.slice(6);
+              try {
+                const parsed = JSON.parse(dataStr);
+                if (parsed.type === "text" && parsed.delta) {
+                  responseText += parsed.delta;
+                  params.onChunk?.(parsed.delta);
+                } else if (parsed.type === "done") {
+                  agentMessageId = parsed.agentMessageId;
+                  responseText = parsed.response;
+                  toolCall = parsed.toolCall;
+                  status = parsed.status;
+                  questionSetId = parsed.questionSetId;
+                } else if (parsed.type === "error") {
+                  throw new Error(parsed.message || "Streaming error occurred");
+                }
+              } catch (e) {
+                console.error("Failed to parse SSE line:", line, e);
+              }
+            }
+          }
+        }
+      } finally {
+        reader.releaseLock();
+      }
+
+      ensureNonEmptyString(agentMessageId, "agentMessageId");
+      ensureNonEmptyString(questionSetId, "questionSetId");
+
+      return {
+        response: responseText,
+        toolCall,
+        status,
+        questionSetId,
+        agentMessageId,
+      };
+    });
   }
 
   async streamChat(params: StreamChatParams): Promise<StreamChatResult> {

@@ -3,13 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/features/auth/ui/hooks/useAuth";
 import { useAuthForm } from "@/features/auth/ui/hooks/useAuthForm";
 import { useEmailAuth } from "@/features/auth/ui/hooks/useEmailAuth";
 import { mapError } from "@/features/auth/utils/mapError";
 import { validatePassword } from "@/features/auth/utils/validatePassword";
 import PasswordInput from "./PasswordInput";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 declare global {
   interface Window {
@@ -27,6 +28,16 @@ export default function AuthForm({ isExistingUser }: Props) {
   const [loading, setLoading] = useState(false);
   const { login, signUp } = useEmailAuth();
 
+  useEffect(() => {
+    setError("");
+    setTurnstileToken(null);
+    turnstileRef.current?.reset();
+  }, [isExistingUser, setError]);
+
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -34,9 +45,13 @@ export default function AuthForm({ isExistingUser }: Props) {
       setLoading(true);
       setError("");
 
+      if (!turnstileToken) {
+        throw new Error("Please complete the security check.");
+      }
+
       const user = isExistingUser
-        ? await login(email, password, "1")
-        : await signUp(email, password, userName, "1");
+        ? await login(email, password, turnstileToken)
+        : await signUp(email, password, userName, turnstileToken);
 
       if (user) {
         if (isExistingUser) {
@@ -50,6 +65,8 @@ export default function AuthForm({ isExistingUser }: Props) {
     } catch (err: any) {
       console.error("Auth failed");
       setError(err.message || "An unknown error occurred.");
+      turnstileRef.current?.reset();
+      setTurnstileToken(null);
     } finally {
       setLoading(false);
     }
@@ -105,10 +122,26 @@ export default function AuthForm({ isExistingUser }: Props) {
         )}
       </div>
 
+      <div className="flex justify-center my-4 min-h-16.25">
+        <Turnstile
+          ref={turnstileRef}
+          siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+          onSuccess={(token) => setTurnstileToken(token)}
+          onExpire={() => setTurnstileToken(null)}
+          onError={() => {
+            setError("Security check failed to load. Please try again.");
+            setTurnstileToken(null);
+          }}
+          options={{
+            theme: "auto",
+          }}
+        />
+      </div>
+
       <Button
         type="submit"
         className="cursor-pointer w-full h-11 rounded-lg 
-               bg-gradient-to-r from-indigo-500 to-purple-500 
+               bg-linear-to-r from-indigo-500 to-purple-500 
                hover:from-indigo-600 hover:to-purple-600 
                dark:from-indigo-600 dark:to-purple-700 
                dark:hover:from-indigo-700 dark:hover:to-purple-800 
@@ -116,7 +149,9 @@ export default function AuthForm({ isExistingUser }: Props) {
                focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600 
                transition-all duration-300"
         disabled={
-          loading || (!validatePassword(password).isValid && !isExistingUser)
+          loading || 
+          (!validatePassword(password).isValid && !isExistingUser) || 
+          !turnstileToken
         }
       >
         {loading ? (

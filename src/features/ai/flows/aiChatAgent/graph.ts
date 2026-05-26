@@ -1,26 +1,22 @@
-import { WebsiteAgentDeps } from "@/features/ai/types/websiteAgent.types";
-import { toolCallMap } from "@/features/ai/tools/tools";
-import { ToolCall } from "@/features/ai/types/tools.types";
-import { BaseMessage, SystemMessage } from "@langchain/core/messages";
-import { buildAiContext, mapMessageToBaseMessage } from "./nodes/buildAiContext";
-import { generateAiResponse } from "./nodes/generateResponse";
-import { updateCollectedContext } from "./nodes/updateCollectedContext.node";
-import { streamLlmCallWithTools, StreamChunk } from "@/features/ai/services/llm.service";
-import { persistAgentResult } from "@/features/ai/services/agentCall.service";
-import { updatePlanTool } from "@/features/ai/tools/tools/updatePlan.tool";
-import { askQuestionsTool } from "@/features/ai/tools/tools/askQuestions.tool";
 import { websiteAgentPrompt } from "@/features/ai/prompts/websiteAgent.prompt";
+import { persistAgentResult } from "@/features/ai/services/agentCall.service";
+import {
+  StreamChunk,
+  streamLlmCallWithTools,
+} from "@/features/ai/services/llm.service";
+import { toolCallMap } from "@/features/ai/tools/tools";
+import { askQuestionsTool } from "@/features/ai/tools/tools/askQuestions.tool";
+import { updatePlanTool } from "@/features/ai/tools/tools/updatePlan.tool";
+import { ToolCall } from "@/features/ai/types/tools.types";
+import { WebsiteAgentDeps } from "@/features/ai/types/websiteAgent.types";
+import { SystemMessage } from "@langchain/core/messages";
+import { mapMessageToBaseMessage } from "./nodes/buildAiContext";
+import { updateCollectedContext } from "./nodes/updateCollectedContext.node";
 
 export class WebsiteAgent {
   private aiContextDeps: any;
 
-  constructor(private deps: WebsiteAgentDeps) {
-    this.aiContextDeps = {
-      messagesRepo: deps.messageRepo,
-      collectedContextRepo: deps.collectedContextRepo,
-      updatePlanRepo: deps.updatePlanRepo,
-    };
-  }
+  constructor(private deps: WebsiteAgentDeps) {}
 
   private toolDbRepo = (toolName: string): unknown => {
     if (toolName === toolCallMap.ASK_QUESTIONS)
@@ -32,57 +28,6 @@ export class WebsiteAgent {
     return null;
   };
 
-  async runAgentFlow(
-    chatId: string,
-    userMessage: string,
-    userMessageId: string,
-  ) {
-    console.log("Running runAgentFlow (sequential non-graph flow)");
-
-    // 1. Update collected context
-    const { collectedContext } = await updateCollectedContext(
-      this.deps.llm,
-      chatId,
-      userMessage,
-      this.deps.collectedContextRepo,
-    );
-
-    // 2. Fetch remaining contexts in parallel
-    const [projectInfo, previousPlan, recentMessages] = await Promise.all([
-      this.deps.collectedContextRepo.fetchProjectInfo(chatId),
-      this.deps.updatePlanRepo.fetchPrevPlan(chatId),
-      this.deps.messageRepo.fetchRecentContext(chatId),
-    ]);
-
-    // 3. Build system prompt and context messages
-    const systemPrompt = websiteAgentPrompt(
-      collectedContext,
-      projectInfo,
-      previousPlan,
-    );
-
-    const context = [
-      new SystemMessage(systemPrompt),
-      ...recentMessages.map(mapMessageToBaseMessage),
-    ];
-
-    // 4. Generate response and tools
-    const { aiMessageId, responseToUser, toolCalls } = await generateAiResponse(
-      this.deps.llm,
-      context,
-      chatId,
-      this.deps.toolCallRepo,
-      this.deps.messageRepo,
-      this.toolDbRepo,
-    );
-
-    return {
-      aiResponse: responseToUser,
-      agentMessageId: aiMessageId,
-      uiToolResponse: (toolCalls?.[0] as ToolCall) ?? null,
-    };
-  }
-
   async *streamAgentFlow(
     chatId: string,
     userMessage: string,
@@ -91,10 +36,10 @@ export class WebsiteAgent {
     console.log("Starting streamAgentFlow");
 
     // 1. Fetch DB context once, and recent context + plan in parallel
-    const [fullContext, recentMessages, previousPlan] = await Promise.all([
+    const [fullContext, recentMessages, previousPlans] = await Promise.all([
       this.deps.collectedContextRepo.fetchFullProjectContext(chatId),
       this.deps.messageRepo.fetchRecentContext(chatId),
-      this.deps.updatePlanRepo.fetchPrevPlan(chatId),
+      this.deps.updatePlanRepo.fetchPrevPlans(chatId, 8),
     ]);
 
     const { collectedContext, projectInfo } = fullContext;
@@ -103,7 +48,7 @@ export class WebsiteAgent {
     const systemPrompt = websiteAgentPrompt(
       collectedContext,
       projectInfo,
-      previousPlan,
+      previousPlans,
     );
 
     const context = [
@@ -127,11 +72,10 @@ export class WebsiteAgent {
     const messagesRepo = this.deps.messageRepo;
     const resolveToolRepository = this.toolDbRepo;
 
-    const llmStream = streamLlmCallWithTools(
-      this.deps.llm,
-      context,
-      [updatePlanTool, askQuestionsTool],
-    );
+    const llmStream = streamLlmCallWithTools(this.deps.llm, context, [
+      updatePlanTool,
+      askQuestionsTool,
+    ]);
 
     let lastResponseToUser = "";
     let lastToolCalls: ToolCall[] = [];
@@ -156,10 +100,7 @@ export class WebsiteAgent {
     );
 
     // Wait for BOTH background update and DB persist to finish
-    const [_, agentResult] = await Promise.all([
-      updatePromise,
-      persistPromise,
-    ]);
+    const [_, agentResult] = await Promise.all([updatePromise, persistPromise]);
 
     // 6. Yield the final done event with full message info & tool call details
     yield {
