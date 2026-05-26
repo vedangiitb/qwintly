@@ -12,6 +12,14 @@ export default function PreviewPanel() {
   const { width } = useGenerateUi();
 
   const [displayUrl, setDisplayUrl] = useState(url || previewUrl);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 796);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
@@ -79,7 +87,15 @@ export default function PreviewPanel() {
           src={displayUrl}
           ref={iframeRef}
           onLoad={onIframeLoad}
-          style={{
+          className={isMobile ? "w-full flex-1 min-h-125" : ""}
+          style={isMobile ? {
+            margin: "auto",
+            height: "calc(100vh - 180px)",
+            border: "1px solid var(--border)",
+            borderRadius: "8px",
+            boxShadow:
+              "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+          } : {
             margin: "auto",
             height: "800px",
             width: width,
