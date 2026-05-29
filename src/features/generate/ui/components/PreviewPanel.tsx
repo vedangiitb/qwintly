@@ -87,6 +87,7 @@ export default function PreviewPanel() {
           key={displayUrl}
           src={displayUrl}
           ref={iframeRef}
+          title="Preview of the generated website"
           onLoad={onIframeLoad}
           className={isMobile ? "w-full flex-1 min-h-125" : ""}
           style={isMobile ? {

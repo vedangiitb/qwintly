@@ -4,8 +4,10 @@ import { verifyToken } from "@/lib/verifyToken";
 
 export const GET = getHandler(async ({ query, token }) => {
   const chatId = query.get("chatId");
-  const rawLimit = parseInt(query.get("limit") ?? "6", 10);
-  const limit = Number.isNaN(rawLimit) ? 6 : Math.min(Math.max(rawLimit, 1), 50);
+  const rawLimit = Number.parseInt(query.get("limit") ?? "6", 10);
+  const limit = Number.isNaN(rawLimit)
+    ? 6
+    : Math.min(Math.max(rawLimit, 1), 50);
   const cursor = query.get("cursor") ?? undefined;
 
   if (!chatId?.trim()) throw new Error("Missing or invalid chatId");

@@ -1,28 +1,22 @@
 "use client";
 
-import React, { useState, useEffect, FormEvent, KeyboardEvent } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useAuth } from "@/features/auth/ui/hooks/useAuth";
-import { useChat } from "@/features/chat/ui/hooks/useChat";
+import React, { useState, useEffect } from "react";
 import SideBar from "@/components/layouts/sidebar/sidebar";
+import { useAuth } from "@/features/auth/ui/hooks/useAuth";
+import { useInitChat } from "@/features/chat/ui/hooks/useInitChat";
 import { Hero } from "./components/Hero";
 import { Features } from "./components/Features";
 import { HowItWorks } from "./components/HowItWorks";
 
 export const LandingPage: React.FC = () => {
-  const router = useRouter();
   const { user } = useAuth();
   const [showSidebar, setShowSidebar] = useState(false);
   const {
-    chatId,
     prompt,
     setPrompt,
-    sendMessage,
+    submitPrompt,
     isGeneratingResponse,
-    resetActiveChatState,
-  } = useChat();
-  const [started, setStarted] = useState(false);
+  } = useInitChat();
 
   useEffect(() => {
     if (showSidebar) {
@@ -31,38 +25,6 @@ export const LandingPage: React.FC = () => {
       document.body.style.overflow = "";
     }
   }, [showSidebar]);
-
-  useEffect(() => {
-    resetActiveChatState();
-  }, [resetActiveChatState]);
-
-  useEffect(() => {
-    if (started && chatId) {
-      router.push(`/generate/${chatId}`);
-      setStarted(false);
-    }
-  }, [chatId, router, started]);
-
-  const submitPrompt = async (e?: FormEvent | KeyboardEvent) => {
-    e?.preventDefault();
-
-    if (!user) {
-      router.push("/login");
-      toast("Please login to continue");
-      return;
-    }
-
-    if (!prompt.trim()) return;
-
-    try {
-      setStarted(true);
-      await sendMessage(prompt);
-    } catch (err) {
-      setStarted(false);
-      console.error("Failed to start chat", err);
-      toast.error("Could not start conversation. Please try again.");
-    }
-  };
 
   return (
     <div className="h-full flex text-stone-900 dark:text-stone-100">

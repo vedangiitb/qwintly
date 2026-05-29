@@ -229,68 +229,28 @@ export class ChatClient implements ChatClientContract {
     }
 
     return this.execute("submitAnswers", CHAT_ENDPOINTS.SUBMIT_ANSWERS, async () => {
-      const reader = await fetchStreamUtil(CHAT_ENDPOINTS.SUBMIT_ANSWERS, {
-        method: "POST",
-        body: JSON.stringify({
+      const payload = await this.streamPostRequest(
+        CHAT_ENDPOINTS.SUBMIT_ANSWERS,
+        {
           chatId,
           answers: params.answers,
           questionSetId: params.questionSetId?.trim() || undefined,
-        }),
-        signal: params.signal,
-      });
+        },
+        params.onChunk,
+        params.signal,
+      );
 
-      const decoder = new TextDecoder("utf-8");
-      let buffer = "";
-      let agentMessageId = "";
-      let responseText = "";
-      let toolCall: ToolCall | null = null;
-      let status: QuestionStatus = "skipped";
-      let questionSetId = "";
-
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() ?? "";
-
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed) continue;
-
-            if (trimmed.startsWith("data: ")) {
-              const dataStr = trimmed.slice(6);
-              try {
-                const parsed = JSON.parse(dataStr);
-                if (parsed.type === "text" && parsed.delta) {
-                  responseText += parsed.delta;
-                  params.onChunk?.(parsed.delta);
-                } else if (parsed.type === "done") {
-                  agentMessageId = parsed.agentMessageId;
-                  responseText = parsed.response;
-                  toolCall = parsed.toolCall;
-                  status = parsed.status;
-                  questionSetId = parsed.questionSetId;
-                } else if (parsed.type === "error") {
-                  throw new Error(parsed.message || "Streaming error occurred");
-                }
-              } catch (e) {
-                console.error("Failed to parse SSE line:", line, e);
-              }
-            }
-          }
-        }
-      } finally {
-        reader.releaseLock();
-      }
+      const agentMessageId = payload.agentMessageId;
+      const questionSetId = payload.questionSetId ?? "";
+      const status = payload.status ?? "skipped";
+      const response = payload.response;
+      const toolCall = payload.toolCall ?? null;
 
       ensureNonEmptyString(agentMessageId, "agentMessageId");
       ensureNonEmptyString(questionSetId, "questionSetId");
 
       return {
-        response: responseText,
+        response,
         toolCall,
         status,
         questionSetId,
@@ -304,61 +264,91 @@ export class ChatClient implements ChatClientContract {
     const message = ensureNonEmptyString(params.message, "message");
 
     return this.execute("streamChat", CHAT_ENDPOINTS.STREAM, async () => {
-      const reader = await fetchStreamUtil(CHAT_ENDPOINTS.STREAM, {
-        method: "POST",
-        body: JSON.stringify({ chatId, message }),
-        signal: params.signal,
-      });
+      const payload = await this.streamPostRequest(
+        CHAT_ENDPOINTS.STREAM,
+        { chatId, message },
+        params.onChunk,
+        params.signal,
+      );
 
-      const decoder = new TextDecoder("utf-8");
-      let buffer = "";
-      let agentMessageId = "";
-      let responseText = "";
-      let toolCall: ToolCall | null = null;
-
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() ?? "";
-
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed) continue;
-
-            if (trimmed.startsWith("data: ")) {
-              const dataStr = trimmed.slice(6);
-              try {
-                const parsed = JSON.parse(dataStr);
-                if (parsed.type === "text" && parsed.delta) {
-                  responseText += parsed.delta;
-                  params.onChunk?.(parsed.delta);
-                } else if (parsed.type === "done") {
-                  agentMessageId = parsed.agentMessageId;
-                  responseText = parsed.response;
-                  toolCall = parsed.toolCall;
-                } else if (parsed.type === "error") {
-                  throw new Error(parsed.message || "Streaming error occurred");
-                }
-              } catch (e) {
-                console.error("Failed to parse SSE line:", line, e);
-              }
-            }
-          }
-        }
-      } finally {
-        reader.releaseLock();
-      }
+      const agentMessageId = payload.agentMessageId;
+      const response = payload.response;
+      const toolCall = payload.toolCall ?? null;
 
       return {
         agentMessageId,
-        response: responseText,
+        response,
         toolCall,
       };
     });
+  }
+
+  private async streamPostRequest(
+    endpoint: string,
+    body: Record<string, any>,
+    onChunk?: (textDelta: string) => void,
+    signal?: AbortSignal,
+  ): Promise<{
+    agentMessageId: string;
+    response: string;
+    toolCall: ToolCall | null;
+    status?: QuestionStatus;
+    questionSetId?: string;
+  }> {
+    const reader = await fetchStreamUtil(endpoint, {
+      method: "POST",
+      body: JSON.stringify(body),
+      signal,
+    });
+
+    const decoder = new TextDecoder("utf-8");
+    let buffer = "";
+    let responseText = "";
+    let donePayload: any = null;
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+
+          if (trimmed.startsWith("data: ")) {
+            const dataStr = trimmed.slice(6);
+            try {
+              const parsed = JSON.parse(dataStr);
+              if (parsed.type === "text" && parsed.delta) {
+                responseText += parsed.delta;
+                onChunk?.(parsed.delta);
+              } else if (parsed.type === "done") {
+                donePayload = parsed;
+              } else if (parsed.type === "error") {
+                throw new Error(parsed.message || "Streaming error occurred");
+              }
+            } catch (e) {
+              console.error("Failed to parse SSE line:", line, e);
+            }
+          }
+        }
+      }
+    } finally {
+      reader.releaseLock();
+    }
+
+    if (!donePayload) {
+      throw new Error("Stream closed without completing successfully");
+    }
+
+    return {
+      ...donePayload,
+      response: donePayload.response || responseText,
+    };
   }
 
   private async execute<T>(
