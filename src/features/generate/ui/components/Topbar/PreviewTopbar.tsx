@@ -17,6 +17,51 @@ import { toast } from "sonner";
 import { useGenerate } from "../../hooks/useGenerate";
 import WidthSetting from "./widthSetting";
 
+interface ShareButtonsProps {
+  activeUrl: string;
+  openInNewWindow: () => void;
+  iconButtonBase: string;
+}
+
+function ShareButtons({
+  activeUrl,
+  openInNewWindow,
+  iconButtonBase,
+}: ShareButtonsProps) {
+  const handleCopy = async () => {
+    if (!activeUrl?.trim()) return;
+    try {
+      await navigator.clipboard.writeText(activeUrl);
+      toast.success("Copied link");
+    } catch {
+      toast.error("Failed to copy link");
+    }
+  };
+
+  return (
+    <>
+      <button
+        aria-label="Copy link"
+        onClick={handleCopy}
+        disabled={!activeUrl?.trim()}
+        className={iconButtonBase}
+        title="Copy link"
+      >
+        <Copy className="h-4 w-4 text-muted-foreground" />
+      </button>
+
+      <button
+        aria-label="Open in new window"
+        onClick={openInNewWindow}
+        className={iconButtonBase}
+        title="Open in new window"
+      >
+        <ExternalLink className="h-4.5 w-4.5 text-muted-foreground" />
+      </button>
+    </>
+  );
+}
+
 export default function PreviewTopbar({
   updateDisplayUrl,
   displayUrl,
@@ -252,32 +297,11 @@ export default function PreviewTopbar({
               </button>
 
               <div className="flex items-center gap-1">
-                <button
-                  aria-label="Copy link"
-                  onClick={async () => {
-                    if (!activeUrl?.trim()) return;
-                    try {
-                      await navigator.clipboard.writeText(activeUrl);
-                      toast.success("Copied link");
-                    } catch {
-                      toast.error("Failed to copy link");
-                    }
-                  }}
-                  disabled={!activeUrl?.trim()}
-                  className={iconButtonBase}
-                  title="Copy link"
-                >
-                  <Copy className="h-4 w-4 text-muted-foreground" />
-                </button>
-
-                <button
-                  aria-label="Open in new window"
-                  onClick={openInNewWindow}
-                  className={iconButtonBase}
-                  title="Open in new window"
-                >
-                  <ExternalLink className="h-4.5 w-4.5 text-muted-foreground" />
-                </button>
+                <ShareButtons
+                  activeUrl={activeUrl}
+                  openInNewWindow={openInNewWindow}
+                  iconButtonBase={iconButtonBase}
+                />
               </div>
             </div>
           </div>
@@ -422,32 +446,11 @@ export default function PreviewTopbar({
               </span>
             </button>
 
-            <button
-              aria-label="Copy link"
-              onClick={async () => {
-                if (!activeUrl?.trim()) return;
-                try {
-                  await navigator.clipboard.writeText(activeUrl);
-                  toast.success("Copied link");
-                } catch {
-                  toast.error("Failed to copy link");
-                }
-              }}
-              disabled={!activeUrl?.trim()}
-              className={iconButtonBase}
-              title="Copy link"
-            >
-              <Copy className="h-4 w-4 text-muted-foreground" />
-            </button>
-
-            <button
-              aria-label="Open in new window"
-              onClick={openInNewWindow}
-              className={iconButtonBase}
-              title="Open in new window"
-            >
-              <ExternalLink className="h-4.5 w-4.5 text-muted-foreground" />
-            </button>
+            <ShareButtons
+              activeUrl={activeUrl}
+              openInNewWindow={openInNewWindow}
+              iconButtonBase={iconButtonBase}
+            />
           </>
         ) : (
           <div />

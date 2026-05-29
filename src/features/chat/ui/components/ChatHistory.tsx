@@ -123,7 +123,6 @@ export default function ChatHistory({
       onScroll={handleScroll}
       className="flex-1 overflow-y-auto px-2 py-8 space-y-2 custom-scrollbar"
       aria-live="polite"
-      tabIndex={0}
       style={{ overflowAnchor: "none" }} // Ensure our manual layout-effect scroll anchoring doesn't conflict with browser defaults
     >
       {/* Sentinel for lazy loading */}

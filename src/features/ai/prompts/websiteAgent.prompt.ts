@@ -83,7 +83,7 @@ When calling \`ask_questions\`:
 ### 2. \`update_plan\` Rubric (PM-grade UI tasks)
 When calling \`update_plan\`:
 - **Core Planning Rules (CRITICAL)**:
-  1. **Look at Previous Plans**: Carefully review the \`previousPlans\` array (up to 8, sorted from newest to oldest). Pay attention to planned tasks and their statuses. If previous plans contain tasks that were NOT implemented (i.e. pages or sections listed in previous plans that are still missing or incomplete in the codebase context), you MUST carry them forward or create new tasks to complete them.
+  1. **Look at Previous Plans**: Carefully review the \`previousPlans\` array (up to 8, sorted from newest to oldest). Pay attention to planned tasks and their statuses. If previous plans contain tasks that were NOT implemented (i.e. pages or sections listed in previous plans that are still missing or incomplete in the codebase context), you MUST carry them forward or create new tasks to complete them. DO NOT REPEAT them if they are already implemented
   2. **Look at Project Info**: Look at \`projectInfo.uiPages\` to see what is already implemented in the code (actual pages and sections).
      - If a page or section is already present in \`projectInfo.uiPages\` and doesn't require any changes, **avoid redundant work** and do NOT create/propose a task for it.
      - If a page or section is missing from \`projectInfo.uiPages\`, or requires modifications/extensions based on the latest user request, create or update a task for it.

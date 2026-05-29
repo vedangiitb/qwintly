@@ -1,56 +1,15 @@
 "use client";
 
-import { useAuth } from "@/features/auth/ui/hooks/useAuth";
 import ChatBox from "@/features/chat/ui/components/ChatBox";
-import { useChat } from "@/features/chat/ui/hooks/useChat";
-import { useRouter } from "next/navigation";
-import { FormEvent, KeyboardEvent, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useInitChat } from "@/features/chat/ui/hooks/useInitChat";
 
 export default function Generate() {
-  const router = useRouter();
-  const { user } = useAuth();
   const {
-    chatId,
     prompt,
     setPrompt,
-    sendMessage,
+    submitPrompt,
     isGeneratingResponse,
-    resetActiveChatState,
-  } = useChat();
-  const [started, setStarted] = useState(false);
-
-  useEffect(() => {
-    resetActiveChatState();
-  }, [resetActiveChatState]);
-
-  useEffect(() => {
-    if (started && chatId) {
-      router.push(`/generate/${chatId}`);
-      setStarted(false);
-    }
-  }, [chatId, router, started]);
-
-  const submitPrompt = async (e?: FormEvent | KeyboardEvent) => {
-    e?.preventDefault();
-
-    if (!user) {
-      router.push("/login");
-      toast("Please login to continue");
-      return;
-    }
-
-    if (!prompt.trim()) return;
-
-    try {
-      setStarted(true);
-      await sendMessage(prompt);
-    } catch (err) {
-      setStarted(false);
-      console.error("Failed to start chat", err);
-      toast.error("Could not start conversation. Please try again.");
-    }
-  };
+  } = useInitChat();
 
   return (
     <div className="w-full flex flex-col h-full pl-4 pr-2 pb-2 overflow-hidden bg-transparent">
