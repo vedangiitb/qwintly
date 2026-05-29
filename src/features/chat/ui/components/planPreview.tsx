@@ -1,14 +1,13 @@
 "use client";
 
-import { PLAN_STATUS, Plan } from "@/features/ai/types/updatePlan.types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
-import { useChat } from "../hooks/useChat";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { PLAN_STATUS, Plan } from "@/features/ai/types/updatePlan.types";
 import { useGenerate } from "@/features/generate/ui/hooks/useGenerate";
+import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useChat } from "../hooks/useChat";
 
 const TASK_TYPE_LABEL: Record<Plan["tasks"][number]["task_type"], string> = {
   ui_task: "UI",
@@ -54,7 +53,7 @@ export function PlanReview({
 
   if (!plan) {
     return (
-      <div className="w-full md:max-w-[95%] rounded-[1.5rem] border border-stone-200/35 bg-white/35 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.01)] backdrop-blur-md dark:border-stone-800/35 dark:bg-stone-900/35">
+      <div className="w-full md:max-w-[95%] rounded-3xl border border-stone-200/35 bg-white/35 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.01)] backdrop-blur-md dark:border-stone-800/35 dark:bg-stone-900/35">
         <p className="text-xs leading-relaxed text-stone-500 dark:text-stone-400 select-none">
           {fallbackText || "Plan details are not available for this message."}
         </p>
@@ -101,7 +100,7 @@ export function PlanReview({
 
   return (
     <div className="w-full md:max-w-[95%] space-y-2">
-      <div className="rounded-[1.5rem] border border-stone-200/35 bg-white/35 dark:border-stone-800/35 dark:bg-stone-900/35 shadow-[0_8px_30px_rgba(0,0,0,0.01)] backdrop-blur-md overflow-hidden p-4 sm:p-5">
+      <div className="rounded-3xl border border-stone-200/35 bg-white/35 dark:border-stone-800/35 dark:bg-stone-900/35 shadow-[0_8px_30px_rgba(0,0,0,0.01)] backdrop-blur-md overflow-hidden p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="space-y-0.5">
             <h2 className="text-sm font-semibold tracking-tight text-stone-900 dark:text-stone-100">

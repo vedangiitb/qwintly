@@ -491,15 +491,15 @@ export default function Account() {
                 <ul className="mt-3 space-y-2 text-sm text-stone-600 dark:text-stone-300">
                   <li className="flex items-start gap-2">
                     <span className="mt-1 size-1.5 rounded-full bg-stone-400 dark:bg-stone-500" />
-                    Verify your email for smoother sign-ins across devices.
+                    <span>Verify your email for smoother sign-ins across devices.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="mt-1 size-1.5 rounded-full bg-stone-400 dark:bg-stone-500" />
-                    Use BYOK to control your provider usage and billing.
+                    <span>Use BYOK to control your provider usage and billing.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="mt-1 size-1.5 rounded-full bg-stone-400 dark:bg-stone-500" />
-                    If you rotate keys, update them in BYOK immediately.
+                    <span>If you rotate keys, update them in BYOK immediately.</span>
                   </li>
                 </ul>
                 <div className="mt-4">
