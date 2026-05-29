@@ -18,15 +18,14 @@ export default function NavBar() {
       <header
         className={`z-20 flex items-center justify-between md:py-1 backdrop-blur-lg bg-white/35 dark:bg-stone-900/35 border border-stone-200/40 dark:border-stone-800/40 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.01)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.08)] ${hasSidebar ? "pl-12 pr-3 md:px-6" : "px-3 md:px-6"}`}
       >
-        <div
+        <Link
+          href="/"
           className="flex items-center gap-2 cursor-pointer group"
-          onClick={() => router.push("/")}
-          role="button"
         >
           <span className="font-semibold text-base md:text-lg tracking-tight text-transparent bg-linear-to-r dark:from-teal-300 dark:via-purple-400 dark:to-pink-400 from-teal-700 via-purple-700 to-pink-700 bg-clip-text select-none transition-all duration-300 group-hover:brightness-110">
             Qwintly
           </span>
-        </div>
+        </Link>
 
         <div className="flex items-center gap-2 md:gap-4">
           <div className="flex gap-1 items-center">
