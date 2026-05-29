@@ -51,7 +51,7 @@ export default function ChatBox({
         submitPrompt(e);
       }}
       className={cn(
-        "sticky bottom-2 left-0 right-0 mx-auto flex w-full max-w-3xl items-end gap-2",
+        "relative z-10 mx-auto flex w-full max-w-3xl items-end gap-2 shrink-0 my-1 md:my-2 px-1",
         "rounded-3xl border border-stone-200/40 dark:border-stone-800/40",
         "bg-white/40 dark:bg-stone-900/40 backdrop-blur-xl",
         "p-1.5 shadow-[0_12px_40px_rgba(28,25,23,0.03)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.18)]",
