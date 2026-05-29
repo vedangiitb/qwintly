@@ -104,9 +104,9 @@ export default function Generate({ params }: Props) {
           </div>
         )}
 
-        <div className="flex-1 flex flex-col overflow-hidden h-full">
+        <div className="flex-1 flex flex-col overflow-hidden">
           {activeTab === "chat" ? (
-            <div className={`flex flex-col flex-1 overflow-y-auto px-2 py-4 h-full ${hasPreviewOrUrl ? "pt-12" : ""}`}>
+            <div className={`flex flex-col flex-1 overflow-hidden px-2 pb-3 pt-4 min-h-0 ${hasPreviewOrUrl ? "pt-12" : ""}`}>
               <ChatHistory
                 convHistory={messages}
                 isResponseLoading={isGeneratingResponse}
@@ -141,7 +141,7 @@ export default function Generate({ params }: Props) {
         className="h-full flex"
       >
         <ResizablePanel
-          className={`flex flex-col flex-1 overflow-y-auto px-2 py-4 h-full ${!chatVisible ? "hidden" : ""}`}
+          className={`flex flex-col flex-1 overflow-hidden px-2 pb-3 pt-4 min-h-0 ${!chatVisible ? "hidden" : ""}`}
         >
           <ChatHistory
             convHistory={messages}

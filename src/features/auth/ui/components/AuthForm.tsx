@@ -55,7 +55,7 @@ export default function AuthForm({ isExistingUser }: Props) {
 
       if (user) {
         if (isExistingUser) {
-          router.push("/account");
+          router.push("/generate");
         } else {
           router.push(
             `/account-created?email=${encodeURIComponent(email)}`,

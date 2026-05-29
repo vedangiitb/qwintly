@@ -12,7 +12,7 @@ import {
   Save,
   Undo2,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useGenerate } from "../../hooks/useGenerate";
 import WidthSetting from "./widthSetting";
@@ -20,6 +20,7 @@ import WidthSetting from "./widthSetting";
 export default function PreviewTopbar({
   updateDisplayUrl,
   displayUrl,
+  currentRoute,
   editMode,
   editingAvailable,
   onToggleEditMode,
@@ -32,6 +33,7 @@ export default function PreviewTopbar({
 }: {
   updateDisplayUrl: (url: string) => void;
   displayUrl: string;
+  currentRoute: string | null;
   editMode: boolean;
   editingAvailable: boolean;
   onToggleEditMode: () => void;
@@ -49,6 +51,37 @@ export default function PreviewTopbar({
   const [isDeployingPreview, setIsDeployingPreview] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  const activeUrl = useMemo(() => {
+    if (!displayUrl) return "";
+    try {
+      const origin = new URL(displayUrl).origin;
+      const cleanRoute = currentRoute
+        ? currentRoute.startsWith("/")
+          ? currentRoute
+          : `/${currentRoute}`
+        : "/";
+      return `${origin}${cleanRoute}`;
+    } catch {
+      return displayUrl;
+    }
+  }, [displayUrl, currentRoute]);
+
+  const urlParts = useMemo(() => {
+    if (!displayUrl) return { protocol: "https://", host: "" };
+    try {
+      const parsed = new URL(displayUrl);
+      return {
+        protocol: parsed.protocol + "//",
+        host: parsed.host,
+      };
+    } catch {
+      return {
+        protocol: "https://",
+        host: displayUrl.replace(/^(https?:\/\/)?(www\.)?/, "").split("/")[0],
+      };
+    }
+  }, [displayUrl]);
+
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 796);
     checkMobile();
@@ -57,7 +90,7 @@ export default function PreviewTopbar({
   }, []);
 
   const openInNewWindow = () => {
-    if (displayUrl) window.open(displayUrl, "_blank");
+    if (activeUrl) window.open(activeUrl, "_blank");
   };
 
   const onDeployPreview = async () => {
@@ -79,7 +112,9 @@ export default function PreviewTopbar({
       await deployApp(activeChatId, genId);
       toast.success("Deployment queued");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to deploy preview");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to deploy preview",
+      );
     } finally {
       setIsDeployingPreview(false);
     }
@@ -104,13 +139,15 @@ export default function PreviewTopbar({
           <h3 className="text-xs font-semibold tracking-wide text-foreground/80 pl-1">
             Preview
           </h3>
-          
+
           <div className="flex items-center gap-2">
             {displayUrl && (canShowDeployed || canShowPreview) ? (
               <div className="flex items-center rounded-lg border border-border/60 bg-background/40 p-0.5">
                 <button
                   aria-label="Show preview version"
-                  onClick={() => (previewUrl ? updateDisplayUrl(previewUrl) : null)}
+                  onClick={() =>
+                    previewUrl ? updateDisplayUrl(previewUrl) : null
+                  }
                   disabled={!canShowPreview}
                   className={`${pillButtonBase} ${
                     showingPreview
@@ -142,7 +179,9 @@ export default function PreviewTopbar({
                 aria-label="Deploy this preview"
                 onClick={() => void onDeployPreview()}
                 disabled={
-                  !activeChatId?.trim() || isSessionRunning || isDeployingPreview
+                  !activeChatId?.trim() ||
+                  isSessionRunning ||
+                  isDeployingPreview
                 }
                 className={`${pillButtonBase} border border-border/60 bg-background/40 text-foreground/80 hover:bg-accent/60`}
                 title="Deploy this preview"
@@ -173,7 +212,9 @@ export default function PreviewTopbar({
                 }
               >
                 <PencilLine className="h-3.5 w-3.5" />
-                <span className="text-[10px] sm:text-[11px]">{editMode ? "Editing" : "Edit"}</span>
+                <span className="text-[10px] sm:text-[11px]">
+                  {editMode ? "Editing" : "Edit"}
+                </span>
               </button>
 
               <div className="flex items-center gap-1">
@@ -214,15 +255,15 @@ export default function PreviewTopbar({
                 <button
                   aria-label="Copy link"
                   onClick={async () => {
-                    if (!displayUrl?.trim()) return;
+                    if (!activeUrl?.trim()) return;
                     try {
-                      await navigator.clipboard.writeText(displayUrl);
+                      await navigator.clipboard.writeText(activeUrl);
                       toast.success("Copied link");
                     } catch {
                       toast.error("Failed to copy link");
                     }
                   }}
-                  disabled={!displayUrl?.trim()}
+                  disabled={!activeUrl?.trim()}
                   className={iconButtonBase}
                   title="Copy link"
                 >
@@ -320,9 +361,13 @@ export default function PreviewTopbar({
       <div className="flex items-center gap-1.5">
         {displayUrl ? (
           <>
-            {!isMobile && <WidthSetting width={width} setWidth={setDeviceMode} />}
+            {!isMobile && (
+              <WidthSetting width={width} setWidth={setDeviceMode} />
+            )}
 
-            {!isMobile && <div className="mx-1 hidden h-5 w-px bg-border/70 sm:block" />}
+            {!isMobile && (
+              <div className="mx-1 hidden h-5 w-px bg-border/70 sm:block" />
+            )}
 
             <button
               aria-label={editMode ? "Disable edit mode" : "Enable edit mode"}
@@ -340,7 +385,9 @@ export default function PreviewTopbar({
               }
             >
               <PencilLine className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{editMode ? "Editing" : "Edit"}</span>
+              <span className="hidden sm:inline">
+                {editMode ? "Editing" : "Edit"}
+              </span>
             </button>
 
             <button
@@ -378,15 +425,15 @@ export default function PreviewTopbar({
             <button
               aria-label="Copy link"
               onClick={async () => {
-                if (!displayUrl?.trim()) return;
+                if (!activeUrl?.trim()) return;
                 try {
-                  await navigator.clipboard.writeText(displayUrl);
+                  await navigator.clipboard.writeText(activeUrl);
                   toast.success("Copied link");
                 } catch {
                   toast.error("Failed to copy link");
                 }
               }}
-              disabled={!displayUrl?.trim()}
+              disabled={!activeUrl?.trim()}
               className={iconButtonBase}
               title="Copy link"
             >

@@ -17,12 +17,23 @@ const tryGetOrigin = (url: string | null | undefined) => {
 };
 
 const tryGetPathFromUrl = (url: string | null | undefined) => {
+  console.log(url);
   if (!url) return "/";
+  if (url.startsWith("/")) {
+    return url;
+  }
   try {
-    const parsed = new URL(url);
+    let targetUrl = url;
+    if (url.startsWith("//")) {
+      targetUrl = `https:${url}`;
+    } else if (!/^[a-zA-Z]+:\/\//.test(url)) {
+      targetUrl = `https://${url}`;
+    }
+    const parsed = new URL(targetUrl);
     const path = parsed.pathname || "/";
     const search = parsed.search || "";
     const hash = parsed.hash || "";
+    console.log(`${path}${search}${hash}`);
     return `${path}${search}${hash}`;
   } catch {
     return "/";
@@ -32,7 +43,7 @@ const tryGetPathFromUrl = (url: string | null | undefined) => {
 export const getGenIdFromUrl = (url: string): string | null => {
   if (!url) return null;
   const match = url.match(
-    /^(?:https?:\/\/)?([0-9a-fA-F-]{36})-(?:dev)?previews\.qwintly\.com\/?$/,
+    /^(?:https?:\/\/)?([0-9a-fA-F-]{36})-(?:dev)?previews\.qwintly\.com(?:\/|$)/,
   );
 
   return match?.[1] ?? null;
