@@ -211,9 +211,9 @@ export default function Account() {
     return (
       <div className="flex-1 min-h-0 overflow-y-auto bg-transparent px-4 py-10">
         <div className="mx-auto max-w-6xl animate-pulse space-y-6">
-          <div className="h-48 rounded-[2rem] bg-white/35 dark:bg-stone-900/35" />
-          <div className="h-56 rounded-[2rem] bg-white/35 dark:bg-stone-900/35" />
-          <div className="h-56 rounded-[2rem] bg-white/35 dark:bg-stone-900/35" />
+          <div className="h-48 rounded-4xl bg-white/35 dark:bg-stone-900/35" />
+          <div className="h-56 rounded-4xl bg-white/35 dark:bg-stone-900/35" />
+          <div className="h-56 rounded-4xl bg-white/35 dark:bg-stone-900/35" />
         </div>
       </div>
     );
@@ -230,7 +230,7 @@ export default function Account() {
   return (
     <div className="flex-1 min-h-0 overflow-y-auto bg-transparent px-4 py-8 text-stone-900 dark:text-stone-100">
       <div className="mx-auto max-w-6xl">
-        <div className="relative overflow-hidden rounded-[2rem] border border-stone-200/35 bg-white/35 p-6 shadow-[0_24px_70px_rgba(28,25,23,0.03)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:p-8 dark:border-stone-800/35 dark:bg-stone-900/35">
+        <div className="relative overflow-hidden rounded-4xl border border-stone-200/35 bg-white/35 p-6 shadow-[0_24px_70px_rgba(28,25,23,0.03)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:p-8 dark:border-stone-800/35 dark:bg-stone-900/35">
           <div className="absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_top,rgba(45,212,191,0.12),transparent_55%)] dark:bg-[radial-gradient(circle_at_top,rgba(45,212,191,0.08),transparent_55%)]" />
 
           <div className="relative space-y-8">

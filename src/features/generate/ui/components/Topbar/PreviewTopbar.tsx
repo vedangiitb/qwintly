@@ -12,7 +12,7 @@ import {
   Save,
   Undo2,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { useGenerate } from "../../hooks/useGenerate";
 import WidthSetting from "./widthSetting";
@@ -20,6 +20,7 @@ import WidthSetting from "./widthSetting";
 export default function PreviewTopbar({
   updateDisplayUrl,
   displayUrl,
+  currentRoute,
   editMode,
   editingAvailable,
   onToggleEditMode,
@@ -32,6 +33,7 @@ export default function PreviewTopbar({
 }: {
   updateDisplayUrl: (url: string) => void;
   displayUrl: string;
+  currentRoute: string | null;
   editMode: boolean;
   editingAvailable: boolean;
   onToggleEditMode: () => void;
@@ -49,6 +51,37 @@ export default function PreviewTopbar({
   const [isDeployingPreview, setIsDeployingPreview] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  const activeUrl = useMemo(() => {
+    if (!displayUrl) return "";
+    try {
+      const origin = new URL(displayUrl).origin;
+      const cleanRoute = currentRoute
+        ? currentRoute.startsWith("/")
+          ? currentRoute
+          : `/${currentRoute}`
+        : "/";
+      return `${origin}${cleanRoute}`;
+    } catch {
+      return displayUrl;
+    }
+  }, [displayUrl, currentRoute]);
+
+  const urlParts = useMemo(() => {
+    if (!displayUrl) return { protocol: "https://", host: "" };
+    try {
+      const parsed = new URL(displayUrl);
+      return {
+        protocol: parsed.protocol + "//",
+        host: parsed.host,
+      };
+    } catch {
+      return {
+        protocol: "https://",
+        host: displayUrl.replace(/^(https?:\/\/)?(www\.)?/, "").split("/")[0],
+      };
+    }
+  }, [displayUrl]);
+
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 796);
     checkMobile();
@@ -57,7 +90,7 @@ export default function PreviewTopbar({
   }, []);
 
   const openInNewWindow = () => {
-    if (displayUrl) window.open(displayUrl, "_blank");
+    if (activeUrl) window.open(activeUrl, "_blank");
   };
 
   const onDeployPreview = async () => {
@@ -214,15 +247,15 @@ export default function PreviewTopbar({
                 <button
                   aria-label="Copy link"
                   onClick={async () => {
-                    if (!displayUrl?.trim()) return;
+                    if (!activeUrl?.trim()) return;
                     try {
-                      await navigator.clipboard.writeText(displayUrl);
+                      await navigator.clipboard.writeText(activeUrl);
                       toast.success("Copied link");
                     } catch {
                       toast.error("Failed to copy link");
                     }
                   }}
-                  disabled={!displayUrl?.trim()}
+                  disabled={!activeUrl?.trim()}
                   className={iconButtonBase}
                   title="Copy link"
                 >
@@ -317,6 +350,16 @@ export default function PreviewTopbar({
         ) : null}
       </div>
 
+      {displayUrl && !isMobile && (
+        <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-lg border border-border/40 bg-background/30 text-[11px] font-mono max-w-[280px] xl:max-w-[400px] truncate shadow-inner">
+          <span className="text-emerald-500/85 select-none">{urlParts.protocol}</span>
+          <span className="text-foreground/70 truncate select-all">{urlParts.host}</span>
+          <span className="text-foreground font-semibold select-all">
+            {currentRoute || "/"}
+          </span>
+        </div>
+      )}
+
       <div className="flex items-center gap-1.5">
         {displayUrl ? (
           <>
@@ -378,15 +421,15 @@ export default function PreviewTopbar({
             <button
               aria-label="Copy link"
               onClick={async () => {
-                if (!displayUrl?.trim()) return;
+                if (!activeUrl?.trim()) return;
                 try {
-                  await navigator.clipboard.writeText(displayUrl);
+                  await navigator.clipboard.writeText(activeUrl);
                   toast.success("Copied link");
                 } catch {
                   toast.error("Failed to copy link");
                 }
               }}
-              disabled={!displayUrl?.trim()}
+              disabled={!activeUrl?.trim()}
               className={iconButtonBase}
               title="Copy link"
             >

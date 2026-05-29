@@ -8,9 +8,7 @@ export async function checkUserMessageLimit(userId: string) {
   const date = getUTCDateString();
   const key = `user:${userId}:messages:${date}`;
 
-  let count: number;
-
-  count = await redis.incr(key);
+  const count = await redis.incr(key);
 
   if (count === 1) {
     const ttl = getSecondsUntilUTCMidnight();

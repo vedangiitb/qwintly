@@ -57,6 +57,7 @@ export default function PreviewPanel() {
       <PreviewTopbar
         updateDisplayUrl={updateDisplayUrl}
         displayUrl={displayUrl}
+        currentRoute={currentRoute}
         editMode={editMode}
         editingAvailable={editingAvailable}
         onToggleEditMode={onToggleEditMode}
