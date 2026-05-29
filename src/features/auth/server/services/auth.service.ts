@@ -17,7 +17,7 @@ export async function signup(
     options: {
       captchaToken: turnstileToken,
       data: { userName },
-      emailRedirectTo: `${location.origin}/account`,
+      emailRedirectTo: `${location.origin}/generate`,
     },
   });
 
@@ -50,7 +50,7 @@ export async function googleLogin() {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${location.origin}/account`,
+      redirectTo: `${location.origin}/generate`,
     },
   });
 

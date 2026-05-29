@@ -36,7 +36,7 @@ export default function SideBar({
       </aside>
 
       {!sidebarExpanded && (
-        <div className="fixed top-2 left-2 md:hidden z-30">
+        <div className="fixed top-[7px] left-3 md:hidden z-30">
           <SidebarToggle
             isExpanded={sidebarExpanded}
             onToggle={() => setSidebarExpanded(!sidebarExpanded)}

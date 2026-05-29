@@ -24,7 +24,7 @@ export default function AccountCreatedClient() {
       try {
         const isVerified = await checkEmailVerified();
         if (isVerified) {
-          router.push("/account");
+          router.push("/generate");
           return;
         }
       } catch (err) {}

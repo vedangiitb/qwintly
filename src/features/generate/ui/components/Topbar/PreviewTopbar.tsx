@@ -12,7 +12,7 @@ import {
   Save,
   Undo2,
 } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useGenerate } from "../../hooks/useGenerate";
 import WidthSetting from "./widthSetting";
@@ -112,7 +112,9 @@ export default function PreviewTopbar({
       await deployApp(activeChatId, genId);
       toast.success("Deployment queued");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to deploy preview");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to deploy preview",
+      );
     } finally {
       setIsDeployingPreview(false);
     }
@@ -137,13 +139,15 @@ export default function PreviewTopbar({
           <h3 className="text-xs font-semibold tracking-wide text-foreground/80 pl-1">
             Preview
           </h3>
-          
+
           <div className="flex items-center gap-2">
             {displayUrl && (canShowDeployed || canShowPreview) ? (
               <div className="flex items-center rounded-lg border border-border/60 bg-background/40 p-0.5">
                 <button
                   aria-label="Show preview version"
-                  onClick={() => (previewUrl ? updateDisplayUrl(previewUrl) : null)}
+                  onClick={() =>
+                    previewUrl ? updateDisplayUrl(previewUrl) : null
+                  }
                   disabled={!canShowPreview}
                   className={`${pillButtonBase} ${
                     showingPreview
@@ -175,7 +179,9 @@ export default function PreviewTopbar({
                 aria-label="Deploy this preview"
                 onClick={() => void onDeployPreview()}
                 disabled={
-                  !activeChatId?.trim() || isSessionRunning || isDeployingPreview
+                  !activeChatId?.trim() ||
+                  isSessionRunning ||
+                  isDeployingPreview
                 }
                 className={`${pillButtonBase} border border-border/60 bg-background/40 text-foreground/80 hover:bg-accent/60`}
                 title="Deploy this preview"
@@ -206,7 +212,9 @@ export default function PreviewTopbar({
                 }
               >
                 <PencilLine className="h-3.5 w-3.5" />
-                <span className="text-[10px] sm:text-[11px]">{editMode ? "Editing" : "Edit"}</span>
+                <span className="text-[10px] sm:text-[11px]">
+                  {editMode ? "Editing" : "Edit"}
+                </span>
               </button>
 
               <div className="flex items-center gap-1">
@@ -350,22 +358,16 @@ export default function PreviewTopbar({
         ) : null}
       </div>
 
-      {displayUrl && !isMobile && (
-        <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-lg border border-border/40 bg-background/30 text-[11px] font-mono max-w-[280px] xl:max-w-[400px] truncate shadow-inner">
-          <span className="text-emerald-500/85 select-none">{urlParts.protocol}</span>
-          <span className="text-foreground/70 truncate select-all">{urlParts.host}</span>
-          <span className="text-foreground font-semibold select-all">
-            {currentRoute || "/"}
-          </span>
-        </div>
-      )}
-
       <div className="flex items-center gap-1.5">
         {displayUrl ? (
           <>
-            {!isMobile && <WidthSetting width={width} setWidth={setDeviceMode} />}
+            {!isMobile && (
+              <WidthSetting width={width} setWidth={setDeviceMode} />
+            )}
 
-            {!isMobile && <div className="mx-1 hidden h-5 w-px bg-border/70 sm:block" />}
+            {!isMobile && (
+              <div className="mx-1 hidden h-5 w-px bg-border/70 sm:block" />
+            )}
 
             <button
               aria-label={editMode ? "Disable edit mode" : "Enable edit mode"}
@@ -383,7 +385,9 @@ export default function PreviewTopbar({
               }
             >
               <PencilLine className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{editMode ? "Editing" : "Edit"}</span>
+              <span className="hidden sm:inline">
+                {editMode ? "Editing" : "Edit"}
+              </span>
             </button>
 
             <button
