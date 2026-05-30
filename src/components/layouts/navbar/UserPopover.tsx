@@ -6,7 +6,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useAuth } from "@/features/auth/ui/hooks/useAuth";
-import { CircleUser, HelpCircle, LogOut } from "lucide-react";
+import { CircleUser, FileText, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import PrefDialog from "./prefDialog";
 
@@ -59,8 +59,8 @@ export default function UserPopover() {
             aria-label="Help"
             type="button"
           >
-            <HelpCircle className="h-4 w-4 mr-1" />
-            <span className="text-[14px]">Help</span>
+            <FileText className="h-4 w-4 mr-1" />
+            <span className="text-[14px]">Docs</span>
           </button>
           <button
             className="flex items-center gap-2 px-2 py-2 rounded-lg bg-transparent hover:bg-pink-400/10 hover:text-pink-400 transition-colors duration-200 group"
