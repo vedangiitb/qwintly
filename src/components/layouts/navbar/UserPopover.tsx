@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Popover,
@@ -6,7 +6,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useAuth } from "@/features/auth/ui/hooks/useAuth";
-import { CircleUser, HelpCircle, LogOut } from "lucide-react";
+import { CircleUser, FileText, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import PrefDialog from "./prefDialog";
 
@@ -53,15 +53,17 @@ export default function UserPopover() {
           <PrefDialog />
         </div>
         <div className="pt-2 flex flex-col gap-1 text-foreground/80 border-t border-white/5">
-          <button
+          <a
+            href="https://docs.qwintly.com"
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center gap-2 px-2 py-2 rounded-lg bg-transparent hover:bg-border transition-colors cursor-pointer duration-200 group"
             tabIndex={0}
-            aria-label="Help"
-            type="button"
+            aria-label="Docs"
           >
-            <HelpCircle className="h-4 w-4 mr-1" />
-            <span className="text-[14px]">Help</span>
-          </button>
+            <FileText className="h-4 w-4 mr-1" />
+            <span className="text-[14px]">Docs</span>
+          </a>
           <button
             className="flex items-center gap-2 px-2 py-2 rounded-lg bg-transparent hover:bg-pink-400/10 hover:text-pink-400 transition-colors duration-200 group"
             tabIndex={0}
