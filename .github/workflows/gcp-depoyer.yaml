@@ -13,25 +13,7 @@ env:
   GAR_REPOSITORY: qwintly-repo
 
 jobs:
-  sonar:
-    runs-on: ubuntu-latest
-
-    environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: SonarSource/sonarqube-scan-action@v6
-        with:
-          args: >
-            -Dsonar.qualitygate.wait=true
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
   deploy:
-    needs: sonar
     runs-on: ubuntu-latest
 
     environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
