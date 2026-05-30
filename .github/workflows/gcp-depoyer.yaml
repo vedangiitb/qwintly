@@ -22,11 +22,9 @@ jobs:
           fetch-depth: 0
 
       - uses: SonarSource/sonarqube-scan-action@v6
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-      - uses: SonarSource/sonarqube-quality-gate-action@master
-        timeout-minutes: 10
+        with:
+          args: >
+            -Dsonar.qualitygate.wait=true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
