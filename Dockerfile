@@ -32,6 +32,9 @@ FROM node:18-slim
 
 WORKDIR /app
 
+# Upgrade base OS packages to resolve vulnerabilities detected by security scanners (e.g. Trivy)
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /app ./
 
 EXPOSE 8080
