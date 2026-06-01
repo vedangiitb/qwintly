@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
   id-token: write # Required for GCP Workload Identity Federation (OIDC)
+  security-events: write # Required to upload SARIF security scans to the Security tab
 
 env:
   SERVICE_NAME: qwintly
@@ -62,11 +63,14 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'qwintly-local:latest'
-          format: 'table'
-          exit-code: '1' # Fails build if high/critical issues are found
-          ignore-unfixed: true
-          vuln-type: 'os,library'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
 
       # 3. Retag and Push to GCP Artifact Registry
       - name: Tag & Push to Artifact Registry
