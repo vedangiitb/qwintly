@@ -34,6 +34,11 @@ export function generateMetadata(): Metadata {
     },
     description: defaultDescription,
     applicationName: defaultTitle,
+    icons: {
+      icon: "/qwintlylogo.png",
+      shortcut: "/qwintlylogo.png",
+      apple: "/qwintlylogo.png",
+    },
     alternates: {
       canonical: "/",
     },
