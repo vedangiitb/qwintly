@@ -1,7 +1,11 @@
 import type { MetadataRoute } from "next";
-import { getSiteUrlOrLocalhost } from "@/lib/seo/siteUrl";
+import { getSiteUrlOrLocalhost, isProductionSite } from "@/lib/seo/siteUrl";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  if (!isProductionSite()) {
+    return [];
+  }
+
   const siteUrl = getSiteUrlOrLocalhost();
   const now = new Date();
 
