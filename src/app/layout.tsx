@@ -6,7 +6,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ChatProvider } from "@/features/chat/ui/hooks/chatContext";
 import Script from "next/script";
-import { getSiteUrlFromEnv, getSiteUrlOrLocalhost } from "@/lib/seo/siteUrl";
+import { getSiteUrlFromEnv, getSiteUrlOrLocalhost, isProductionSite } from "@/lib/seo/siteUrl";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,17 +58,26 @@ export function generateMetadata(): Metadata {
       description: defaultDescription,
       images: ["/opengraph-image"],
     },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-        "max-video-preview": -1,
-      },
-    },
+    robots: isProductionSite()
+      ? {
+          index: true,
+          follow: true,
+          googleBot: {
+            index: true,
+            follow: true,
+            "max-image-preview": "large",
+            "max-snippet": -1,
+            "max-video-preview": -1,
+          },
+        }
+      : {
+          index: false,
+          follow: false,
+          googleBot: {
+            index: false,
+            follow: false,
+          },
+        },
   };
 }
 
