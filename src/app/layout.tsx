@@ -107,7 +107,7 @@ export default function RootLayout({
                 "@type": "Organization",
                 name: defaultTitle,
                 url: structuredDataSiteUrl,
-                logo: `${structuredDataSiteUrl}/logo.png`,
+                logo: `${structuredDataSiteUrl}/qwintlylogo.png`,
               },
               {
                 "@context": "https://schema.org",
