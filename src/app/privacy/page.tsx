@@ -41,7 +41,7 @@ export default function PrivacyPolicyPage() {
             <section className="space-y-3">
               <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">1. Introduction</h2>
               <p>
-                Welcome to Qwintly ("we," "our," or "us"). We respect your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our application located at qwintly.com and dev.qwintly.com.
+                Welcome to Qwintly (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). We respect your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our application located at qwintly.com and dev.qwintly.com.
               </p>
             </section>
 
@@ -99,7 +99,7 @@ export default function PrivacyPolicyPage() {
             <section className="space-y-3">
               <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">7. Changes to This Policy</h2>
               <p>
-                We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
+                We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the &quot;Last updated&quot; date.
               </p>
             </section>
 

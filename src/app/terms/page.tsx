@@ -41,7 +41,7 @@ export default function TermsOfServicePage() {
             <section className="space-y-3">
               <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">1. Agreement to Terms</h2>
               <p>
-                By accessing or using Qwintly ("the Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to all of these Terms, do not use the Service.
+                By accessing or using Qwintly (&quot;the Service&quot;), you agree to be bound by these Terms of Service (&quot;Terms&quot;). If you do not agree to all of these Terms, do not use the Service.
               </p>
             </section>
 
@@ -92,7 +92,7 @@ export default function TermsOfServicePage() {
             <section className="space-y-3">
               <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">7. Disclaimer of Warranties</h2>
               <p>
-                THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. WE DO NOT WARRANT THAT GENERATED CODE IS COMPLETELY ERROR-FREE, SECURE, OR SUITABLE FOR ANY SPECIFIC BUSINESS PURPOSE.
+                THE SERVICE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. WE DO NOT WARRANT THAT GENERATED CODE IS COMPLETELY ERROR-FREE, SECURE, OR SUITABLE FOR ANY SPECIFIC BUSINESS PURPOSE.
               </p>
             </section>
 
