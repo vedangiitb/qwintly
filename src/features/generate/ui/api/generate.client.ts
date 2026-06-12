@@ -403,6 +403,7 @@ export class GenerateClient implements GenerateClientContract {
       async () => {
         const url = buildUrl(GENERATE_ENDPOINTS.FETCH_STATUS, {
           chatId,
+          ...(params.sessionId ? { sessionId: params.sessionId } : {}),
         });
 
         const reader = await this.httpClient.getStream(url, params.signal);

@@ -9,7 +9,7 @@ export const GET = getHandler(async ({ query, token }) => {
 
   await verifyToken(token);
 
-  const { questionAnswers, plans, siteUrl, previewUrl, isGenerating } =
+  const { questionAnswers, plans, siteUrl, previewUrl, isGenerating, sessionId } =
     await fetchChatInfo(chatId, token);
 
   return {
@@ -18,5 +18,6 @@ export const GET = getHandler(async ({ query, token }) => {
     siteUrl,
     previewUrl,
     isGenerating,
+    sessionId,
   };
 });

@@ -6,6 +6,7 @@ import { UpdatePlanRepository } from "@/features/ai/repository/updatePlan.reposi
 import { SitesRepository } from "../repositories/sites.repository";
 import { ChatRepository } from "../repositories/chat.repository";
 import { GenSnapshotsRepository } from "@/features/generate/server/repositories/genSessions.repository";
+import { StatusRepository } from "@/features/generate/server/repositories/status.repository";
 
 interface ChatInfoResponse {
   questionAnswers: QuestionAnswers[];
@@ -13,6 +14,7 @@ interface ChatInfoResponse {
   siteUrl: string | null;
   previewUrl: string | null;
   isGenerating: boolean;
+  sessionId: string | null;
 }
 
 interface ChatInfoRepositories {
@@ -21,6 +23,7 @@ interface ChatInfoRepositories {
   sitesRepo: Pick<SitesRepository, "fetchSite">;
   chatsRepo: Pick<ChatRepository, "isGenerating">;
   snapshotsRepo: Pick<GenSnapshotsRepository, "getGenIdFromChatId">;
+  statusRepo: Pick<StatusRepository, "getGenSession">;
 }
 
 const createChatInfoRepositories = (token: string): ChatInfoRepositories => ({
@@ -29,6 +32,7 @@ const createChatInfoRepositories = (token: string): ChatInfoRepositories => ({
   sitesRepo: new SitesRepository(token),
   chatsRepo: new ChatRepository(token),
   snapshotsRepo: new GenSnapshotsRepository(token),
+  statusRepo: new StatusRepository(token),
 });
 
 export const fetchChatInfo = async (
@@ -37,10 +41,10 @@ export const fetchChatInfo = async (
   repositories: ChatInfoRepositories = createChatInfoRepositories(token),
 ): Promise<ChatInfoResponse> => {
   const validChatId = validateChatId(chatId);
-  const { questionsRepo, plansRepo, sitesRepo, chatsRepo, snapshotsRepo } =
+  const { questionsRepo, plansRepo, sitesRepo, chatsRepo, snapshotsRepo, statusRepo } =
     repositories;
 
-  const [questionAnswers, plans, siteUrl, previewUrl, isGenerating] =
+  const [questionAnswers, plans, siteUrl, previewUrl, isGenerating, sessionId] =
     await Promise.all([
       questionsRepo.fetchQuestionsByChatId(validChatId),
       plansRepo.fetchPlansByChatId(validChatId),
@@ -49,7 +53,16 @@ export const fetchChatInfo = async (
         return genId ? genId + '-' + process.env.PREVIEW_URL_SUFFIX : "";
       }),
       chatsRepo.isGenerating(validChatId),
+      statusRepo.getGenSession(chatId),
     ]);
 
-  return { questionAnswers, plans, siteUrl, previewUrl, isGenerating };
+  return {
+    questionAnswers,
+    plans,
+    siteUrl,
+    previewUrl,
+    isGenerating,
+    sessionId: sessionId || null,
+  };
 };
+

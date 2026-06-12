@@ -89,6 +89,7 @@ export interface FetchChatInfoResult {
   siteUrl: string;
   previewUrl: string;
   isGenerating: boolean;
+  sessionId: string | null;
 }
 
 export interface ChatClientContract {
@@ -210,6 +211,7 @@ export class ChatClient implements ChatClientContract {
           siteUrl: data?.siteUrl ?? "",
           previewUrl: data?.previewUrl ?? "",
           isGenerating: data?.isGenerating ?? false,
+          sessionId: data?.sessionId ?? null,
         };
       },
     );
