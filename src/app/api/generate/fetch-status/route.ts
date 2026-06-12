@@ -21,7 +21,11 @@ export async function GET(req: NextRequest) {
 
   await verifyToken(token);
 
-  const stream = createGenerationStatusStream(chatId.trim(), token,sessionId, req.signal);
+  const stream = createGenerationStatusStream(
+    chatId.trim(),
+    sessionId,
+    req.signal,
+  );
 
   return new Response(stream, {
     headers: {

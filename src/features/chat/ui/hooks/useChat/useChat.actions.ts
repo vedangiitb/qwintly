@@ -103,13 +103,14 @@ export const useChatActions = ({
     setActiveChatId: setReduxActiveChatId,
     setSiteUrl: setReduxSiteUrl,
     setPreviewUrl,
+    setSessionId,
   } = useGenerate();
 
   const terminalHydrationInFlightRef = useRef<Set<string>>(new Set());
 
   const hydrateChatInfo = useCallback(
     async (targetChatId: string) => {
-      const { questionAnswers, plans, siteUrl, previewUrl, isGenerating } =
+      const { questionAnswers, plans, siteUrl, previewUrl, isGenerating, sessionId } =
         await fetchChatInfo(targetChatId);
       setQuestionAnswersByMessageId(toQuestionAnswerMap(questionAnswers));
       setPlansByMessageId(toPlanMap(plans));
@@ -121,6 +122,7 @@ export const useChatActions = ({
       setIsGenerating(isGenerating);
       setReduxGenerating(isGenerating);
       setReduxActiveChatId(targetChatId);
+      setSessionId(sessionId);
       return { questionAnswers, plans };
     },
     [
@@ -133,6 +135,7 @@ export const useChatActions = ({
       setReduxGenerating,
       setReduxActiveChatId,
       setReduxSiteUrl,
+      setSessionId,
     ],
   );
 

@@ -18,7 +18,7 @@ const TERMINAL_EVENTS = new Set(["generation_completed", "generation_failed"]);
 const safeTrim = (value: string | null | undefined): string | null => {
   if (!value) return null;
   const trimmed = value.trim();
-  return trimmed ? trimmed : null;
+  return trimmed || null;
 };
 
 const titleFromEventType = (eventType: string): string =>
@@ -115,7 +115,7 @@ export const useGenerate = () => {
         const logs = streamEvent.payload.map(toHistoryLog);
         applyHistoryLogs(logs);
         const lastEventType = logs.length
-          ? logs[logs.length - 1]?.eventType
+          ? logs.at(-1)?.eventType
           : null;
         const isTerminal = lastEventType
           ? TERMINAL_EVENTS.has(lastEventType)
@@ -358,6 +358,7 @@ export const useGenerate = () => {
     clearStatusState,
     setGenerating,
     setActiveChatId,
+    setSessionId,
     setSiteUrl,
     url,
     previewUrl,
