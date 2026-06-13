@@ -1,13 +1,7 @@
-interface PageSection {
-  sectionName: string;
-  description: string;
-}
-
 interface Page {
   pageRoute: string;
   pageName: string;
   description: string;
-  sections?: PageSection[];
 }
 
 export interface ProjectInfo {
@@ -22,12 +16,6 @@ export const defaultProjectInfo: ProjectInfo = {
       pageName: "Home Page",
       description:
         "A simple starter homepage with placeholder content you can replace with your brand, product, and links.",
-      sections: [
-        {
-          sectionName: "Hero",
-          description: "Boilerplate placeholder headline. Will be replaced",
-        },
-      ],
     },
   ],
   lastUpdatedPlanVersion: 0,

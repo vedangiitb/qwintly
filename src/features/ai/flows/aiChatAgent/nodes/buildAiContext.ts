@@ -2,7 +2,6 @@ import { websiteAgentPrompt } from "@/features/ai/prompts/websiteAgent.prompt";
 import { UpdatePlanRepository } from "@/features/ai/repository/updatePlan.repository";
 import { CollectedContextRepository } from "@/features/chat/server/repositories/collectedContext.repository";
 import { MessagesRepository } from "@/features/chat/server/repositories/messages.repository";
-import { CollectedContext } from "@/features/chat/types/collectedContext.types";
 import { RecentMsgContext } from "@/features/chat/types/messages.types";
 import {
   AIMessage,
@@ -12,34 +11,38 @@ import {
 } from "@langchain/core/messages";
 
 export interface AiContextDependencies {
-  messagesRepo: MessagesRepository;
+  messageRepo: MessagesRepository;
   collectedContextRepo: CollectedContextRepository;
   updatePlanRepo: UpdatePlanRepository;
 }
 
 export const buildAiContext = async (
   convId: string,
-  collectedContext: CollectedContext,
   deps: AiContextDependencies,
 ): Promise<BaseMessage[]> => {
   console.log("Building AI Context");
-  const { messagesRepo, collectedContextRepo, updatePlanRepo } = deps;
 
-  const [recentMessages, projectContext, previousPlans] = await Promise.all([
-    messagesRepo.fetchRecentContext(convId),
-    collectedContextRepo.fetchProjectInfo(convId),
-    updatePlanRepo.fetchPrevPlans(convId, 8),
+  const [fullContext, recentMessages, previousPlans] = await Promise.all([
+    deps.collectedContextRepo.fetchFullProjectContext(convId),
+    deps.messageRepo.fetchRecentContext(convId),
+    deps.updatePlanRepo.fetchPrevPlans(convId, 8),
   ]);
+
+  const { collectedContext, projectInfo } = fullContext;
 
   const systemPrompt = websiteAgentPrompt(
     collectedContext,
-    projectContext,
+    projectInfo,
     previousPlans,
   );
 
-  const aiContext = mapToBaseMessages(systemPrompt, recentMessages);
-  console.log("Built AiContext", aiContext);
-  return aiContext;
+  const context = [
+    new SystemMessage(systemPrompt),
+    ...recentMessages.map(mapMessageToBaseMessage),
+  ];
+
+  console.log("Built AiContext", context);
+  return context;
 };
 
 const mapToBaseMessages = (
