@@ -1,7 +1,7 @@
 import { buildWebsiteAgent } from "@/features/ai/factories/buildWebsiteAgent";
 import { ROLES } from "../../types/messages.types";
-import { MessagesRepository } from "../repositories/messages.repository";
 import { createChatSseResponse } from "../helpers/createChatSseResponse";
+import { MessagesRepository } from "../repositories/messages.repository";
 import { persistMessage } from "./persistMessage.service";
 import { checkUserMessageLimit } from "./rateLimit.service";
 
@@ -18,14 +18,14 @@ export const streamChat = async (
   await checkUserMessageLimit(userId);
 
   // 2. Persist user message
-  const userMessageId = await persistMessage({
+  await persistMessage({
     chatId,
     content: userMessage,
     role: ROLES.USER,
     repo: messageRepo,
   });
 
-  const stream = aiAgent.streamAgentFlow(chatId, userMessage, userMessageId);
+  const stream = aiAgent.streamAgentFlow(chatId, userMessage);
 
   return createChatSseResponse({
     stream,

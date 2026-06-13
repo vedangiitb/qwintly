@@ -1,17 +1,16 @@
 import { buildWebsiteAgent } from "@/features/ai/factories/buildWebsiteAgent";
 import { AskQuestionsRepository } from "@/features/ai/repository/askQuestions.repository";
+import { StreamChunk } from "@/features/ai/services/llm.service";
 import {
   QUESTION_STATUS,
   QuestionAnswers,
   QuestionStatus,
   UserResponse,
 } from "../../../ai/types/askQuestions.types";
-import { ToolCall } from "../../../ai/types/tools.types";
 import { MESSAGE_TYPES, ROLES } from "../../types/messages.types";
 import { validateChatId } from "../helpers/validateChatId";
 import { MessagesRepository } from "../repositories/messages.repository";
 import { persistMessage } from "./persistMessage.service";
-import { StreamChunk } from "@/features/ai/services/llm.service";
 
 interface SubmitAnswersDeps {
   askQuestionsRepo: Pick<
@@ -23,13 +22,20 @@ interface SubmitAnswersDeps {
     streamAgentFlow: (
       chatId: string,
       userMessage: string,
-      userMessageId: string,
-    ) => AsyncGenerator<StreamChunk & { agentMessageId?: string }, void, unknown>;
+    ) => AsyncGenerator<
+      StreamChunk & { agentMessageId?: string },
+      void,
+      unknown
+    >;
   };
 }
 
 interface SubmitAnswersResult {
-  stream: AsyncGenerator<StreamChunk & { agentMessageId?: string }, void, unknown>;
+  stream: AsyncGenerator<
+    StreamChunk & { agentMessageId?: string },
+    void,
+    unknown
+  >;
   questionSetId: string;
   status: QuestionStatus;
 }
@@ -42,7 +48,7 @@ const createSubmitAnswersDeps = (token: string): SubmitAnswersDeps => ({
 
 const validateAnswers = (answers: unknown): UserResponse[] => {
   if (!Array.isArray(answers)) {
-    throw new Error("Invalid answers payload");
+    throw new TypeError("Invalid answers payload");
   }
 
   answers.forEach((answer, index) => {
@@ -131,7 +137,7 @@ export const submitAnswers = async (
 
   const userMessage = `User submitted questionnaire answers for question set ${resolvedQuestionSetId}: ${JSON.stringify(validAnswers)}`;
 
-  const userMessageId = await persistMessage({
+  await persistMessage({
     chatId,
     content: userMessage,
     role: ROLES.USER,
@@ -139,11 +145,7 @@ export const submitAnswers = async (
     type: MESSAGE_TYPES.QUESTIONS,
   });
 
-  const stream = deps.aiAgent.streamAgentFlow(
-    validChatId,
-    userMessage,
-    userMessageId,
-  );
+  const stream = deps.aiAgent.streamAgentFlow(validChatId, userMessage);
 
   return {
     stream,
